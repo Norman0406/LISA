@@ -23,7 +23,7 @@ Lots of different plugins can be thought of. Some of them include:
 - **Rotator** Connects to a rotator device and allows the user to rotate his beams from within the application. Can also be used to align the beams for satellite operation
 
 # Building
-The application is based on the QtCreator source code, since it already provides a working application environment with a plugin ecosystem. Building is done through the QBS build system alone. To start developing, use the QtCreator IDE for your operating system and activate the QBS plugin to load the project. While the source code itself is platform independent, building has only been tested on Windows.
+The application is based on the QtCreator source code, since it already provides a working application environment with a plugin ecosystem. Building is done through the QBS build system alone. To start developing, use the QtCreator IDE for your operating system and activate the QBS plugin to load the project. While the source code itself is platform independent, building has only been tested on Windows yet.
 
 # Licensing
 The application has been built on top of the QtCreator source code. Code that is based on QtCreator is licensed under LGPL 2.1. The LISA plugins themselves are licensed under GPL 3. Please respect the licensing at any time.
@@ -33,15 +33,6 @@ LISA uses information and knowledge from the following open source projects:
 - **fldigi**
 - **GNURadio**
 - **CuteSDR**
-
-# Components
-LISA will provide the following components
-
-- **Core** Provides the core framework on which the application is based upon. It serves as a main hub to host all used modules and manages the dependencies and inter-module communication.
-- **Application** Provides the main application window and is itself a module. All the other modules add gui components to the main application to provide a seamless gui integration.
-- **Logging** This module manages a logbook and provides functionality like distributed logbook-hosting, syncronization with web-services (dropbox, Google Drive, ...) and callsign lookup with various online/offline ressources.
-- **Digital** Provides all features to be used during digital operation such as encoding/decoding digital protocols like PSK31, RTTY, etc. 
-- **Control** Provides the functionality to control various kinds of transceivers.
 
 # Contributing
 Contributing to the application is highly welcomed. If you want to contribute, contact the author via GitHub or issue a pull request. However, please note that contributing is not wise in the current development stage, since lots of concepts will change until everything is stable.
