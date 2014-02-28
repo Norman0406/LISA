@@ -1,0 +1,11 @@
+<plugin name=\"Digital\" version=\"$$LISA_VERSION\" compatVersion=\"$$LISA_COMPAT_VERSION\" experimental=\"false\">
+    <vendor>Norman Link</vendor>
+    <copyright>(C) Norman Link</copyright>
+    <license>
+    TODO
+    </license>
+    <category>Digital Operating</category>
+    <description>Plugin supporting digital operating modes.</description>
+    <url>TODO</url>
+    $$dependencyList
+</plugin>
