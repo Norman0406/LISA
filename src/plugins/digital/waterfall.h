@@ -25,8 +25,7 @@
 #ifndef WATERFALL_H
 #define WATERFALL_H
 
-#include <QWidget>
-#include <QTimer>
+#include "spectrumwidget.h"
 
 namespace Digital {
 namespace Internal {
@@ -34,7 +33,7 @@ namespace Internal {
 class Colormap;
 
 class Waterfall
-        : public QWidget    // : public SpectrumWidget
+        : public SpectrumWidget
 {
     Q_OBJECT
 
@@ -42,74 +41,36 @@ public:
     explicit Waterfall(QWidget* parent);
     ~Waterfall(void);
 
-    void init(int);
     void reset();
 
-    void setLowerPass(double);
-    void setUpperPass(double);
     void setRefLevel(int);
     void setAmpSpan(int);
 
-    double getLowerPass() const;
-    double getUpperPass() const;
     int getRefLevel() const;
     int getAmpSpan() const;
 
-signals:
-    void frequencySelected(double);
-
-public slots:
-    void addSpectrum(const QVector<double>&, double, double);
-    void bandwidthChanged(double);
-    void frequencyChanged(double);
-    void modemActive(bool);    // a modem has been selected, lock the frequency
-
-private slots:
-    void redraw();
-
 protected:
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void enterEvent(QEvent*);
-    void leaveEvent(QEvent*);
-    void drawOverlay();
+    void iInit();
+    void iAddSpectrum(const QVector<double>&, bool);
+    void sizeChanged(const QSize&);
+
+    void beginDraw(QPainter&);
+    void drawSpectrum(QPainter&, const QRect&);
+    QRect drawFrequencies(QPainter&);
+    void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    qreal bwToScreen(double);
-    qreal frqToScreen(double);
-    double screenToFrq(qreal);
-    void drawMarkers();
-    void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
+    void drawFrequencies();
     int log2disp(double);
 
-    QTimer*     m_updateTimer;
-
-    double      m_binSize;
-    double      m_maxFrq;
     int         m_refLevel;
     int         m_ampSpan;
-    int         m_spectrumSize;
-    QSize       m_size;
-    QPixmap     m_waterfallPixmap;
-    QPixmap     m_overlayFrq;
-    QPixmap     m_overlayMarkers;
-    float       m_mouseFrequency;
-
-    // modem specific
-    float       m_frequency;
-    float       m_bandwidth;
-    bool        m_showMarkers;
+    QPixmap     m_waterfall;
+    QPixmap     m_frequencies;
 
     // TODO: use either of them
     Colormap*	m_colorMap;
     QColor		m_colorTable[256];
-
-    double		m_lowerPassband;
-    double      m_upperPassband;
-    bool		m_drawOverlayFrq;
-    bool        m_showMouse;
 };
 
 } // namespace Internal

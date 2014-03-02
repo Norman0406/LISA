@@ -31,14 +31,9 @@
 using namespace Digital::Internal;
 
 Spectrograph::Spectrograph(QWidget* parent)
-    : QWidget(parent),
+    : SpectrumWidget(parent),
       m_mode(MODE_MAG)
 {
-    m_updateTimer = new QTimer(this);
-    m_updateTimer->setTimerType(Qt::PreciseTimer);
-    m_updateTimer->setInterval(30);   // time in ms
-    connect(m_updateTimer, &QTimer::timeout, this, &Spectrograph::redraw);
-    m_updateTimer->start();
 }
 
 Spectrograph::~Spectrograph(void)
@@ -51,9 +46,12 @@ void Spectrograph::setMode(Mode mode)
     m_mode = mode;
 }
 
-void Spectrograph::paintEvent(QPaintEvent*)
+void Spectrograph::iInit()
 {
-    QPainter painter(this);
+}
+
+void Spectrograph::beginDraw(QPainter& painter)
+{
     QRect paintRect = rect();
 
     QColor startCol(20, 22, 54);
@@ -63,16 +61,31 @@ void Spectrograph::paintEvent(QPaintEvent*)
     gradient.setColorAt(1, endCol);
     painter.setBrush(QBrush(gradient));
     painter.drawRect(paintRect);
-
-    // TODO: draw grid with labels
-
-    if (m_mode == MODE_LOG)
-        drawSpectrum(painter, m_spectrumLog);
-    else
-        drawSpectrum(painter, m_spectrumMag);
 }
 
-void Spectrograph::drawSpectrum(QPainter& painter, const QVector<double>& spectrum)
+void Spectrograph::drawSpectrum(QPainter& painter, const QRect&)
+{
+    /*if (m_mode == MODE_LOG)
+        drawSpectrum(painter, m_spectrumLog);
+    else
+        drawSpectrum(painter, m_spectrumMag);*/
+}
+
+QRect Spectrograph::drawFrequencies(QPainter&)
+{
+    return QRect();
+}
+
+void Spectrograph::drawFrequencies()
+{
+
+}
+
+void Spectrograph::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
+{
+}
+
+/*void Spectrograph::drawSpectrum(QPainter& painter, const QVector<double>& spectrum)
 {
     if (spectrum.size() == 0)
         return;
@@ -115,23 +128,16 @@ void Spectrograph::drawSpectrum(QPainter& painter, const QVector<double>& spectr
     // Better performance: http://www.qtcentre.org/threads/23818-Performance-with-many-filled-polygons-on-screen
     // maybe draw to an offline pixmap
     painter.drawConvexPolygon(polygon);
+}*/
+
+void Spectrograph::sizeChanged(const QSize& size)
+{
+
 }
 
-void Spectrograph::resizeEvent(QResizeEvent*)
+void Spectrograph::iAddSpectrum(const QVector<double>& spectrum, bool changed)
 {
-}
+    // TODO: mag and log
 
-void Spectrograph::redraw()
-{
-    update();
-}
-
-void Spectrograph::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
-{
     m_spectrumLog = spectrum;
-}
-
-void Spectrograph::addSpectrumMag(const QVector<double>& spectrum, double binSize, double maxFrq)
-{
-    m_spectrumMag = spectrum;
 }

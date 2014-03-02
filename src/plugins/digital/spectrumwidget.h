@@ -26,6 +26,8 @@
 #define SPECTRUMWIDGET_H
 
 #include <QWidget>
+#include <QTimer>
+#include <QPainter>
 
 namespace Digital {
 namespace Internal {
@@ -33,8 +35,22 @@ namespace Internal {
 class SpectrumWidget
         : public QWidget
 {
+    Q_OBJECT
+
+signals:
+    void frequencySelected(double);
+
 public:
-    SpectrumWidget();
+    ~SpectrumWidget();
+
+    void init(int);
+    virtual void reset();
+
+    void setLowerPass(double);
+    void setUpperPass(double);
+
+    double getLowerPass() const;
+    double getUpperPass() const;
 
 public slots:
     void addSpectrum(const QVector<double>&, double, double);
@@ -42,8 +58,53 @@ public slots:
     void frequencyChanged(double);
     void modemActive(bool);    // a modem has been selected, lock the frequency
 
+protected:
+    SpectrumWidget(QWidget*);
+
+    void paintEvent(QPaintEvent*);
+    void resizeEvent(QResizeEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void enterEvent(QEvent*);
+    void leaveEvent(QEvent*);
+
+    void requestRedraw();
+    qreal bwToScreen(double);
+    qreal frqToScreen(double);
+    double screenToFrq(qreal);
+
+    virtual void iInit() = 0;
+    virtual void iAddSpectrum(const QVector<double>&, bool) = 0;
+    virtual void sizeChanged(const QSize&);
+
+    virtual void beginDraw(QPainter&) = 0;
+    virtual void drawSpectrum(QPainter&, const QRect&) = 0;
+    virtual QRect drawFrequencies(QPainter&) = 0;
+    virtual void drawFrequencies() = 0;
+    virtual void drawMarkers(QPainter&, qreal, const QColor&, const QColor&) = 0;
+
+    double      m_binSize;
+    double      m_maxFrq;
+    int         m_spectrumSize;
+    float       m_frequency;
+    float       m_bandwidth;
+    float       m_mouseFrequency;
+    bool        m_showMouse;
+    bool        m_showMarkers;
+    bool        m_showFrequencies;
+    double		m_lowerPassband;
+    double      m_upperPassband;
+    QSize       m_size;
+    QTimer*     m_updateTimer;
+    QPixmap     m_markers;
+
 private slots:
     void redraw();
+
+private:
+    void drawMarkers();
+
+    bool m_needToRedraw;
 };
 
 } // namespace Internal

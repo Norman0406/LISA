@@ -25,13 +25,13 @@
 #ifndef SPECTROGRAPH_H
 #define SPECTROGRAPH_H
 
-#include <QWidget>
+#include "spectrumwidget.h"
 
 namespace Digital {
 namespace Internal {
 
 class Spectrograph
-        : public QWidget    // : public SpectrumWidget
+        : public SpectrumWidget
 {
 public:
     explicit Spectrograph(QWidget* parent);
@@ -45,24 +45,23 @@ public:
 
     void setMode(Mode);
 
-public slots:
-    void addSpectrumLog(const QVector<double>&, double, double);
-    void addSpectrumMag(const QVector<double>&, double, double);
-
-private slots:
-    void redraw();
-
 protected:
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
+    void iInit();
+    void iAddSpectrum(const QVector<double>&, bool);
+    void sizeChanged(const QSize&);
+
+    void beginDraw(QPainter&);
+    void drawSpectrum(QPainter&, const QRect&);
+    QRect drawFrequencies(QPainter&);
+    void drawFrequencies();
+    void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    void drawSpectrum(QPainter&, const QVector<double>&);
+    //void drawSpectrum(QPainter&, const QVector<double>&);
 
     QVector<double> m_spectrumLog;
     QVector<double> m_spectrumMag;
     Mode m_mode;
-    QTimer* m_updateTimer;
 };
 
 } // namespace Internal

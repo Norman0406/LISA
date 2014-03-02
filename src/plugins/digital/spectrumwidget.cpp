@@ -23,9 +23,292 @@
  **********************************************************************/
 
 #include "spectrumwidget.h"
+#include <QMouseEvent>
+#include <QDebug>
 
 using namespace Digital::Internal;
 
-SpectrumWidget::SpectrumWidget()
+SpectrumWidget::SpectrumWidget(QWidget* parent)
+    : QWidget(parent),
+      m_binSize(0),
+      m_maxFrq(0),
+      m_spectrumSize(0),
+      m_frequency(1000),
+      m_bandwidth(100),
+      m_mouseFrequency(1000),
+      m_showMouse(false),
+      m_showMarkers(false),
+      m_showFrequencies(true),
+      m_lowerPassband(0),
+      m_upperPassband(4000),
+      m_needToRedraw(false)
 {
+    m_updateTimer = new QTimer(this);
+    m_updateTimer->setTimerType(Qt::PreciseTimer);
+    m_updateTimer->setInterval(30);   // time in ms
+    connect(m_updateTimer, &QTimer::timeout, this, &SpectrumWidget::redraw);
+
+    m_size = size();
+}
+
+SpectrumWidget::~SpectrumWidget()
+{
+}
+
+void SpectrumWidget::init(int specSize)
+{
+    m_spectrumSize = specSize;
+    setMouseTracking(true);
+
+    iInit();
+
+    m_updateTimer->start();
+}
+
+void SpectrumWidget::reset()
+{
+    // not implemented
+}
+
+void SpectrumWidget::setLowerPass(double value)
+{
+    if (value < 0) {
+        qWarning() << "value < 0, setting to 0";
+        value = 0;
+    }
+    else if (value > m_upperPassband) {
+        qWarning() << "value < m_upperPassband, setting to 0";
+        value = 0;
+    }
+
+    m_lowerPassband = value;
+}
+
+void SpectrumWidget::setUpperPass(double value)
+{
+    if (value > m_maxFrq) {
+        qWarning() << "value > m_maxFrq, setting to m_maxFrq";
+        value = m_maxFrq;
+    }
+    else if (value < m_lowerPassband) {
+        qWarning() << "value < m_lowerPassband, setting to m_maxFrq";
+        value = m_maxFrq;
+    }
+
+    m_upperPassband = value;
+}
+
+double SpectrumWidget::getLowerPass() const
+{
+    return m_lowerPassband;
+}
+
+double SpectrumWidget::getUpperPass() const
+{
+    return m_upperPassband;
+}
+
+void SpectrumWidget::addSpectrum(const QVector<double>& spectrum, double binSize, double maxFrq)
+{
+    bool changed = false;
+
+    if (m_binSize != binSize || m_maxFrq != maxFrq) {
+        m_binSize = binSize;
+        m_maxFrq = maxFrq;
+        changed = true;
+    }
+
+    iAddSpectrum(spectrum, changed);
+}
+
+void SpectrumWidget::bandwidthChanged(double bandwidth)
+{
+    if (bandwidth != m_bandwidth) {
+        m_bandwidth = bandwidth;
+        drawMarkers();
+    }
+}
+
+void SpectrumWidget::frequencyChanged(double frequency)
+{
+    if (frequency != m_frequency) {
+        m_frequency = frequency;
+        drawMarkers();
+        drawFrequencies();
+    }
+}
+
+void SpectrumWidget::modemActive(bool active)
+{
+    m_showMarkers = active;
+
+    // hide or show the mouse cursor
+    if (active) {
+        setCursor(Qt::BlankCursor);
+        emit frequencySelected(m_frequency);
+    }
+    else
+        setCursor(Qt::ArrowCursor);
+}
+
+void SpectrumWidget::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+
+    // TODO: only draw what has changed
+
+    // begin drawing, i.e. draw background etc
+    beginDraw(painter);
+
+    QRect spectrumRect = rect();
+
+    // draw overlay
+    if (m_showFrequencies) {
+        QRect frqRect = drawFrequencies(painter);
+
+        // adjust spectrum rectangle
+        spectrumRect.setTop(frqRect.bottom() + 1);
+    }
+
+    // draw actual spectrum data
+    drawSpectrum(painter, spectrumRect);
+
+    // draw modem markers
+    if (m_showMarkers || m_showMouse) {
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter.drawPixmap(0, 0, m_markers);
+    }
+}
+
+void SpectrumWidget::drawMarkers()
+{
+    if (!m_showMarkers && !m_showMouse)
+        return;
+
+    if (!m_markers.isNull()) {
+        // draw markers overlay
+        QPainter painter(&m_markers);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.setBackgroundMode(Qt::TransparentMode);
+        painter.fillRect(m_markers.rect(), QColor(255, 255, 255, 0));
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        QColor frqCol(255, 255, 255, 255);
+        QColor bwCol(255, 0, 0, 255);
+
+        // draw modem marker
+        if (m_showMarkers) {
+            drawMarkers(painter, m_frequency, frqCol, bwCol);
+            requestRedraw();
+        }
+
+        // draw mouse marker
+        if (m_showMouse) {
+            bwCol = QColor(255, 255, 0, 255);
+
+            // draw mouse marker
+            drawMarkers(painter, m_mouseFrequency, frqCol, bwCol);
+
+            update();
+        }
+    }
+}
+
+void SpectrumWidget::resizeEvent(QResizeEvent*)
+{
+    if(!size().isValid())
+        return;
+
+    if(m_size != size()) {
+        m_size = size();
+
+        if (m_showMarkers || m_showMouse) {
+            m_markers = QPixmap(m_size);
+            m_markers.fill(Qt::transparent);
+            drawMarkers();
+        }
+
+        sizeChanged(m_size);
+    }
+}
+
+void SpectrumWidget::sizeChanged(const QSize&)
+{
+    // not implemented
+}
+
+void SpectrumWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    const QPointF& pos = event->pos();
+
+    qreal frequency = m_lowerPassband + (m_upperPassband - m_lowerPassband) * pos.x() / qreal(m_size.width());
+    m_mouseFrequency = frequency;
+
+    drawMarkers();
+    update();
+}
+
+void SpectrumWidget::mousePressEvent(QMouseEvent* event)
+{
+    if (m_showMarkers) {
+        Qt::MouseButton button = event->button();
+        if (button == Qt::LeftButton) {
+            QPoint pos = event->pos();
+
+            // determine the clicked frequency
+            double frequency = screenToFrq(pos.x());
+            if (frequency < m_lowerPassband)
+                frequency = m_lowerPassband;
+            else if (frequency > m_upperPassband)
+                frequency = m_upperPassband;
+
+            m_frequency = frequency;
+            emit frequencySelected(m_frequency);
+
+            drawMarkers();
+            update();
+        }
+    }
+}
+
+void SpectrumWidget::enterEvent(QEvent*)
+{
+    m_showMouse = true;
+    drawMarkers();
+    update();
+}
+
+void SpectrumWidget::leaveEvent(QEvent*)
+{
+    m_showMouse = false;
+    drawMarkers();
+    update();
+}
+
+void SpectrumWidget::requestRedraw()
+{
+    m_needToRedraw = true;
+}
+
+void SpectrumWidget::redraw()
+{
+    if (m_needToRedraw) {
+        update();
+        m_needToRedraw = false;
+    }
+}
+
+qreal SpectrumWidget::bwToScreen(double bandwidth)
+{
+    return m_size.width() / (m_upperPassband - m_lowerPassband) * (bandwidth);
+}
+
+qreal SpectrumWidget::frqToScreen(double frequency)
+{
+    return m_size.width() * (frequency - m_lowerPassband) / (m_upperPassband - m_lowerPassband);
+}
+
+double SpectrumWidget::screenToFrq(qreal pos)
+{
+    return m_lowerPassband + (m_upperPassband - m_lowerPassband) * pos / m_size.width();
 }

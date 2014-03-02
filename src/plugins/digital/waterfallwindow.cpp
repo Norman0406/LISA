@@ -40,7 +40,7 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
       m_inputDevice(0),
       m_toolBar(new WaterfallToolBar(this)),
       m_waterfall(new Waterfall(this)),
-      m_spectrograph(new Spectrograph(this))
+      m_spectrograph(0)//new Spectrograph(this))
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
@@ -51,7 +51,7 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
 
     // connect spectrum to widget
     m_spectrum = new Spectrum(4096, WT_BLACKMANHARRIS, this);
-    connect(m_spectrum, &Spectrum::spectrumLog, m_waterfall, &Waterfall::addSpectrum);
+    connect(m_spectrum, &Spectrum::spectrumLog, m_waterfall, &SpectrumWidget::addSpectrum);
     //connect(m_spectrum, &Spectrum::spectrumLog, m_spectrograph, &Spectrograph::addSpectrumLog);
     //connect(m_spectrum, &Spectrum::spectrumMag, m_spectrograph, &Spectrograph::addSpectrumMag);
     m_spectrum->init();
@@ -60,7 +60,7 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
     m_waterfall->init(m_spectrum->getSpectrumSize());
 
     layout->addWidget(m_waterfall);
-    layout->addWidget(m_spectrograph);
+    //layout->addWidget(m_spectrograph);
 
     setMinimumHeight(100);
 }
