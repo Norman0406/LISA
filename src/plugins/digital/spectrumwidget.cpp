@@ -108,7 +108,7 @@ double SpectrumWidget::getUpperPass() const
     return m_upperPassband;
 }
 
-void SpectrumWidget::addSpectrum(const QVector<double>& spectrum, double binSize, double maxFrq)
+void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
 {
     bool changed = false;
 
@@ -118,7 +118,20 @@ void SpectrumWidget::addSpectrum(const QVector<double>& spectrum, double binSize
         changed = true;
     }
 
-    iAddSpectrum(spectrum, changed);
+    iAddSpectrumLog(spectrum, changed);
+}
+
+void SpectrumWidget::addSpectrumMag(const QVector<double>& spectrum, double binSize, double maxFrq)
+{
+    bool changed = false;
+
+    if (m_binSize != binSize || m_maxFrq != maxFrq) {
+        m_binSize = binSize;
+        m_maxFrq = maxFrq;
+        changed = true;
+    }
+
+    iAddSpectrumMag(spectrum, changed);
 }
 
 void SpectrumWidget::bandwidthChanged(double bandwidth)
@@ -232,6 +245,16 @@ void SpectrumWidget::resizeEvent(QResizeEvent*)
     }
 }
 
+void SpectrumWidget::iAddSpectrumLog(const QVector<double>&, bool)
+{
+    // not implemented
+}
+
+void SpectrumWidget::iAddSpectrumMag(const QVector<double>&, bool)
+{
+    // not implemented
+}
+
 void SpectrumWidget::sizeChanged(const QSize&)
 {
     // not implemented
@@ -245,7 +268,6 @@ void SpectrumWidget::mouseMoveEvent(QMouseEvent* event)
     m_mouseFrequency = frequency;
 
     drawMarkers();
-    update();
 }
 
 void SpectrumWidget::mousePressEvent(QMouseEvent* event)

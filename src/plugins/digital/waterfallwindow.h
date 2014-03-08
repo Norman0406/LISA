@@ -26,7 +26,7 @@
 #define WATERFALLWINDOW_H
 
 #include <QWidget>
-#include <QTimer>
+#include <QThread>
 
 namespace Digital {
 namespace Internal {
@@ -44,7 +44,15 @@ class WaterfallWindow
     Q_OBJECT
 
 public:
+    enum WaterfallSpeed
+    {
+        WF_FAST,
+        WF_NORMAL,
+        WF_SLOW
+    };
+
     WaterfallWindow(QWidget*);
+    ~WaterfallWindow();
 
     void setSpeed(float speedMs);
     void reset();
@@ -61,6 +69,8 @@ private:
     WaterfallToolBar*   m_toolBar;
     Waterfall*          m_waterfall;
     Spectrograph*       m_spectrograph;
+    QTimer*             m_spectrumTimer;
+    QThread*            m_timerThread;
 };
 
 } // namespace Internal

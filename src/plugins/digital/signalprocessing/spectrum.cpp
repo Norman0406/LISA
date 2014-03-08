@@ -35,11 +35,10 @@ using namespace Digital::Internal;
 
 Spectrum::Spectrum(int fftSize, SpectrumWindow wdType, QObject* parent)
     : AudioConsumer(512, parent),
+      m_fftSize(fftSize),
       m_fftWorker(0),
       m_fftThread(0),
-      m_buffer(0),
-      m_newData(false),
-      m_speed(SPEED_FAST)
+      m_buffer(0)
 {
     m_fftThread = new QThread(this);
     m_fftWorker = new SpectrumWorker(fftSize, wdType);
@@ -50,12 +49,6 @@ Spectrum::Spectrum(int fftSize, SpectrumWindow wdType, QObject* parent)
     connect(m_fftWorker, &SpectrumWorker::finished, m_fftWorker, &SpectrumWorker::deleteLater);
     connect(m_fftThread, &QThread::finished, m_fftThread, &QThread::deleteLater);
     connect(m_fftWorker, &SpectrumWorker::dataReady, this, &Spectrum::spectrumReady);
-
-    // init timer to update the widget
-    m_updateTimer = new QTimer(this);
-    m_updateTimer->setTimerType(Qt::PreciseTimer);
-    m_updateTimer->setInterval(100);   // time in ms
-    connect(m_updateTimer, &QTimer::timeout, this, &Spectrum::compute);
 }
 
 Spectrum::~Spectrum()
@@ -67,21 +60,18 @@ Spectrum::~Spectrum()
 
 void Spectrum::init()
 {
-    // start thread
+    // start processing thread
     if (m_fftThread)
         m_fftThread->start();
 }
 
 void Spectrum::registered()
 {
-    setSpeed(m_speed);
-    m_updateTimer->start();
     m_buffer = new AudioRingBuffer(getFormat(), (qint64)m_fftWorker->getFFTSize(), this);
 }
 
 void Spectrum::unregistered()
 {
-    m_updateTimer->stop();
     delete m_buffer;
 }
 
@@ -89,25 +79,17 @@ void Spectrum::audioDataReady(const QVector<double>& data)
 {
     if (m_buffer) {
         m_buffer->writeData(data);
-        m_newData = true;
     }
-}
-
-void Spectrum::create(QAudioFormat format)
-{
-    AudioConsumer::create(format);
-    qint64 blockSize = format.sampleRate() / 15;
-    setNumSamples(blockSize);
 }
 
 void Spectrum::compute()
 {
-    if (m_fftWorker && m_newData) {
+    if (m_fftWorker && m_buffer->getBufferLength() >= m_fftSize) {
         // TODO: avoid copying the buffer multiple times
         QVector<double> bufferData;
         m_buffer->getBuffer(bufferData);
+
         m_fftWorker->startFFT(getFormat(), bufferData);
-        m_newData = false;
     }
 }
 
@@ -121,35 +103,6 @@ void Spectrum::spectrumReady()
 
     emit spectrumLog(m_spectrumLog, binSize, maxFrq);
     emit spectrumMag(m_spectrumMag, binSize, maxFrq);
-}
-
-void Spectrum::setSpeed(Speed speed)
-{
-    int sampleRate = getFormat().sampleRate();
-    qint64 blockSize = getNumSamples();
-    int blockDurationMs = (blockSize / (double)sampleRate) * 1000;
-
-    double speedMs = blockDurationMs;
-    switch (m_speed) {
-    case SPEED_NORMAL:
-        speedMs = blockDurationMs * 2;
-        break;
-    case SPEED_SLOW:
-        speedMs = blockDurationMs * 4;
-        break;
-    default:
-    case SPEED_FAST:
-        break;
-    }
-
-    m_updateTimer->setInterval(speedMs);   // time in ms
-
-    m_speed = speed;
-}
-
-Spectrum::Speed Spectrum::getSpeed() const
-{
-    return m_speed;
 }
 
 int Spectrum::getFFTSize() const

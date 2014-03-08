@@ -47,7 +47,7 @@ public:
 
 protected:
     void iInit();
-    void iAddSpectrum(const QVector<double>&, bool);
+    void iAddSpectrumMag(const QVector<double>&, bool);
     void sizeChanged(const QSize&);
 
     void beginDraw(QPainter&);
@@ -59,7 +59,6 @@ protected:
 private:
     //void drawSpectrum(QPainter&, const QVector<double>&);
 
-    QVector<double> m_spectrumLog;
     QVector<double> m_spectrumMag;
     Mode m_mode;
 };

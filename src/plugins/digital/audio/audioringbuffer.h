@@ -51,6 +51,7 @@ public:
 
     qint64 getBuffer(QVector<double>&) const;
     qint64 getBuffer(QVector<double>&, qint64) const;
+    qint64 getBufferLength() const;
 
 private:
     const QAudioFormat m_format;

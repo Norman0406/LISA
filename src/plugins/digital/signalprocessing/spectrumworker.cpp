@@ -120,6 +120,8 @@ void SpectrumWorker::run()
 
         if (!m_terminate) {
 
+            //time.start();
+
             // latency means that only a portion of the input data is processed via fft.
             // a latency of 16 processes the whole input data of size m_fftSize while a
             // latency of 1 processes the first 1/16th of input data.

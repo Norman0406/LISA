@@ -32,7 +32,9 @@
 #include <QAudioFormat>
 #include <QVector>
 #include <QTimer>
+#include <QMutex>
 #include <complex>
+#include <QWaitCondition>
 
 namespace Digital {
 namespace Internal {
@@ -52,30 +54,21 @@ class Spectrum
 {
     Q_OBJECT
 
-    enum Speed
-    {
-        SPEED_FAST,
-        SPEED_NORMAL,
-        SPEED_SLOW
-    };
-
 public:
     Spectrum(int, SpectrumWindow, QObject*);
     ~Spectrum();
 
     void init();
-    void setSpeed(Speed);
-    Speed getSpeed() const;
     int getFFTSize() const;
     int getSpectrumSize() const;
     double getBinSize() const;
     double getMaxFrq() const;
 
 public slots:
-    void spectrumReady();
+    void compute();
 
 private slots:
-    void compute();
+    void spectrumReady();
 
 signals:
     void spectrumLog(const QVector<double>&, double, double);
@@ -85,17 +78,14 @@ protected:
     void registered();
     void unregistered();
     void audioDataReady(const QVector<double>& data);
-    void create(QAudioFormat);
 
 private:
+    int m_fftSize;
     QVector<double> m_spectrumLog;
     QVector<double> m_spectrumMag;
     SpectrumWorker* m_fftWorker;
     QThread* m_fftThread;
-    QTimer* m_updateTimer;
     AudioRingBuffer* m_buffer;
-    bool m_newData;
-    Speed m_speed;
 };
 
 } // namespace Internal

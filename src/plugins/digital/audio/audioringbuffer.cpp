@@ -74,6 +74,10 @@ qint64 AudioRingBuffer::writeData(const QVector<double>& data)
         samplesLeft--;
     } while (samplesLeft > 0);
 
+    m_bufferLength += samplesWrittenTotal;
+    if (m_bufferLength > m_bufferSize)
+        m_bufferLength = m_bufferSize;
+
     return samplesWrittenTotal;
 }
 
@@ -82,6 +86,7 @@ qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
     const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
 
     qint64 bytesWrittenTotal = 0;
+    qint64 samplesWrittenTotal = 0;
 
     // signal that a block of data is available as soon as the buffer is full
     m_lock.lock();
@@ -92,16 +97,21 @@ qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
         m_position = (m_position + 1) % m_buffer.size();
 
         bytesWrittenTotal += bytesPerSample;
+        samplesWrittenTotal++;
         bytesLeft -= bytesPerSample;
     } while (bytesLeft > 0);
     m_lock.unlock();
+
+    m_bufferLength += samplesWrittenTotal;
+    if (m_bufferLength > m_bufferSize)
+        m_bufferLength = m_bufferSize;
 
     return bytesWrittenTotal;
 }
 
 qint64 AudioRingBuffer::readData(char* data, qint64 maxSize)
 {
-    // not sure if this is working correctly in all cases
+    // UNDONE
     return 0;
 }
 
@@ -122,4 +132,9 @@ qint64 AudioRingBuffer::getBuffer(QVector<double>& buffer, qint64 size) const
 
     m_lock.unlock();
     return size;
+}
+
+qint64 AudioRingBuffer::getBufferLength() const
+{
+    return m_bufferLength;
 }

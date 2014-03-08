@@ -51,10 +51,21 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
 
     // connect spectrum to widget
     m_spectrum = new Spectrum(4096, WT_BLACKMANHARRIS, this);
-    connect(m_spectrum, &Spectrum::spectrumLog, m_waterfall, &SpectrumWidget::addSpectrum);
+    connect(m_spectrum, &Spectrum::spectrumLog, m_waterfall, &SpectrumWidget::addSpectrumLog);
     //connect(m_spectrum, &Spectrum::spectrumLog, m_spectrograph, &Spectrograph::addSpectrumLog);
     //connect(m_spectrum, &Spectrum::spectrumMag, m_spectrograph, &Spectrograph::addSpectrumMag);
     m_spectrum->init();
+
+    // init timer to update the widgets
+    m_timerThread = new QThread(this);
+    m_spectrumTimer = new QTimer(0);
+    m_spectrumTimer->setTimerType(Qt::PreciseTimer);
+    m_spectrumTimer->setInterval(50);   // time in ms
+    m_spectrumTimer->moveToThread(m_timerThread);
+    connect(m_spectrumTimer, &QTimer::timeout, m_spectrum, &Spectrum::compute, Qt::DirectConnection);
+    connect(m_timerThread, SIGNAL(started()), m_spectrumTimer, SLOT(start()));
+
+    // set block size such that each block has a duration corresponding with m_spectrumTimer
 
     // init waterfall
     m_waterfall->init(m_spectrum->getSpectrumSize());
@@ -65,14 +76,30 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
     setMinimumHeight(100);
 }
 
+WaterfallWindow::~WaterfallWindow()
+{
+    m_timerThread->quit();
+    m_timerThread->wait();
+}
+
 void WaterfallWindow::start(AudioDeviceIn* inputDevice)
 {
     m_inputDevice = inputDevice;
+
+    double frameLength = 1.0 / (m_spectrumTimer->interval() * 0.001);
+    qint64 blockSize = inputDevice->getFormat().sampleRate() / frameLength;
+    m_spectrum->setNumSamples(blockSize);
+
     m_inputDevice->registerConsumer(m_spectrum);
+
+    //m_spectrumTimer->start();
+    m_timerThread->start();
 }
 
 void WaterfallWindow::stop()
 {
+    //m_spectrumTimer->stop();
+    m_timerThread->quit();
     m_inputDevice->unregisterConsumer(m_spectrum);
     m_inputDevice = 0;
 }

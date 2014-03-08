@@ -53,7 +53,8 @@ public:
     double getUpperPass() const;
 
 public slots:
-    void addSpectrum(const QVector<double>&, double, double);
+    void addSpectrumLog(const QVector<double>&, double, double);
+    void addSpectrumMag(const QVector<double>&, double, double);
     void bandwidthChanged(double);
     void frequencyChanged(double);
     void modemActive(bool);    // a modem has been selected, lock the frequency
@@ -74,7 +75,8 @@ protected:
     double screenToFrq(qreal);
 
     virtual void iInit() = 0;
-    virtual void iAddSpectrum(const QVector<double>&, bool) = 0;
+    virtual void iAddSpectrumLog(const QVector<double>&, bool);
+    virtual void iAddSpectrumMag(const QVector<double>&, bool);
     virtual void sizeChanged(const QSize&);
 
     virtual void beginDraw(QPainter&) = 0;
@@ -98,8 +100,8 @@ protected:
     QTimer*     m_updateTimer;
     QPixmap     m_markers;
 
-private slots:
-    void redraw();
+protected slots:
+    virtual void redraw();
 
 private:
     void drawMarkers();

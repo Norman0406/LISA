@@ -27,6 +27,8 @@
 
 #include "spectrumwidget.h"
 
+#include <QVector>
+
 namespace Digital {
 namespace Internal {
 
@@ -51,8 +53,9 @@ public:
 
 protected:
     void iInit();
-    void iAddSpectrum(const QVector<double>&, bool);
+    void iAddSpectrumLog(const QVector<double>&, bool);
     void sizeChanged(const QSize&);
+    void redraw();
 
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
@@ -65,12 +68,16 @@ private:
 
     int         m_refLevel;
     int         m_ampSpan;
-    QPixmap     m_waterfall;
     QPixmap     m_frequencies;
+
+    QImage      m_waterfall;
+    QRgb*       m_scrollBuffer;
+    int         m_scrollPosition;
 
     // TODO: use either of them
     Colormap*	m_colorMap;
     QColor		m_colorTable[256];
+    QVector<QVector<double> > m_recentData;
 };
 
 } // namespace Internal

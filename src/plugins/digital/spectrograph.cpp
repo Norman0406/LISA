@@ -135,9 +135,9 @@ void Spectrograph::sizeChanged(const QSize& size)
 
 }
 
-void Spectrograph::iAddSpectrum(const QVector<double>& spectrum, bool changed)
+void Spectrograph::iAddSpectrumMag(const QVector<double>& spectrum, bool changed)
 {
     // TODO: mag and log
 
-    m_spectrumLog = spectrum;
+    m_spectrumMag = spectrum;
 }

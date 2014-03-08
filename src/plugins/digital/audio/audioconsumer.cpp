@@ -79,6 +79,7 @@ qint64 AudioConsumer::writeData(const char* data, qint64 len)
             // the buffer is full, convert the data block into real data
             if (m_position == m_realData.size()) {
                 m_position = 0;
+
                 audioDataReady(m_realData);
             }
 

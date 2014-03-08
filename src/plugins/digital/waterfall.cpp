@@ -37,22 +37,21 @@ using namespace Digital::Internal;
 Waterfall::Waterfall(QWidget* parent)
     : SpectrumWidget(parent),
       m_refLevel(-10),
-      m_ampSpan(90)
+      m_ampSpan(90),
+      m_scrollBuffer(0),
+      m_scrollPosition(0),
+      m_colorMap(0)
 {
 }
 
 Waterfall::~Waterfall(void)
 {
+    delete[] m_scrollBuffer;
 }
 
 void Waterfall::iInit()
 {
-    // TODO: waterfallSize.height from x seconds
-
-    // the waterfall pixmap has a fixed size independently from the window size
-    QSize waterfallSize(m_spectrumSize, 1000);
-    m_waterfall = QPixmap(waterfallSize);
-    m_waterfall.fill(Qt::black);
+    delete m_colorMap;
 
     //ColormapBlue colormap;
     //ColormapCuteSDR colormap;
@@ -65,6 +64,7 @@ void Waterfall::iInit()
 void Waterfall::reset()
 {
     m_waterfall.fill(Qt::black);
+    m_scrollPosition = 0;
 }
 
 void Waterfall::setRefLevel(int value)
@@ -97,7 +97,7 @@ void Waterfall::drawSpectrum(QPainter& painter, const QRect& rect)
 {
     QRect newRect(rect);
     newRect.setHeight(m_waterfall.height());
-    painter.drawPixmap(newRect, m_waterfall);
+    painter.drawImage(newRect, m_waterfall);
 }
 
 QRect Waterfall::drawFrequencies(QPainter& painter)
@@ -207,15 +207,27 @@ void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& fr
     lowerGradient.setColorAt(1, QColor(0, 0, 0, 0));
     painter.setBrush(QBrush(lowerGradient));
     painter.drawRect(lowerGradientRect);
-    painter.setBrush(QBrush());
+
+    // draw bandwidth alpha
+    /*QRect bwAlphaRect(pos - bwPos + 1, upPos, bwPos * 2 - 1, m_size.height());
+    painter.setBrush(QBrush(QColor(255, 255, 255, 50)));
+    painter.drawRect(bwAlphaRect);*/
 }
 
 void Waterfall::sizeChanged(const QSize& size)
 {
+    QSize waterfallSize = size;
     if (m_showFrequencies) {
         m_frequencies = QPixmap(size.width(), 25);
+        waterfallSize.setHeight(size.height() - m_frequencies.height());
         drawFrequencies();
     }
+
+    m_waterfall = QImage(waterfallSize, QImage::Format_RGB32);
+    m_scrollPosition = 0;
+
+    delete[] m_scrollBuffer;
+    m_scrollBuffer = new QRgb[m_waterfall.width() * m_waterfall.height()];
 }
 
 int Waterfall::log2disp(double value)
@@ -230,49 +242,73 @@ int Waterfall::log2disp(double value)
     return (int)(255 - value);
 }
 
-void Waterfall::iAddSpectrum(const QVector<double>& spectrum, bool changed)
+void Waterfall::redraw()
 {
-    // TODO: only request the most recent fft data when a timer runs out.
-    // The timer speed therefore indicates the waterfall speed.
-
-    if (m_waterfall.isNull())
+    if (m_waterfall.isNull() || m_recentData.size() == 0)
         return;
 
-    if (changed) {
-        m_waterfall.fill(Qt::black);
-        //drawFrequencies();
+    // At the time of redraw(), several spectrums may have been computed and added to
+    // m_recentData. During redraw(), the waterfall image is updated such that existing data
+    // is moved down (scrolled) and the most recent data available in m_recentData is added
+    // on top of the waterfall image. Scrolling is done by using a temporary scrolling buffer.
+    // In order to achieve the necessary performance, scrolling is done on the raw pixel data
+    // instead of using a QPainter.
+
+    // get the data size that needs to be scrolled
+    int scrollSize = m_waterfall.bytesPerLine() * m_scrollPosition;
+    int availableSize = m_waterfall.bytesPerLine() * (m_waterfall.height() - m_recentData.size());
+    if (scrollSize > availableSize)
+        scrollSize = availableSize;
+
+    // scroll image
+    if (m_scrollPosition > 0) {
+        QRgb* srcData = (QRgb*)m_waterfall.scanLine(0);
+        QRgb* dstData = (QRgb*)m_waterfall.scanLine(m_recentData.size());
+        memcpy(m_scrollBuffer, srcData, scrollSize);
+        memcpy(dstData, m_scrollBuffer, scrollSize);
     }
-
-    const int width = m_waterfall.width();
-    const int height = m_waterfall.height();
-
-    // scroll waterfall pixmap down by 1 pixel
-    m_waterfall.scroll(0, 1, 0, 0, width, height);
-
-    QPainter painter(&m_waterfall);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     int lower = m_lowerPassband / m_binSize;
     lower = lower < 0 ? 0 : lower;
     int upper = m_upperPassband / m_binSize;
-    upper = upper > spectrum.size() ? spectrum.size() : upper;
-
-    // set scaling to the spectrum's coordinate system
-    double scaleX = width / (double)(upper - lower);
-    painter.scale(scaleX, 1);
-    painter.translate(-lower, 0);
+    const int spectrumSize = m_recentData.first().size();
+    upper = upper > spectrumSize ? spectrumSize : upper;
 
     // draw fft data into pixmap in the spectrum's coordinate system
-    for (int i = lower; i < upper; i++) {
-        double value = spectrum[i];
+    for (int i = 0; i < m_recentData.size(); i++) {
+        QRgb* data = (QRgb*)m_waterfall.scanLine(i);
+        const QVector<double>& spectrum = m_recentData[i];
+        for (int j = 0; j < m_waterfall.width(); j++) {
+            int index = ((j / (double)m_waterfall.width()) * (upper - lower)) + lower;
+            const double& value = spectrum[index];
 
-        int intVal = log2disp(value);
+            int intVal = log2disp(value);
+            QColor col = m_colorMap->getColorValue(intVal);
 
-        QColor col = m_colorMap->getColorValue(intVal);
-
-        painter.setPen(col);
-        painter.drawPoint(i, 0);
+            data[j] = qRgb(col.red(), col.green(), col.blue());
+        }
     }
 
+    if (m_scrollPosition != m_waterfall.height() &&
+            m_scrollPosition + m_recentData.size() > m_waterfall.height())
+        m_scrollPosition = m_waterfall.height();
+    else if (m_scrollPosition + m_recentData.size() < m_waterfall.height())
+        m_scrollPosition += m_recentData.size();
+
+    m_recentData.clear();
+
     requestRedraw();
+
+    SpectrumWidget::redraw();
+}
+
+void Waterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
+{
+    // store the newly computed spectrum
+    m_recentData.push_front(spectrum);
+
+    if (changed) {
+        reset();
+        //drawFrequencies();
+    }
 }
