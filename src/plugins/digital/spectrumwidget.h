@@ -39,6 +39,8 @@ class SpectrumWidget
 
 signals:
     void frequencySelected(double);
+    void mouseMoved(double);
+    void mouseVisible(bool);
 
 public:
     ~SpectrumWidget();
@@ -57,6 +59,8 @@ public slots:
     void addSpectrumMag(const QVector<double>&, double, double);
     void bandwidthChanged(double);
     void frequencyChanged(double);
+    void moveMouse(double);
+    void showMouse(bool);
     void modemActive(bool);    // a modem has been selected, lock the frequency
 
 protected:
@@ -78,6 +82,7 @@ protected:
     virtual void iAddSpectrumLog(const QVector<double>&, bool);
     virtual void iAddSpectrumMag(const QVector<double>&, bool);
     virtual void sizeChanged(const QSize&);
+    virtual void iRedraw();
 
     virtual void beginDraw(QPainter&) = 0;
     virtual void drawSpectrum(QPainter&, const QRect&) = 0;
@@ -100,7 +105,7 @@ protected:
     QTimer*     m_updateTimer;
     QPixmap     m_markers;
 
-protected slots:
+private slots:
     virtual void redraw();
 
 private:

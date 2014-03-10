@@ -35,11 +35,7 @@ WaterfallToolBar::WaterfallToolBar(QWidget* parent)
     toolBarLayout->setSpacing(0);
 
     m_cmbSpecType = new QComboBox(this);
-    m_cmbSpecType->addItem(tr("Waterfall"));
-    m_cmbSpecType->addItem(tr("Signal"));
-    m_cmbSpecType->addItem(tr("Waveform"));
-    m_cmbSpecType->addItem(tr("Combined"));
-    connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SLOT(spectrumTypeChanged(int)));
+    connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SIGNAL(widgetSelected(int)));
     toolBarLayout->addWidget(m_cmbSpecType);
 
     toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
@@ -48,16 +44,7 @@ WaterfallToolBar::WaterfallToolBar(QWidget* parent)
     toolBarLayout->addWidget(m_lblInfo);
 }
 
-void WaterfallToolBar::spectrumTypeChanged(int index)
+void WaterfallToolBar::addSpectrumWidget(QString name)
 {
-    switch (index) {
-    case 0: // Waterfall
-        break;
-    case 1: // Signal
-        break;
-    case 2: // Waveform
-        break;
-    case 3: // Combined
-        break;
-    }
+    m_cmbSpecType->addItem(name);
 }

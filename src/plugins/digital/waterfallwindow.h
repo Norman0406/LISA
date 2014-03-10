@@ -26,6 +26,7 @@
 #define WATERFALLWINDOW_H
 
 #include <QWidget>
+#include <QStackedWidget>
 #include <QThread>
 
 namespace Digital {
@@ -57,18 +58,26 @@ public:
     void setSpeed(float speedMs);
     void reset();
 
-    Waterfall* getWaterfall();
-
 public slots:
     void start(AudioDeviceIn*);
     void stop();
+    void bandwidthChanged(double);
+    void frequencyChanged(double);
+    void modemActive(bool);
+    void widgetSelected(int);
+
+signals:
+    void frequencySelected(double);
 
 private:
+    QStackedWidget*     m_widget;
     AudioDeviceIn*      m_inputDevice;
     Spectrum*           m_spectrum;
     WaterfallToolBar*   m_toolBar;
     Waterfall*          m_waterfall;
+    Waterfall*          m_waterfallCombined;
     Spectrograph*       m_spectrograph;
+    Spectrograph*       m_spectrographCombined;
     QTimer*             m_spectrumTimer;
     QThread*            m_timerThread;
 };

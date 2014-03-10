@@ -40,7 +40,9 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
       m_inputDevice(0),
       m_toolBar(new WaterfallToolBar(this)),
       m_waterfall(new Waterfall(this)),
-      m_spectrograph(0)//new Spectrograph(this))
+      m_waterfallCombined(new Waterfall(this)),
+      m_spectrograph(new Spectrograph(this)),
+      m_spectrographCombined(new Spectrograph(this))
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
@@ -48,12 +50,16 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
 
     // TODO: init toolbar signals / slots
     layout->addWidget(m_toolBar);
+    connect(m_toolBar, &WaterfallToolBar::widgetSelected, this, &WaterfallWindow::widgetSelected);
 
     // connect spectrum to widget
     m_spectrum = new Spectrum(4096, WT_BLACKMANHARRIS, this);
     connect(m_spectrum, &Spectrum::spectrumLog, m_waterfall, &SpectrumWidget::addSpectrumLog);
-    //connect(m_spectrum, &Spectrum::spectrumLog, m_spectrograph, &Spectrograph::addSpectrumLog);
-    //connect(m_spectrum, &Spectrum::spectrumMag, m_spectrograph, &Spectrograph::addSpectrumMag);
+    connect(m_spectrum, &Spectrum::spectrumLog, m_waterfallCombined, &SpectrumWidget::addSpectrumLog);
+    connect(m_spectrum, &Spectrum::spectrumLog, m_spectrograph, &Spectrograph::addSpectrumLog);
+    connect(m_spectrum, &Spectrum::spectrumMag, m_spectrograph, &Spectrograph::addSpectrumMag);
+    connect(m_spectrum, &Spectrum::spectrumLog, m_spectrographCombined, &Spectrograph::addSpectrumLog);
+    connect(m_spectrum, &Spectrum::spectrumMag, m_spectrographCombined, &Spectrograph::addSpectrumMag);
     m_spectrum->init();
 
     // init timer to update the widgets
@@ -65,13 +71,40 @@ WaterfallWindow::WaterfallWindow(QWidget* parent)
     connect(m_spectrumTimer, &QTimer::timeout, m_spectrum, &Spectrum::compute, Qt::DirectConnection);
     connect(m_timerThread, SIGNAL(started()), m_spectrumTimer, SLOT(start()));
 
+    // connect spectrum widgets
+    connect(m_waterfall, &Waterfall::frequencySelected, this, &WaterfallWindow::frequencySelected);
+    connect(m_waterfallCombined, &Waterfall::frequencySelected, this, &WaterfallWindow::frequencySelected);
+    connect(m_waterfallCombined, &Waterfall::mouseMoved, m_spectrographCombined, &Spectrograph::moveMouse);
+    connect(m_waterfallCombined, &Waterfall::mouseVisible, m_spectrographCombined, &Spectrograph::showMouse);
+    connect(m_spectrograph, &Spectrograph::frequencySelected, this, &WaterfallWindow::frequencySelected);
+    connect(m_spectrographCombined, &Spectrograph::frequencySelected, this, &WaterfallWindow::frequencySelected);
+    connect(m_spectrographCombined, &Spectrograph::mouseMoved, m_waterfallCombined, &Waterfall::moveMouse);
+    connect(m_spectrographCombined, &Spectrograph::mouseVisible, m_waterfallCombined, &Waterfall::showMouse);
+
     // set block size such that each block has a duration corresponding with m_spectrumTimer
 
-    // init waterfall
+    // init spectrum displays
     m_waterfall->init(m_spectrum->getSpectrumSize());
+    m_waterfallCombined->init(m_spectrum->getSpectrumSize());
+    m_spectrograph->init(m_spectrum->getSpectrumSize());
+    m_spectrographCombined->init(m_spectrum->getSpectrumSize());
 
-    layout->addWidget(m_waterfall);
-    //layout->addWidget(m_spectrograph);
+    m_widget = new QStackedWidget(this);
+    m_widget->addWidget(m_waterfall);
+    m_toolBar->addSpectrumWidget(tr("Waterfall"));
+    m_widget->addWidget(m_spectrograph);
+    m_toolBar->addSpectrumWidget(tr("Spectrum"));
+
+    QWidget* combined = new QWidget(this);
+    combined->setLayout(new QVBoxLayout(combined));
+    combined->layout()->setSpacing(0);
+    combined->layout()->setMargin(0);
+    combined->layout()->addWidget(m_waterfallCombined);
+    combined->layout()->addWidget(m_spectrographCombined);
+    m_widget->addWidget(combined);
+    m_toolBar->addSpectrumWidget(tr("Combined"));
+
+    layout->addWidget(m_widget);
 
     setMinimumHeight(100);
 }
@@ -104,12 +137,45 @@ void WaterfallWindow::stop()
     m_inputDevice = 0;
 }
 
+void WaterfallWindow::bandwidthChanged(double bandwidth)
+{
+    m_waterfall->bandwidthChanged(bandwidth);
+    m_waterfallCombined->bandwidthChanged(bandwidth);
+    m_spectrograph->bandwidthChanged(bandwidth);
+    m_spectrographCombined->bandwidthChanged(bandwidth);
+}
+
+void WaterfallWindow::frequencyChanged(double frequency)
+{
+    m_waterfall->frequencyChanged(frequency);
+    m_waterfallCombined->frequencyChanged(frequency);
+    m_spectrograph->frequencyChanged(frequency);
+    m_spectrographCombined->frequencyChanged(frequency);
+}
+
+void WaterfallWindow::modemActive(bool active)
+{
+    m_waterfall->modemActive(active);
+    m_waterfallCombined->modemActive(active);
+    m_spectrograph->modemActive(active);
+    m_spectrographCombined->modemActive(active);
+}
+
 void WaterfallWindow::reset()
 {
     m_waterfall->reset();
+    m_waterfallCombined->reset();
+    m_spectrograph->reset();
+    m_spectrographCombined->reset();
 }
 
-Waterfall* WaterfallWindow::getWaterfall()
+void WaterfallWindow::widgetSelected(int index)
 {
-    return m_waterfall;
+    m_widget->setCurrentIndex(index);
+
+    // TODO: copy data from between waterfall widgets, such that each widget displays
+    // the same waterfall without the need to work in background while it is not visible
+
+    // or: find a more efficient way to work in background without a vector containing the
+    // most recent data that can grow to infinity
 }

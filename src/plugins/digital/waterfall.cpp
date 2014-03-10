@@ -164,8 +164,8 @@ void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& fr
     qreal upPos = m_frequencies.height();
 
     // determine the distance of the bandwidth markers
-    qreal bwPos = bwToScreen(m_bandwidth);
-    bwPos /= 2.0;
+    qreal bwScreen = bwToScreen(m_bandwidth);
+    bwScreen /= 2.0;
 
     // the width of the bandwidth gradients
     int bwSize = 10;
@@ -177,13 +177,13 @@ void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& fr
     painter.drawLine(lineStart, lineEnd);
 
     // draw upper bandwidth limit
-    lineStart.setX(pos + bwPos);
+    lineStart.setX(pos + bwScreen);
     lineEnd.setX(lineStart.x());
     painter.setPen(bwCol);
     painter.drawLine(lineStart, lineEnd);
 
     // draw lower bandwidth limit
-    lineStart.setX(pos - bwPos);
+    lineStart.setX(pos - bwScreen);
     lineEnd.setX(lineStart.x());
     painter.setPen(bwCol);
     painter.drawLine(lineStart, lineEnd);
@@ -192,26 +192,21 @@ void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& fr
     bwAlpha.setAlpha(50);
 
     // draw upper bandwidth gradient
-    QRect upperGradientRect(pos + bwPos + 1, upPos, bwSize, m_size.height());
+    QRectF upperGradientRect(pos + bwScreen - bwSize, upPos, bwSize, m_size.height());
     QLinearGradient upperGradient(upperGradientRect.topLeft(), upperGradientRect.topRight());
-    upperGradient.setColorAt(0, bwAlpha);
-    upperGradient.setColorAt(1, QColor(0, 0, 0, 0));
+    upperGradient.setColorAt(0, QColor(0, 0, 0, 0));
+    upperGradient.setColorAt(1, bwAlpha);
     painter.setBrush(QBrush(upperGradient));
     painter.setPen(Qt::NoPen);
     painter.drawRect(upperGradientRect);
 
     // draw lower bandwidth gradient
-    QRect lowerGradientRect(pos - bwPos - bwSize, upPos, bwSize, m_size.height());
+    QRectF lowerGradientRect(pos - bwScreen, upPos, bwSize, m_size.height());
     QLinearGradient lowerGradient(lowerGradientRect.topRight(), lowerGradientRect.topLeft());
-    lowerGradient.setColorAt(0, bwAlpha);
-    lowerGradient.setColorAt(1, QColor(0, 0, 0, 0));
+    lowerGradient.setColorAt(0, QColor(0, 0, 0, 0));
+    lowerGradient.setColorAt(1, bwAlpha);
     painter.setBrush(QBrush(lowerGradient));
     painter.drawRect(lowerGradientRect);
-
-    // draw bandwidth alpha
-    /*QRect bwAlphaRect(pos - bwPos + 1, upPos, bwPos * 2 - 1, m_size.height());
-    painter.setBrush(QBrush(QColor(255, 255, 255, 50)));
-    painter.drawRect(bwAlphaRect);*/
 }
 
 void Waterfall::sizeChanged(const QSize& size)
@@ -242,7 +237,7 @@ int Waterfall::log2disp(double value)
     return (int)(255 - value);
 }
 
-void Waterfall::redraw()
+void Waterfall::iRedraw()
 {
     if (m_waterfall.isNull() || m_recentData.size() == 0)
         return;
@@ -268,13 +263,14 @@ void Waterfall::redraw()
         memcpy(dstData, m_scrollBuffer, scrollSize);
     }
 
+    // compute array indices for lower and upper passband frequencies
     int lower = m_lowerPassband / m_binSize;
     lower = lower < 0 ? 0 : lower;
     int upper = m_upperPassband / m_binSize;
     const int spectrumSize = m_recentData.first().size();
     upper = upper > spectrumSize ? spectrumSize : upper;
 
-    // draw fft data into pixmap in the spectrum's coordinate system
+    // draw the most recent data on top of the waterfall
     for (int i = 0; i < m_recentData.size(); i++) {
         QRgb* data = (QRgb*)m_waterfall.scanLine(i);
         const QVector<double>& spectrum = m_recentData[i];
@@ -289,17 +285,11 @@ void Waterfall::redraw()
         }
     }
 
-    if (m_scrollPosition != m_waterfall.height() &&
-            m_scrollPosition + m_recentData.size() > m_waterfall.height())
+    m_scrollPosition += m_recentData.size();
+    if (m_scrollPosition > m_waterfall.height())
         m_scrollPosition = m_waterfall.height();
-    else if (m_scrollPosition + m_recentData.size() < m_waterfall.height())
-        m_scrollPosition += m_recentData.size();
 
     m_recentData.clear();
-
-    requestRedraw();
-
-    SpectrumWidget::redraw();
 }
 
 void Waterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
@@ -311,4 +301,6 @@ void Waterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
         reset();
         //drawFrequencies();
     }
+
+    requestRedraw();
 }

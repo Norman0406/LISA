@@ -44,11 +44,19 @@ public:
     };
 
     void setMode(Mode);
+    void setRefLevel(int);
+    void setAmpSpan(int);
+
+    Mode getMode() const;
+    int getRefLevel() const;
+    int getAmpSpan() const;
 
 protected:
     void iInit();
     void iAddSpectrumMag(const QVector<double>&, bool);
+    void iAddSpectrumLog(const QVector<double>&, bool);
     void sizeChanged(const QSize&);
+    void iRedraw();
 
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
@@ -57,9 +65,14 @@ protected:
     void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    //void drawSpectrum(QPainter&, const QVector<double>&);
-
-    QVector<double> m_spectrumMag;
+    static void bresenham(QImage&, QPoint, QPoint, const QColor&, const QColor&);
+    double valueToDisp(double) const;
+    double m_refLevel;
+    double m_ampSpan;
+    QVector<double> m_spectrum;
+    //QPixmap m_spectrograph;
+    QPixmap m_background;
+    QImage m_spectrograph;
     Mode m_mode;
 };
 

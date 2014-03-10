@@ -47,10 +47,10 @@ DigitalWindow::DigitalWindow(QWidget *parent)
     m_waterfall = new WaterfallWindow(this);
     m_messenger = new MessengerWindow(this);
 
-    connect(m_waterfall->getWaterfall(), &Waterfall::frequencySelected, m_messenger->getModemManager(), &ModemManager::frequencySelected);
-    connect(m_messenger->getModemManager(), &ModemManager::frequencyChanged, m_waterfall->getWaterfall(), &Waterfall::frequencyChanged);
-    connect(m_messenger->getModemManager(), &ModemManager::bandwidthChanged, m_waterfall->getWaterfall(), &Waterfall::bandwidthChanged);
-    connect(m_messenger, &MessengerWindow::modemActive, m_waterfall->getWaterfall(), &Waterfall::modemActive);
+    connect(m_waterfall, &WaterfallWindow::frequencySelected, m_messenger->getModemManager(), &ModemManager::frequencySelected);
+    connect(m_messenger->getModemManager(), &ModemManager::frequencyChanged, m_waterfall, &WaterfallWindow::frequencyChanged);
+    connect(m_messenger->getModemManager(), &ModemManager::bandwidthChanged, m_waterfall, &WaterfallWindow::bandwidthChanged);
+    connect(m_messenger, &MessengerWindow::modemActive, m_waterfall, &WaterfallWindow::modemActive);
 
     Core::MiniSplitter* splitter = new Core::MiniSplitter(Qt::Vertical);
     splitter->insertWidget(0, m_waterfall);

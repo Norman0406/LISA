@@ -40,8 +40,10 @@ class WaterfallToolBar
 public:
     WaterfallToolBar(QWidget*);
 
-private slots:
-    void spectrumTypeChanged(int);
+    void addSpectrumWidget(QString);
+
+signals:
+    void widgetSelected(int);
 
 private:
     QComboBox* m_cmbSpecType;

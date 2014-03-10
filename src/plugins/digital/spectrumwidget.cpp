@@ -110,6 +110,9 @@ double SpectrumWidget::getUpperPass() const
 
 void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
 {
+    if (!isVisible())
+        return;
+
     bool changed = false;
 
     if (m_binSize != binSize || m_maxFrq != maxFrq) {
@@ -123,6 +126,9 @@ void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binS
 
 void SpectrumWidget::addSpectrumMag(const QVector<double>& spectrum, double binSize, double maxFrq)
 {
+    if (!isVisible())
+        return;
+
     bool changed = false;
 
     if (m_binSize != binSize || m_maxFrq != maxFrq) {
@@ -149,6 +155,20 @@ void SpectrumWidget::frequencyChanged(double frequency)
         drawMarkers();
         drawFrequencies();
     }
+}
+
+void SpectrumWidget::moveMouse(double frequency)
+{
+    m_mouseFrequency = frequency;
+    drawMarkers();
+    update();
+}
+
+void SpectrumWidget::showMouse(bool show)
+{
+    m_showMouse = show;
+    drawMarkers();
+    update();
 }
 
 void SpectrumWidget::modemActive(bool active)
@@ -196,6 +216,9 @@ void SpectrumWidget::paintEvent(QPaintEvent*)
 void SpectrumWidget::drawMarkers()
 {
     if (!m_showMarkers && !m_showMouse)
+        return;
+
+    if (!isVisible())
         return;
 
     if (!m_markers.isNull()) {
@@ -260,14 +283,22 @@ void SpectrumWidget::sizeChanged(const QSize&)
     // not implemented
 }
 
+void SpectrumWidget::iRedraw()
+{
+    // not implemented
+}
+
 void SpectrumWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    const QPointF& pos = event->pos();
+    if (m_showMouse) {
+        const QPointF& pos = event->pos();
 
-    qreal frequency = m_lowerPassband + (m_upperPassband - m_lowerPassband) * pos.x() / qreal(m_size.width());
-    m_mouseFrequency = frequency;
+        qreal frequency = m_lowerPassband + (m_upperPassband - m_lowerPassband) * pos.x() / qreal(m_size.width());
+        m_mouseFrequency = frequency;
 
-    drawMarkers();
+        moveMouse(frequency);
+        emit mouseMoved(frequency);
+    }
 }
 
 void SpectrumWidget::mousePressEvent(QMouseEvent* event)
@@ -295,16 +326,14 @@ void SpectrumWidget::mousePressEvent(QMouseEvent* event)
 
 void SpectrumWidget::enterEvent(QEvent*)
 {
-    m_showMouse = true;
-    drawMarkers();
-    update();
+    showMouse(true);
+    emit mouseVisible(true);
 }
 
 void SpectrumWidget::leaveEvent(QEvent*)
 {
-    m_showMouse = false;
-    drawMarkers();
-    update();
+    showMouse(false);
+    emit mouseVisible(false);
 }
 
 void SpectrumWidget::requestRedraw()
@@ -314,7 +343,8 @@ void SpectrumWidget::requestRedraw()
 
 void SpectrumWidget::redraw()
 {
-    if (m_needToRedraw) {
+    if (m_needToRedraw && isVisible()) {
+        iRedraw();
         update();
         m_needToRedraw = false;
     }

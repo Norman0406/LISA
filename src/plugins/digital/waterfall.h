@@ -55,7 +55,7 @@ protected:
     void iInit();
     void iAddSpectrumLog(const QVector<double>&, bool);
     void sizeChanged(const QSize&);
-    void redraw();
+    void iRedraw();
 
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
