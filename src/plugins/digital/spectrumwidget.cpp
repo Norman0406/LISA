@@ -41,6 +41,8 @@ SpectrumWidget::SpectrumWidget(QWidget* parent)
       m_showFrequencies(true),
       m_lowerPassband(0),
       m_upperPassband(4000),
+      m_refLevel(-10),
+      m_ampSpan(90),
       m_needToRedraw(false)
 {
     m_updateTimer = new QTimer(this);
@@ -98,6 +100,16 @@ void SpectrumWidget::setUpperPass(double value)
     m_upperPassband = value;
 }
 
+void SpectrumWidget::setRefLevel(int value)
+{
+    m_refLevel = value;
+}
+
+void SpectrumWidget::setAmpSpan(int value)
+{
+    m_ampSpan = value;
+}
+
 double SpectrumWidget::getLowerPass() const
 {
     return m_lowerPassband;
@@ -106,6 +118,16 @@ double SpectrumWidget::getLowerPass() const
 double SpectrumWidget::getUpperPass() const
 {
     return m_upperPassband;
+}
+
+int SpectrumWidget::getRefLevel() const
+{
+    return m_refLevel;
+}
+
+int SpectrumWidget::getAmpSpan() const
+{
+    return m_ampSpan;
 }
 
 void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
@@ -122,22 +144,6 @@ void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binS
     }
 
     iAddSpectrumLog(spectrum, changed);
-}
-
-void SpectrumWidget::addSpectrumMag(const QVector<double>& spectrum, double binSize, double maxFrq)
-{
-    if (!isVisible())
-        return;
-
-    bool changed = false;
-
-    if (m_binSize != binSize || m_maxFrq != maxFrq) {
-        m_binSize = binSize;
-        m_maxFrq = maxFrq;
-        changed = true;
-    }
-
-    iAddSpectrumMag(spectrum, changed);
 }
 
 void SpectrumWidget::bandwidthChanged(double bandwidth)
@@ -269,11 +275,6 @@ void SpectrumWidget::resizeEvent(QResizeEvent*)
 }
 
 void SpectrumWidget::iAddSpectrumLog(const QVector<double>&, bool)
-{
-    // not implemented
-}
-
-void SpectrumWidget::iAddSpectrumMag(const QVector<double>&, bool)
 {
     // not implemented
 }

@@ -24,8 +24,7 @@
 
 #include "digitalwindow.h"
 #include "audiomanager.h"
-#include "waterfallwindow.h"
-#include "waterfall.h"
+#include "spectrumwindow.h"
 #include "messengerwindow.h"
 #include "modems/modemmanager.h"
 
@@ -37,23 +36,23 @@ using namespace Digital::Internal;
 DigitalWindow::DigitalWindow(QWidget *parent)
    : QWidget(parent),
      m_audioManager(0),
-     m_waterfall(0),
+     m_spectrum(0),
      m_messenger(0)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
     layout->setMargin(0);
 
-    m_waterfall = new WaterfallWindow(this);
+    m_spectrum = new SpectrumWindow(this);
     m_messenger = new MessengerWindow(this);
 
-    connect(m_waterfall, &WaterfallWindow::frequencySelected, m_messenger->getModemManager(), &ModemManager::frequencySelected);
-    connect(m_messenger->getModemManager(), &ModemManager::frequencyChanged, m_waterfall, &WaterfallWindow::frequencyChanged);
-    connect(m_messenger->getModemManager(), &ModemManager::bandwidthChanged, m_waterfall, &WaterfallWindow::bandwidthChanged);
-    connect(m_messenger, &MessengerWindow::modemActive, m_waterfall, &WaterfallWindow::modemActive);
+    connect(m_spectrum, &SpectrumWindow::frequencySelected, m_messenger->getModemManager(), &ModemManager::frequencySelected);
+    connect(m_messenger->getModemManager(), &ModemManager::frequencyChanged, m_spectrum, &SpectrumWindow::frequencyChanged);
+    connect(m_messenger->getModemManager(), &ModemManager::bandwidthChanged, m_spectrum, &SpectrumWindow::bandwidthChanged);
+    connect(m_messenger, &MessengerWindow::modemActive, m_spectrum, &SpectrumWindow::modemActive);
 
     Core::MiniSplitter* splitter = new Core::MiniSplitter(Qt::Vertical);
-    splitter->insertWidget(0, m_waterfall);
+    splitter->insertWidget(0, m_spectrum);
     splitter->insertWidget(1, m_messenger);
     splitter->setStretchFactor(0, 2);
     splitter->setStretchFactor(1, 1);
@@ -66,7 +65,7 @@ DigitalWindow::DigitalWindow(QWidget *parent)
     layout->addWidget(splitter);
 
     m_audioManager = new AudioManager(this);
-    connect(m_audioManager, &AudioManager::inDeviceReady, m_waterfall, &WaterfallWindow::start);
+    connect(m_audioManager, &AudioManager::inDeviceReady, m_spectrum, &SpectrumWindow::start);
     connect(m_audioManager, &AudioManager::inDeviceReady, m_messenger, &MessengerWindow::inDeviceReady);
     connect(m_audioManager, &AudioManager::outDeviceReady, m_messenger, &MessengerWindow::outDeviceReady);
 

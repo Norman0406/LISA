@@ -75,13 +75,11 @@ void Messenger::modemSelected(QString modemType)
     if (modemType.isEmpty()) {
         m_ui->txtReceived->setEnabled(false);
         m_ui->txtSent->setEnabled(false);
-        m_ui->trMacros->setEnabled(false);
         m_updateTimer->stop();
     }
     else {
         m_ui->txtReceived->setEnabled(true);
         m_ui->txtSent->setEnabled(true);
-        m_ui->trMacros->setEnabled(true);
         m_updateTimer->start();
     }
 }

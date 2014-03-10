@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#ifndef SPECTRUMWORKER_H
-#define SPECTRUMWORKER_H
+#ifndef FFTSPECTRUMWORKER_H
+#define FFTSPECTRUMWORKER_H
 
 #include <QObject>
 #include <QAudioFormat>
@@ -31,7 +31,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <complex>
-#include "Spectrum.h"
+#include "fftspectrum.h"
 
 namespace Digital {
 namespace Internal {
@@ -39,14 +39,14 @@ namespace Internal {
 // threading method (not subclassing QThread) discussed in
 // http://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
 // http://blog.qt.digia.com/blog/2010/06/17/youre-doing-it-wrong/
-class SpectrumWorker
+class FFTSpectrumWorker
         : public QObject
 {
     Q_OBJECT
 
 public:
-    SpectrumWorker(int, SpectrumWindow);
-    ~SpectrumWorker();
+    FFTSpectrumWorker(int, FFTWindow);
+    ~FFTSpectrumWorker();
 
     void stop();
 
@@ -78,7 +78,7 @@ private:
     int m_sampleRate;
     double m_binSize;
     double m_maxFrq;
-    SpectrumWindow m_windowFunc;
+    FFTWindow m_windowFunc;
     double* m_window;
     bool m_terminate;
     double m_windowAvg;
@@ -101,4 +101,4 @@ private:
 } // namespace Internal
 } // namespace Digital
 
-#endif // SPECTRUMWORKER_H
+#endif // FFTSPECTRUMWORKER_H

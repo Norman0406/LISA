@@ -30,7 +30,7 @@
 namespace Digital {
 namespace Internal {
 
-class WaterfallWindow;
+class SpectrumWindow;
 class MessengerWindow;
 class AudioManager;
 
@@ -44,7 +44,7 @@ public:
 
 private:
     AudioManager*       m_audioManager;
-    WaterfallWindow*    m_waterfall;
+    SpectrumWindow*     m_spectrum;
     MessengerWindow*    m_messenger;
 };
 

@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#include "spectrum.h"
-#include "spectrumworker.h"
+#include "fftspectrum.h"
+#include "fftspectrumworker.h"
 #include "../audio/audiodevice.h"
 
 #include <QtMath>
@@ -33,7 +33,7 @@
 
 using namespace Digital::Internal;
 
-Spectrum::Spectrum(int fftSize, SpectrumWindow wdType, QObject* parent)
+FFTSpectrum::FFTSpectrum(int fftSize, FFTWindow wdType, QObject* parent)
     : AudioConsumer(512, parent),
       m_fftSize(fftSize),
       m_fftWorker(0),
@@ -41,48 +41,48 @@ Spectrum::Spectrum(int fftSize, SpectrumWindow wdType, QObject* parent)
       m_buffer(0)
 {
     m_fftThread = new QThread(this);
-    m_fftWorker = new SpectrumWorker(fftSize, wdType);
+    m_fftWorker = new FFTSpectrumWorker(fftSize, wdType);
     m_fftWorker->moveToThread(m_fftThread);
 
-    connect(m_fftThread, &QThread::started, m_fftWorker, &SpectrumWorker::run);
-    connect(m_fftWorker, &SpectrumWorker::finished, m_fftThread, &QThread::quit);
-    connect(m_fftWorker, &SpectrumWorker::finished, m_fftWorker, &SpectrumWorker::deleteLater);
+    connect(m_fftThread, &QThread::started, m_fftWorker, &FFTSpectrumWorker::run);
+    connect(m_fftWorker, &FFTSpectrumWorker::finished, m_fftThread, &QThread::quit);
+    connect(m_fftWorker, &FFTSpectrumWorker::finished, m_fftWorker, &FFTSpectrumWorker::deleteLater);
     connect(m_fftThread, &QThread::finished, m_fftThread, &QThread::deleteLater);
-    connect(m_fftWorker, &SpectrumWorker::dataReady, this, &Spectrum::spectrumReady);
+    connect(m_fftWorker, &FFTSpectrumWorker::dataReady, this, &FFTSpectrum::spectrumReady);
 }
 
-Spectrum::~Spectrum()
+FFTSpectrum::~FFTSpectrum()
 {
     m_fftWorker->stop();
     m_fftThread->quit();
     m_fftThread->wait();
 }
 
-void Spectrum::init()
+void FFTSpectrum::init()
 {
     // start processing thread
     if (m_fftThread)
         m_fftThread->start();
 }
 
-void Spectrum::registered()
+void FFTSpectrum::registered()
 {
     m_buffer = new AudioRingBuffer(getFormat(), (qint64)m_fftWorker->getFFTSize(), this);
 }
 
-void Spectrum::unregistered()
+void FFTSpectrum::unregistered()
 {
     delete m_buffer;
 }
 
-void Spectrum::audioDataReady(const QVector<double>& data)
+void FFTSpectrum::audioDataReady(const QVector<double>& data)
 {
     if (m_buffer) {
         m_buffer->writeData(data);
     }
 }
 
-void Spectrum::compute()
+void FFTSpectrum::compute()
 {
     if (m_fftWorker && m_buffer->getBufferLength() >= m_fftSize) {
         // TODO: avoid copying the buffer multiple times
@@ -93,7 +93,7 @@ void Spectrum::compute()
     }
 }
 
-void Spectrum::spectrumReady()
+void FFTSpectrum::spectrumReady()
 {
     m_spectrumLog = m_fftWorker->getSpectrumLog();
     m_spectrumMag = m_fftWorker->getSpectrumMag();
@@ -105,22 +105,22 @@ void Spectrum::spectrumReady()
     emit spectrumMag(m_spectrumMag, binSize, maxFrq);
 }
 
-int Spectrum::getFFTSize() const
+int FFTSpectrum::getFFTSize() const
 {
     return m_fftWorker ? m_fftWorker->getFFTSize() : 0;
 }
 
-int Spectrum::getSpectrumSize() const
+int FFTSpectrum::getSpectrumSize() const
 {
     return m_fftWorker ? m_fftWorker->getSpectrumSize() : 0;
 }
 
-double Spectrum::getBinSize() const
+double FFTSpectrum::getBinSize() const
 {
     return m_fftWorker ? m_fftWorker->getBinSize() : 0;
 }
 
-double Spectrum::getMaxFrq() const
+double FFTSpectrum::getMaxFrq() const
 {
     return m_fftWorker ? m_fftWorker->getMaxFrq() : 0;
 }

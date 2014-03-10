@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#ifndef WATERFALLWINDOW_H
-#define WATERFALLWINDOW_H
+#ifndef SPECTRUMWINDOW_H
+#define SPECTRUMWINDOW_H
 
 #include <QWidget>
 #include <QStackedWidget>
@@ -34,12 +34,12 @@ namespace Internal {
 
 class AudioDeviceList;
 class AudioDeviceIn;
-class Spectrum;
-class WaterfallToolBar;
-class Waterfall;
-class Spectrograph;
+class FFTSpectrum;
+class SpectrumToolBar;
+class SpectrumWaterfall;
+class SpectrumGraph;
 
-class WaterfallWindow
+class SpectrumWindow
         : public QWidget
 {
     Q_OBJECT
@@ -52,8 +52,8 @@ public:
         WF_SLOW
     };
 
-    WaterfallWindow(QWidget*);
-    ~WaterfallWindow();
+    SpectrumWindow(QWidget*);
+    ~SpectrumWindow();
 
     void setSpeed(float speedMs);
     void reset();
@@ -72,12 +72,12 @@ signals:
 private:
     QStackedWidget*     m_widget;
     AudioDeviceIn*      m_inputDevice;
-    Spectrum*           m_spectrum;
-    WaterfallToolBar*   m_toolBar;
-    Waterfall*          m_waterfall;
-    Waterfall*          m_waterfallCombined;
-    Spectrograph*       m_spectrograph;
-    Spectrograph*       m_spectrographCombined;
+    FFTSpectrum*        m_fftSpectrum;
+    SpectrumToolBar*    m_toolBar;
+    SpectrumWaterfall*  m_waterfall;
+    SpectrumWaterfall*  m_waterfallCombined;
+    SpectrumGraph*      m_graph;
+    SpectrumGraph*      m_graphCombined;
     QTimer*             m_spectrumTimer;
     QThread*            m_timerThread;
 };
@@ -85,4 +85,4 @@ private:
 } // namespace Internal
 } // namespace Digital
 
-#endif // WATERFALLWINDOW_H
+#endif // SPECTRUMWINDOW_H

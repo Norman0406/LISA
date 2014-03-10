@@ -50,13 +50,16 @@ public:
 
     void setLowerPass(double);
     void setUpperPass(double);
+    void setRefLevel(int);
+    void setAmpSpan(int);
 
     double getLowerPass() const;
     double getUpperPass() const;
+    int getRefLevel() const;
+    int getAmpSpan() const;
 
 public slots:
     void addSpectrumLog(const QVector<double>&, double, double);
-    void addSpectrumMag(const QVector<double>&, double, double);
     void bandwidthChanged(double);
     void frequencyChanged(double);
     void moveMouse(double);
@@ -80,7 +83,6 @@ protected:
 
     virtual void iInit() = 0;
     virtual void iAddSpectrumLog(const QVector<double>&, bool);
-    virtual void iAddSpectrumMag(const QVector<double>&, bool);
     virtual void sizeChanged(const QSize&);
     virtual void iRedraw();
 
@@ -101,6 +103,8 @@ protected:
     bool        m_showFrequencies;
     double		m_lowerPassband;
     double      m_upperPassband;
+    double      m_refLevel;
+    double      m_ampSpan;
     QSize       m_size;
     QTimer*     m_updateTimer;
     QPixmap     m_markers;

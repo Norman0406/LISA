@@ -22,38 +22,31 @@
  *
  **********************************************************************/
 
-#ifndef SPECTROGRAPH_H
-#define SPECTROGRAPH_H
+#ifndef SPECTRUMWATERFALL_H
+#define SPECTRUMWATERFALL_H
 
 #include "spectrumwidget.h"
+
+#include <QVector>
 
 namespace Digital {
 namespace Internal {
 
-class Spectrograph
+class Colormap;
+
+class SpectrumWaterfall
         : public SpectrumWidget
 {
+    Q_OBJECT
+
 public:
-    explicit Spectrograph(QWidget* parent);
-    ~Spectrograph(void);
+    explicit SpectrumWaterfall(QWidget* parent);
+    ~SpectrumWaterfall(void);
 
-    enum Mode
-    {
-        MODE_LOG,
-        MODE_MAG
-    };
-
-    void setMode(Mode);
-    void setRefLevel(int);
-    void setAmpSpan(int);
-
-    Mode getMode() const;
-    int getRefLevel() const;
-    int getAmpSpan() const;
+    void reset();
 
 protected:
     void iInit();
-    void iAddSpectrumMag(const QVector<double>&, bool);
     void iAddSpectrumLog(const QVector<double>&, bool);
     void sizeChanged(const QSize&);
     void iRedraw();
@@ -61,22 +54,25 @@ protected:
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
     QRect drawFrequencies(QPainter&);
-    void drawFrequencies();
     void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    static void bresenham(QImage&, QPoint, QPoint, const QColor&, const QColor&);
-    double valueToDisp(double) const;
-    double m_refLevel;
-    double m_ampSpan;
-    QVector<double> m_spectrum;
-    //QPixmap m_spectrograph;
-    QPixmap m_background;
-    QImage m_spectrograph;
-    Mode m_mode;
+    void drawFrequencies();
+    int log2disp(double);
+
+    QPixmap     m_frequencies;
+
+    QImage      m_waterfall;
+    QRgb*       m_scrollBuffer;
+    int         m_scrollPosition;
+
+    // TODO: use either of them
+    Colormap*	m_colorMap;
+    QColor		m_colorTable[256];
+    QVector<QVector<double> > m_recentData;
 };
 
 } // namespace Internal
 } // namespace Digital
 
-#endif // SPECTROGRAPH_H
+#endif // SPECTRUMWATERFALL_H

@@ -22,35 +22,29 @@
  *
  **********************************************************************/
 
-#ifndef WATERFALLTOOLBAR_H
-#define WATERFALLTOOLBAR_H
+#include "spectrumtoolbar.h"
+#include <QHBoxLayout>
 
-#include <utils/styledbar.h>
-#include <QComboBox>
-#include <QLabel>
+using namespace Digital::Internal;
 
-namespace Digital {
-namespace Internal {
-
-class WaterfallToolBar
-        : public Utils::StyledBar
+SpectrumToolBar::SpectrumToolBar(QWidget* parent)
+    : Utils::StyledBar(parent)
 {
-    Q_OBJECT
+    QHBoxLayout* toolBarLayout = new QHBoxLayout(this);
+    toolBarLayout->setMargin(0);
+    toolBarLayout->setSpacing(0);
 
-public:
-    WaterfallToolBar(QWidget*);
+    m_cmbSpecType = new QComboBox(this);
+    connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SIGNAL(widgetSelected(int)));
+    toolBarLayout->addWidget(m_cmbSpecType);
 
-    void addSpectrumWidget(QString);
+    toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
-signals:
-    void widgetSelected(int);
+    m_lblInfo = new QLabel(QString::fromAscii("Sound Info"), this);
+    toolBarLayout->addWidget(m_lblInfo);
+}
 
-private:
-    QComboBox* m_cmbSpecType;
-    QLabel* m_lblInfo;
-};
-
-} // namespace Internal
-} // namespace Digital
-
-#endif // WATERFALLTOOLBAR_H
+void SpectrumToolBar::addSpectrumWidget(QString name)
+{
+    m_cmbSpecType->addItem(name);
+}

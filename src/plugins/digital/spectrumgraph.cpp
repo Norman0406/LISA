@@ -22,7 +22,7 @@
  *
  **********************************************************************/
 
-#include "spectrograph.h"
+#include "spectrumgraph.h"
 
 #include <limits>
 #include <QPainter>
@@ -31,72 +31,39 @@
 
 using namespace Digital::Internal;
 
-Spectrograph::Spectrograph(QWidget* parent)
-    : SpectrumWidget(parent),
-      m_refLevel(-10),
-      m_ampSpan(90),
-      m_mode(MODE_LOG)
+SpectrumGraph::SpectrumGraph(QWidget* parent)
+    : SpectrumWidget(parent)
 {
 }
 
-Spectrograph::~Spectrograph(void)
+SpectrumGraph::~SpectrumGraph(void)
 {
 
 }
 
-void Spectrograph::iInit()
+void SpectrumGraph::iInit()
 {
 }
 
-void Spectrograph::setMode(Mode mode)
-{
-    m_mode = mode;
-}
-
-void Spectrograph::setRefLevel(int value)
-{
-    m_refLevel = value;
-}
-
-void Spectrograph::setAmpSpan(int value)
-{
-    m_ampSpan = value;
-}
-
-Spectrograph::Mode Spectrograph::getMode() const
-{
-    return m_mode;
-}
-
-int Spectrograph::getRefLevel() const
-{
-    return m_refLevel;
-}
-
-int Spectrograph::getAmpSpan() const
-{
-    return m_ampSpan;
-}
-
-void Spectrograph::beginDraw(QPainter&)
+void SpectrumGraph::beginDraw(QPainter&)
 {
 }
 
-void Spectrograph::drawSpectrum(QPainter& painter, const QRect& rect)
+void SpectrumGraph::drawSpectrum(QPainter& painter, const QRect& rect)
 {
-    painter.drawImage(rect, m_spectrograph);
+    painter.drawImage(rect, m_spectrumGraph);
 }
 
-QRect Spectrograph::drawFrequencies(QPainter&)
+QRect SpectrumGraph::drawFrequencies(QPainter&)
 {
     return QRect();
 }
 
-void Spectrograph::drawFrequencies()
+void SpectrumGraph::drawFrequencies()
 {
 }
 
-void Spectrograph::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
+void SpectrumGraph::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
 {
     // check and limit the actual marker frequency to the possible frequency range
     if (frequency < m_lowerPassband)
@@ -163,10 +130,10 @@ void Spectrograph::drawMarkers(QPainter& painter, qreal frequency, const QColor&
 
 }
 
-void Spectrograph::sizeChanged(const QSize& size)
+void SpectrumGraph::sizeChanged(const QSize& size)
 {
     // create new spectrograph image
-    m_spectrograph = QImage(size, QImage::Format_RGB32);
+    m_spectrumGraph = QImage(size, QImage::Format_RGB32);
 
     // draw background image
     m_background = QPixmap(size);
@@ -181,7 +148,7 @@ void Spectrograph::sizeChanged(const QSize& size)
     painter.drawRect(paintRect);
 }
 
-void Spectrograph::bresenham(QImage& image, QPoint point1, QPoint point2, const QColor& lineCol, const QColor& fillCol)
+void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const QColor& lineCol, const QColor& fillCol)
 {
     int dx = abs(point2.x() - point1.x());
     int dy = abs(point2.y() - point1.y());
@@ -235,14 +202,14 @@ void Spectrograph::bresenham(QImage& image, QPoint point1, QPoint point2, const 
     }
 }
 
-void Spectrograph::iRedraw()
+void SpectrumGraph::iRedraw()
 {
     if (m_spectrum.size() <= 2)
         return;
 
     // draw background image
-    QPainter painter(&m_spectrograph);
-    painter.drawPixmap(0, 0, m_spectrograph.width(), m_spectrograph.height(), m_background);
+    QPainter painter(&m_spectrumGraph);
+    painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_background);
     painter.end();
 
     // compute array indices for lower and upper passband frequencies
@@ -257,25 +224,25 @@ void Spectrograph::iRedraw()
 
     // fill with background color
     QPoint prevPoint;
-    for (int j = 0; j < m_spectrograph.width(); j++) {
-        int index = ((j / (double)m_spectrograph.width()) * (upper - lower)) + lower;
+    for (int j = 0; j < m_spectrumGraph.width(); j++) {
+        int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
         const double& value = m_spectrum[index];
         QPoint point(j, (int)valueToDisp(value));
 
         if (!prevPoint.isNull())
-            bresenham(m_spectrograph, prevPoint, point, QColor(), fillCol);
+            bresenham(m_spectrumGraph, prevPoint, point, QColor(), fillCol);
         prevPoint = point;
     }
 
     // draw spectrum line
     prevPoint = QPoint();
-    for (int j = 0; j < m_spectrograph.width(); j++) {
-        int index = ((j / (double)m_spectrograph.width()) * (upper - lower)) + lower;
+    for (int j = 0; j < m_spectrumGraph.width(); j++) {
+        int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
         const double& value = m_spectrum[index];
         QPoint point(j, (int)valueToDisp(value));
 
         if (!prevPoint.isNull())
-            bresenham(m_spectrograph, prevPoint, point, lineCol, QColor());
+            bresenham(m_spectrumGraph, prevPoint, point, lineCol, QColor());
         prevPoint = point;
     }
 
@@ -283,69 +250,47 @@ void Spectrograph::iRedraw()
     /*QPolygonF polygon;
 
     // add a line just outside the drawing area
-    polygon.append(QPointF(-1, m_spectrograph.height() + 1));
+    polygon.append(QPointF(-1, m_spectrumGraph.height() + 1));
     polygon.append(QPointF(-1, valueToDisp(m_spectrum.first())));
 
-    for (int i = 0; i < m_spectrograph.width(); i++) {
-        int index = ((i / (double)m_spectrograph.width()) * (upper - lower)) + lower;
+    for (int i = 0; i < m_spectrumGraph.width(); i++) {
+        int index = ((i / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
         const double& value = m_spectrum[index];
         polygon.append(QPointF(i, valueToDisp(value)));
     }
 
     // add a line just outside the drawing area
-    polygon.append(QPointF(m_spectrograph.width() + 1, valueToDisp(m_spectrum.last())));
-    polygon.append(QPointF(m_spectrograph.width() + 1, m_spectrograph.height() + 1));
+    polygon.append(QPointF(m_spectrumGraph.width() + 1, valueToDisp(m_spectrum.last())));
+    polygon.append(QPointF(m_spectrumGraph.width() + 1, m_spectrumGraph.height() + 1));
 
-    QPainter painter(&m_spectrograph);
+    QPainter painter(&m_spectrumGraph);
 
     painter.setBrush(QBrush(fillCol));
     painter.setPen(lineCol);
-    m_spectrograph.fill(Qt::transparent);
+    m_spectrumGraph.fill(Qt::transparent);
     painter.drawPolygon(polygon);*/
 }
 
-double Spectrograph::valueToDisp(double value) const
+double SpectrumGraph::valueToDisp(double value) const
 {
-    if (m_mode == MODE_MAG) {
-        value *= -1000000000;
-        value += m_spectrograph.height();
-    }
-    else if (m_mode == MODE_LOG) {
-        value = (m_refLevel - value) / m_ampSpan;
-        value *= m_spectrograph.height();
-    }
+    value = (m_refLevel - value) / m_ampSpan;
+    value *= m_spectrumGraph.height();
 
     // clamp (important for performance issues)
     value = value < 0 ? -1 : value;
-    value = value >= m_spectrograph.height() ? m_spectrograph.height() - 1 : value;
+    value = value >= m_spectrumGraph.height() ? m_spectrumGraph.height() - 1 : value;
 
     return value;
 }
 
-void Spectrograph::iAddSpectrumMag(const QVector<double>& spectrum, bool changed)
+void SpectrumGraph::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
 {
-    if (m_mode == MODE_MAG) {
-        m_spectrum = spectrum;
+    m_spectrum = spectrum;
 
-        if (changed) {
-            reset();
-            //drawFrequencies();
-        }
-
-        requestRedraw();
+    if (changed) {
+        reset();
+        //drawFrequencies();
     }
-}
 
-void Spectrograph::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
-{
-    if (m_mode == MODE_LOG) {
-        m_spectrum = spectrum;
-
-        if (changed) {
-            reset();
-            //drawFrequencies();
-        }
-
-        requestRedraw();
-    }
+    requestRedraw();
 }

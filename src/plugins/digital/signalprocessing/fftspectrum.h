@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#ifndef SPECTRUM_H
-#define SPECTRUM_H
+#ifndef FFTSPECTRUM_H
+#define FFTSPECTRUM_H
 
 #include "../audio/audioconsumer.h"
 #include "../audio/audioringbuffer.h"
@@ -39,7 +39,7 @@
 namespace Digital {
 namespace Internal {
 
-enum SpectrumWindow {
+enum FFTWindow {
     WT_RECT = 0,
     WT_HANNING,	// or HANN?
     WT_HAMMING,
@@ -47,16 +47,16 @@ enum SpectrumWindow {
     WT_BLACKMANHARRIS,
 };
 
-class SpectrumWorker;
+class FFTSpectrumWorker;
 
-class Spectrum
+class FFTSpectrum
         : public AudioConsumer
 {
     Q_OBJECT
 
 public:
-    Spectrum(int, SpectrumWindow, QObject*);
-    ~Spectrum();
+    FFTSpectrum(int, FFTWindow, QObject*);
+    ~FFTSpectrum();
 
     void init();
     int getFFTSize() const;
@@ -83,7 +83,7 @@ private:
     int m_fftSize;
     QVector<double> m_spectrumLog;
     QVector<double> m_spectrumMag;
-    SpectrumWorker* m_fftWorker;
+    FFTSpectrumWorker* m_fftWorker;
     QThread* m_fftThread;
     AudioRingBuffer* m_buffer;
 };
@@ -91,4 +91,4 @@ private:
 } // namespace Internal
 } // namespace Digital
 
-#endif // SPECTRUM_H
+#endif // FFTSPECTRUM_H

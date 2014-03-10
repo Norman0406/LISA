@@ -22,34 +22,20 @@
  *
  **********************************************************************/
 
-#ifndef WATERFALL_H
-#define WATERFALL_H
+#ifndef SPECTRUMGRAPH_H
+#define SPECTRUMGRAPH_H
 
 #include "spectrumwidget.h"
-
-#include <QVector>
 
 namespace Digital {
 namespace Internal {
 
-class Colormap;
-
-class Waterfall
+class SpectrumGraph
         : public SpectrumWidget
 {
-    Q_OBJECT
-
 public:
-    explicit Waterfall(QWidget* parent);
-    ~Waterfall(void);
-
-    void reset();
-
-    void setRefLevel(int);
-    void setAmpSpan(int);
-
-    int getRefLevel() const;
-    int getAmpSpan() const;
+    explicit SpectrumGraph(QWidget* parent);
+    ~SpectrumGraph(void);
 
 protected:
     void iInit();
@@ -60,27 +46,18 @@ protected:
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
     QRect drawFrequencies(QPainter&);
+    void drawFrequencies();
     void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    void drawFrequencies();
-    int log2disp(double);
-
-    int         m_refLevel;
-    int         m_ampSpan;
-    QPixmap     m_frequencies;
-
-    QImage      m_waterfall;
-    QRgb*       m_scrollBuffer;
-    int         m_scrollPosition;
-
-    // TODO: use either of them
-    Colormap*	m_colorMap;
-    QColor		m_colorTable[256];
-    QVector<QVector<double> > m_recentData;
+    static void bresenham(QImage&, QPoint, QPoint, const QColor&, const QColor&);
+    double valueToDisp(double) const;
+    QVector<double> m_spectrum;
+    QPixmap m_background;
+    QImage m_spectrumGraph;
 };
 
 } // namespace Internal
 } // namespace Digital
 
-#endif // WATERFALL_H
+#endif // SPECTRUMGRAPH_H

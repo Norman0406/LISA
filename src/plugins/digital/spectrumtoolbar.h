@@ -22,29 +22,35 @@
  *
  **********************************************************************/
 
-#include "waterfalltoolbar.h"
-#include <QHBoxLayout>
+#ifndef SPECTRUMTOOLBAR_H
+#define SPECTRUMTOOLBAR_H
 
-using namespace Digital::Internal;
+#include <utils/styledbar.h>
+#include <QComboBox>
+#include <QLabel>
 
-WaterfallToolBar::WaterfallToolBar(QWidget* parent)
-    : Utils::StyledBar(parent)
+namespace Digital {
+namespace Internal {
+
+class SpectrumToolBar
+        : public Utils::StyledBar
 {
-    QHBoxLayout* toolBarLayout = new QHBoxLayout(this);
-    toolBarLayout->setMargin(0);
-    toolBarLayout->setSpacing(0);
+    Q_OBJECT
 
-    m_cmbSpecType = new QComboBox(this);
-    connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SIGNAL(widgetSelected(int)));
-    toolBarLayout->addWidget(m_cmbSpecType);
+public:
+    SpectrumToolBar(QWidget*);
 
-    toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+    void addSpectrumWidget(QString);
 
-    m_lblInfo = new QLabel(QString::fromAscii("Sound Info"), this);
-    toolBarLayout->addWidget(m_lblInfo);
-}
+signals:
+    void widgetSelected(int);
 
-void WaterfallToolBar::addSpectrumWidget(QString name)
-{
-    m_cmbSpecType->addItem(name);
-}
+private:
+    QComboBox* m_cmbSpecType;
+    QLabel* m_lblInfo;
+};
+
+} // namespace Internal
+} // namespace Digital
+
+#endif // SPECTRUMTOOLBAR_H

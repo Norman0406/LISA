@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#include "spectrumworker.h"
-#include "spectrum.h"
+#include "fftspectrumworker.h"
+#include "fftspectrum.h"
 #include "../audio/audiodevice.h"
 #include <math.h>
 #include <fftw/fftw3.h>
@@ -36,7 +36,7 @@
 
 using namespace Digital::Internal;
 
-SpectrumWorker::SpectrumWorker(int fftSize, SpectrumWindow windowFunc)
+FFTSpectrumWorker::FFTSpectrumWorker(int fftSize, FFTWindow windowFunc)
     : m_sampleRate(-1),
       m_window(0),
       m_terminate(false),
@@ -60,13 +60,13 @@ SpectrumWorker::SpectrumWorker(int fftSize, SpectrumWindow windowFunc)
     qDebug() << "using FFT size: " << m_fftSize;
 }
 
-SpectrumWorker::~SpectrumWorker()
+FFTSpectrumWorker::~FFTSpectrumWorker()
 {
     stop();
     delete[] m_window;
 }
 
-void SpectrumWorker::stop()
+void FFTSpectrumWorker::stop()
 {
     m_mutexIn.lock();
     m_terminate = true;
@@ -74,7 +74,7 @@ void SpectrumWorker::stop()
     m_mutexIn.unlock();
 }
 
-void SpectrumWorker::startFFT(const QAudioFormat& format, const QVector<double>& buffer)
+void FFTSpectrumWorker::startFFT(const QAudioFormat& format, const QVector<double>& buffer)
 {
     // set data
     m_mutexIn.lock();
@@ -102,7 +102,7 @@ void SpectrumWorker::startFFT(const QAudioFormat& format, const QVector<double>&
     m_dataReady.wakeAll();
 }
 
-void SpectrumWorker::run()
+void FFTSpectrumWorker::run()
 {
     m_terminate = false;
 
@@ -181,27 +181,27 @@ void SpectrumWorker::run()
     emit finished();
 }
 
-int SpectrumWorker::getFFTSize() const
+int FFTSpectrumWorker::getFFTSize() const
 {
     return m_fftSize;
 }
 
-int SpectrumWorker::getSpectrumSize() const
+int FFTSpectrumWorker::getSpectrumSize() const
 {
     return m_spectrum.size();
 }
 
-double SpectrumWorker::getBinSize() const
+double FFTSpectrumWorker::getBinSize() const
 {
     return m_binSize;
 }
 
-double SpectrumWorker::getMaxFrq() const
+double FFTSpectrumWorker::getMaxFrq() const
 {
     return m_maxFrq;
 }
 
-const QVector<std::complex<double> >& SpectrumWorker::getSpectrum()
+const QVector<std::complex<double> >& FFTSpectrumWorker::getSpectrum()
 {
     // wait until data is ready
     m_mutexOut.lock();
@@ -212,7 +212,7 @@ const QVector<std::complex<double> >& SpectrumWorker::getSpectrum()
     return m_spectrum;
 }
 
-const QVector<double>& SpectrumWorker::getSpectrumMag()
+const QVector<double>& FFTSpectrumWorker::getSpectrumMag()
 {
     // wait until data is ready
     m_mutexOut.lock();
@@ -223,7 +223,7 @@ const QVector<double>& SpectrumWorker::getSpectrumMag()
     return m_spectrumMag;
 }
 
-const QVector<double>& SpectrumWorker::getSpectrumLog()
+const QVector<double>& FFTSpectrumWorker::getSpectrumLog()
 {
     // wait until data is ready
     m_mutexOut.lock();
@@ -234,7 +234,7 @@ const QVector<double>& SpectrumWorker::getSpectrumLog()
     return m_spectrumLog;
 }
 
-const QVector<double>& SpectrumWorker::getSpectrumPhase()
+const QVector<double>& FFTSpectrumWorker::getSpectrumPhase()
 {
     // wait until data is ready
     m_mutexOut.lock();
@@ -245,7 +245,7 @@ const QVector<double>& SpectrumWorker::getSpectrumPhase()
     return m_spectrumPhase;
 }
 
-void SpectrumWorker::createWindow()
+void FFTSpectrumWorker::createWindow()
 {
     double pwr = 0;
     for (int i = 0; i < m_fftSize; i++) {
@@ -262,7 +262,7 @@ void SpectrumWorker::createWindow()
     m_windowAvg /= m_fftSize;
 }
 
-double SpectrumWorker::calcWindowFunc(const int sample)
+double FFTSpectrumWorker::calcWindowFunc(const int sample)
 {
     const double val = sample / (double)m_fftSize;
 
@@ -282,12 +282,12 @@ double SpectrumWorker::calcWindowFunc(const int sample)
     }
 }
 
-double SpectrumWorker::getMagnitude(const std::complex<double>& fftVal) const
+double FFTSpectrumWorker::getMagnitude(const std::complex<double>& fftVal) const
 {
     return std::norm(fftVal);
 }
 
-double SpectrumWorker::getMagnitudeSqr(const std::complex<double>& fftVal) const
+double FFTSpectrumWorker::getMagnitudeSqr(const std::complex<double>& fftVal) const
 {
     return fftVal.real() * fftVal.real() + fftVal.imag() * fftVal.imag();
 }

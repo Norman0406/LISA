@@ -22,7 +22,7 @@
  *
  **********************************************************************/
 
-#include "waterfall.h"
+#include "spectrumwaterfall.h"
 #include "colormap.h"
 #include "colormapvisitor.h"
 #include <QtGui/QPainter>
@@ -34,22 +34,20 @@
 
 using namespace Digital::Internal;
 
-Waterfall::Waterfall(QWidget* parent)
+SpectrumWaterfall::SpectrumWaterfall(QWidget* parent)
     : SpectrumWidget(parent),
-      m_refLevel(-10),
-      m_ampSpan(90),
       m_scrollBuffer(0),
       m_scrollPosition(0),
       m_colorMap(0)
 {
 }
 
-Waterfall::~Waterfall(void)
+SpectrumWaterfall::~SpectrumWaterfall(void)
 {
     delete[] m_scrollBuffer;
 }
 
-void Waterfall::iInit()
+void SpectrumWaterfall::iInit()
 {
     delete m_colorMap;
 
@@ -61,46 +59,26 @@ void Waterfall::iInit()
     //m_colorMap->accept(colormap);
 }
 
-void Waterfall::reset()
+void SpectrumWaterfall::reset()
 {
     m_waterfall.fill(Qt::black);
     m_scrollPosition = 0;
 }
 
-void Waterfall::setRefLevel(int value)
-{
-    m_refLevel = value;
-}
-
-void Waterfall::setAmpSpan(int value)
-{
-    m_ampSpan = value;
-}
-
-int Waterfall::getRefLevel() const
-{
-    return m_refLevel;
-}
-
-int Waterfall::getAmpSpan() const
-{
-    return m_ampSpan;
-}
-
-void Waterfall::beginDraw(QPainter& painter)
+void SpectrumWaterfall::beginDraw(QPainter& painter)
 {
     QRect paintRect = rect();
     painter.fillRect(paintRect, Qt::black);
 }
 
-void Waterfall::drawSpectrum(QPainter& painter, const QRect& rect)
+void SpectrumWaterfall::drawSpectrum(QPainter& painter, const QRect& rect)
 {
     QRect newRect(rect);
     newRect.setHeight(m_waterfall.height());
     painter.drawImage(newRect, m_waterfall);
 }
 
-QRect Waterfall::drawFrequencies(QPainter& painter)
+QRect SpectrumWaterfall::drawFrequencies(QPainter& painter)
 {
     if (m_frequencies.isNull())
         return QRect();
@@ -109,7 +87,7 @@ QRect Waterfall::drawFrequencies(QPainter& painter)
     return QRect(m_frequencies.rect());
 }
 
-void Waterfall::drawFrequencies()
+void SpectrumWaterfall::drawFrequencies()
 {
     if (!m_frequencies.isNull()) {
         const int width = m_frequencies.width();
@@ -150,7 +128,7 @@ void Waterfall::drawFrequencies()
     }
 }
 
-void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
+void SpectrumWaterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
 {
     // check and limit the actual marker frequency to the possible frequency range
     if (frequency < m_lowerPassband)
@@ -209,7 +187,7 @@ void Waterfall::drawMarkers(QPainter& painter, qreal frequency, const QColor& fr
     painter.drawRect(lowerGradientRect);
 }
 
-void Waterfall::sizeChanged(const QSize& size)
+void SpectrumWaterfall::sizeChanged(const QSize& size)
 {
     QSize waterfallSize = size;
     if (m_showFrequencies) {
@@ -225,7 +203,7 @@ void Waterfall::sizeChanged(const QSize& size)
     m_scrollBuffer = new QRgb[m_waterfall.width() * m_waterfall.height()];
 }
 
-int Waterfall::log2disp(double value)
+int SpectrumWaterfall::log2disp(double value)
 {
     value = 255.0 * (m_refLevel - value) / m_ampSpan;
 
@@ -237,7 +215,7 @@ int Waterfall::log2disp(double value)
     return (int)(255 - value);
 }
 
-void Waterfall::iRedraw()
+void SpectrumWaterfall::iRedraw()
 {
     if (m_waterfall.isNull() || m_recentData.size() == 0)
         return;
@@ -292,7 +270,7 @@ void Waterfall::iRedraw()
     m_recentData.clear();
 }
 
-void Waterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
+void SpectrumWaterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool changed)
 {
     // store the newly computed spectrum
     m_recentData.push_front(spectrum);
