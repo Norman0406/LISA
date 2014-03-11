@@ -147,38 +147,72 @@ void SpectrumGraph::sizeChanged(const QSize& size)
     painter.setBrush(QBrush(gradient));
     painter.drawRect(paintRect);
 
+    // set font
+    const int fontSize = 10;
+    QFont font = painter.font();
+    font.setPixelSize(fontSize);
+    painter.setFont(font);
+    const int fontHeight = painter.fontMetrics().height();
+    const int fontBorder = 5;
+    const int maxHeight = fontBorder * 2 + fontHeight;
+
+    // set line color
     painter.setPen(QColor(47, 47, 57));
 
-    // TODO: dynamically adapt spacing between lines depending on the widget size
-    /*QVector<int> dbSteps;
+    QVector<int> dbSteps;
+    dbSteps.push_back(5);
     dbSteps.push_back(10);
     dbSteps.push_back(20);
     dbSteps.push_back(50);
 
-    const int minSpace = size.height() / 10;
-
-    // determine space between two lines
-    int lineSpace;*/
+    // determine space between two db lines
+    int dbStep = dbSteps.last();
+    for (int i = 0; i < dbSteps.size(); i++) {
+        int lineSpace = valueToDisp(m_refLevel - dbSteps[i]);
+        if (lineSpace > maxHeight) {
+            dbStep = dbSteps[i];
+            break;
+        }
+    }
 
     // draw decibel grid on y-axis
-    int dbStep = 10;
     for (int i = m_refLevel; i >= -m_ampSpan; i -= dbStep) {
-        double dispValue = (m_refLevel - i) / m_ampSpan;
-        dispValue *= m_spectrumGraph.height();
-
+        double dispValue = valueToDisp(i);
         QPointF start(0, dispValue);
         QPointF end(size.width(), dispValue);
         painter.drawLine(start, end);
     }
 
-    /*QVector<int> frqSteps;
+    QVector<int> frqSteps;
     frqSteps.push_back(100);
     frqSteps.push_back(200);
     frqSteps.push_back(500);
-    frqSteps.push_back(1000);*/
+    frqSteps.push_back(1000);
+
+    // determine space between two frequency lines
+    int frqStep = frqSteps.last();
+    for (int i = 0; i < frqSteps.size(); i++) {
+
+        double maxWidth = 0;
+        int count = 0;
+        for (int j = 0; j < m_upperPassband; j += frqSteps[i]) {
+            if (j > m_lowerPassband) {
+                QString text = QString::number(j);
+                double halfWidth = painter.fontMetrics().width(text) / 2.0;
+                maxWidth += halfWidth + fontBorder;
+                count++;
+            }
+        }
+        maxWidth = (maxWidth * 2) / count;
+
+        int lineSpace = frqToScreen(frqSteps[i]);
+        if (lineSpace > maxWidth) {
+            frqStep = frqSteps[i];
+            break;
+        }
+    }
 
     // draw frequencies grid on x-axis
-    const int frqStep = 100;
     for (int i = 0; i < m_upperPassband; i += frqStep) {
         if (i > m_lowerPassband) {
             double frq = frqToScreen(i);
@@ -188,7 +222,26 @@ void SpectrumGraph::sizeChanged(const QSize& size)
         }
     }
 
-    // TODO: draw frequency and decibel
+    painter.setPen(Qt::yellow);
+    const int fontAscent = painter.fontMetrics().ascent();
+
+    // draw decibel labels
+    for (int i = m_refLevel; i >= -m_ampSpan; i -= dbStep) {
+        double dispValue = valueToDisp(i);
+        QString text = QString::number(i);
+        text += QLatin1String(" db");
+        painter.drawText(QPoint(fontBorder, dispValue + fontAscent + fontBorder), text);
+    }
+
+    // draw frequency labels
+    for (int i = 0; i < m_upperPassband; i += frqStep) {
+        if (i > m_lowerPassband) {
+            double frq = frqToScreen(i);
+            QString text = QString::number(i);
+            double pos = frq - painter.fontMetrics().width(text) / 2.0;
+            painter.drawText(QPoint(pos, fontAscent + fontBorder), text);
+        }
+    }
 }
 
 void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const QColor& lineCol, const QColor& fillCol)
