@@ -42,7 +42,7 @@ SpectrumWidget::SpectrumWidget(QWidget* parent)
       m_lowerPassband(0),
       m_upperPassband(4000),
       m_refLevel(-10),
-      m_ampSpan(90),
+      m_ampSpan(100),
       m_needToRedraw(false)
 {
     m_updateTimer = new QTimer(this);
