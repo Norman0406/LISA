@@ -38,11 +38,10 @@ SpectrumWidget::SpectrumWidget(QWidget* parent)
       m_mouseFrequency(1000),
       m_showMouse(false),
       m_showMarkers(false),
-      m_showFrequencies(true),
       m_lowerPassband(0),
       m_upperPassband(4000),
       m_refLevel(-10),
-      m_ampSpan(100),
+      m_ampSpan(80),
       m_needToRedraw(false)
 {
     m_updateTimer = new QTimer(this);
@@ -110,11 +109,6 @@ void SpectrumWidget::setAmpSpan(int value)
     m_ampSpan = value;
 }
 
-void SpectrumWidget::setShowFrequencies(bool showFrequencies)
-{
-    m_showFrequencies = showFrequencies;
-}
-
 double SpectrumWidget::getLowerPass() const
 {
     return m_lowerPassband;
@@ -133,11 +127,6 @@ int SpectrumWidget::getRefLevel() const
 int SpectrumWidget::getAmpSpan() const
 {
     return m_ampSpan;
-}
-
-bool SpectrumWidget::getShowFrequencies() const
-{
-    return m_showFrequencies;
 }
 
 void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
@@ -169,7 +158,6 @@ void SpectrumWidget::frequencyChanged(double frequency)
     if (frequency != m_frequency) {
         m_frequency = frequency;
         drawMarkers();
-        drawFrequencies();
     }
 }
 
@@ -206,29 +194,18 @@ void SpectrumWidget::paintEvent(QPaintEvent*)
 
     // TODO: only draw what has changed
 
-    // begin drawing, i.e. draw background etc
-    /*beginDraw(painter);
-
-    QRect spectrumRect = rect();
-
-    // draw overlay
-    if (m_showFrequencies) {
-        QRect frqRect = drawFrequencies(painter);
-
-        // adjust spectrum rectangle
-        spectrumRect.setTop(frqRect.bottom() + 1);
-    }
-
-    // draw actual spectrum data
-    drawSpectrum(painter, spectrumRect);*/
-
     paint(painter);
 
     // draw modem markers
     if (m_showMarkers || m_showMouse) {
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        //painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter.drawPixmap(0, 0, m_markers);
     }
+}
+
+void SpectrumWidget::paint(QPainter&)
+{
+    // not implemented
 }
 
 void SpectrumWidget::drawMarkers()

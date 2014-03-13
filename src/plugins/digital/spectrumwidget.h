@@ -52,13 +52,11 @@ public:
     void setUpperPass(double);
     void setRefLevel(int);
     void setAmpSpan(int);
-    void setShowFrequencies(bool);
 
     double getLowerPass() const;
     double getUpperPass() const;
     int getRefLevel() const;
     int getAmpSpan() const;
-    bool getShowFrequencies() const;
 
 public slots:
     void addSpectrumLog(const QVector<double>&, double, double);
@@ -88,11 +86,7 @@ protected:
     virtual void sizeChanged(const QSize&);
     virtual void iRedraw();
 
-    virtual void paint(QPainter&) {};
-    virtual void beginDraw(QPainter&) = 0;
-    virtual void drawSpectrum(QPainter&, const QRect&) = 0;
-    virtual QRect drawFrequencies(QPainter&) = 0;
-    virtual void drawFrequencies() = 0;
+    virtual void paint(QPainter&);
     virtual void drawMarkers(QPainter&, qreal, const QColor&, const QColor&) = 0;
 
     double      m_binSize;
@@ -103,7 +97,6 @@ protected:
     float       m_mouseFrequency;
     bool        m_showMouse;
     bool        m_showMarkers;
-    bool        m_showFrequencies;
     double		m_lowerPassband;
     double      m_upperPassband;
     double      m_refLevel;

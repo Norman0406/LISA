@@ -38,6 +38,9 @@ SpectrumWaterfall::SpectrumWaterfall(QWidget* parent)
     : SpectrumWidget(parent),
       m_scrollBuffer(0),
       m_scrollPosition(0),
+      m_fontSize(11),
+      m_fontBorder(5),
+      m_fontColor(Qt::yellow),
       m_colorMap(0)
 {
 }
@@ -67,6 +70,8 @@ void SpectrumWaterfall::reset()
 
 void SpectrumWaterfall::paint(QPainter& painter)
 {
+    painter.setBackgroundMode(Qt::OpaqueMode);
+
     if (m_frequencies.isNull()) {
         painter.drawImage(0, 0, m_waterfall);
     }
@@ -76,66 +81,73 @@ void SpectrumWaterfall::paint(QPainter& painter)
     }
 }
 
-void SpectrumWaterfall::beginDraw(QPainter& painter)
-{
-    QRect paintRect = rect();
-    painter.fillRect(paintRect, Qt::black);
-}
-
-void SpectrumWaterfall::drawSpectrum(QPainter& painter, const QRect& rect)
-{
-    QRect newRect(rect);
-    newRect.setHeight(m_waterfall.height());
-    painter.drawImage(newRect, m_waterfall);
-}
-
-QRect SpectrumWaterfall::drawFrequencies(QPainter& painter)
-{
-    if (m_frequencies.isNull())
-        return QRect();
-
-    painter.drawPixmap(0, 0, m_frequencies);
-    return QRect(m_frequencies.rect());
-}
 
 void SpectrumWaterfall::drawFrequencies()
 {
     if (!m_frequencies.isNull()) {
-        const int width = m_frequencies.width();
-        const int height = m_frequencies.height();
-
-        m_frequencies.fill(Qt::black);
 
         QPainter painter(&m_frequencies);
-        painter.setPen(Qt::yellow);
-
-        const double bigLineFrq = 500.0;	// lines every x Hz
+        m_frequencies.fill(Qt::black);
 
         // set font
         QFont font = painter.font();
-        font.setPixelSize(height / 2);
+        font.setPixelSize(m_fontSize);
         painter.setFont(font);
+        const int fontAscent = painter.fontMetrics().ascent();
+        const int fontHeight = painter.fontMetrics().height();
 
-        const int mainLinePos = height - 1;
-        painter.drawLine(0, mainLinePos, width, mainLinePos);
+        QVector<int> frqSteps;
+        frqSteps.push_back(100);
+        frqSteps.push_back(200);
+        frqSteps.push_back(500);
+        frqSteps.push_back(1000);
 
-        for (double frq = 0; frq < m_maxFrq; frq += bigLineFrq) {
-            if (frq > m_lowerPassband && frq < m_upperPassband) {
+        // determine space between two frequency lines
+        int frqStep = frqSteps.last();
+        for (int i = 0; i < frqSteps.size(); i++) {
 
-                qreal pos = frqToScreen(frq);
-                QString text = QString::number(frq);
-                int textWidth = painter.fontMetrics().width(text);
-                int textHeight = painter.fontMetrics().height();
+            double maxWidth = 0;
+            int count = 0;
+            for (int j = 0; j < m_upperPassband; j += frqSteps[i]) {
+                if (j > m_lowerPassband) {
+                    QString text = QString::number(j);
+                    double halfWidth = painter.fontMetrics().width(text) / 2.0;
+                    maxWidth += halfWidth + m_fontBorder;
+                    count++;
+                }
+            }
+            maxWidth = (maxWidth * 2) / count;
 
-                if (pos - textWidth / 2.0 < 0 ||
-                        pos + textWidth / 2.0 > width)
-                    continue;
-
-                painter.drawText(pos - textWidth / 2.0, textHeight, text);
-                painter.drawLine(pos, textHeight + 5, pos, height);
+            int lineSpace = frqToScreen(frqSteps[i]);
+            if (lineSpace > maxWidth) {
+                frqStep = frqSteps[i];
+                break;
             }
         }
-        requestRedraw();
+
+
+        // draw frequency labels
+        for (int i = 0; i < m_upperPassband; i += frqStep) {
+            if (i > m_lowerPassband) {
+                double frq = frqToScreen(i);
+                QString text = QString::number(i);
+                double pos = frq - painter.fontMetrics().width(text) / 2.0;
+
+                // draw text
+                painter.setPen(m_fontColor);
+                painter.drawText(QPoint(pos, fontAscent + m_fontBorder), text);
+
+                // draw line
+                QPointF start(frq, m_fontBorder * 2 + fontHeight);
+                QPointF end(frq, m_frequencies.height() - 2);
+                painter.drawLine(start, end);
+            }
+        }
+
+        // draw end line
+        QPointF start(0, m_frequencies.height() - 1);
+        QPointF end(m_frequencies.width(), m_frequencies.height() - 1);
+        painter.drawLine(start, end);
     }
 }
 
@@ -201,11 +213,9 @@ void SpectrumWaterfall::drawMarkers(QPainter& painter, qreal frequency, const QC
 void SpectrumWaterfall::sizeChanged(const QSize& size)
 {
     QSize waterfallSize = size;
-    if (m_showFrequencies) {
-        m_frequencies = QPixmap(size.width(), 25);
-        waterfallSize.setHeight(size.height() - m_frequencies.height());
-        drawFrequencies();
-    }
+    m_frequencies = QPixmap(size.width(), 30);
+    waterfallSize.setHeight(size.height() - m_frequencies.height());
+    drawFrequencies();
 
     m_waterfall = QImage(waterfallSize, QImage::Format_RGB32);
     m_scrollPosition = 0;

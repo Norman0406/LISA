@@ -52,9 +52,6 @@ protected:
     void iRedraw();
 
     void paint(QPainter&);
-    void beginDraw(QPainter&);
-    void drawSpectrum(QPainter&, const QRect&);
-    QRect drawFrequencies(QPainter&);
     void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
@@ -62,10 +59,13 @@ private:
     int log2disp(double);
 
     QPixmap     m_frequencies;
-
     QImage      m_waterfall;
     QRgb*       m_scrollBuffer;
     int         m_scrollPosition;
+
+    int         m_fontSize;
+    int         m_fontBorder;
+    QColor      m_fontColor;
 
     // TODO: use either of them
     Colormap*	m_colorMap;

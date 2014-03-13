@@ -37,6 +37,10 @@ public:
     explicit SpectrumGraph(QWidget* parent);
     ~SpectrumGraph(void);
 
+    void setShowFrequencies(bool);
+
+    bool getShowFrequencies() const;
+
 protected:
     void iInit();
     void iAddSpectrumLog(const QVector<double>&, bool);
@@ -44,21 +48,18 @@ protected:
     void iRedraw();
 
     void paint(QPainter&);
-    void beginDraw(QPainter&);
-    void drawSpectrum(QPainter&, const QRect&);
-    QRect drawFrequencies(QPainter&);
-    void drawFrequencies();
     void drawMarkers(QPainter&, qreal, const QColor&, const QColor&);
 
 private:
-    static void bresenham(QImage&, QPoint, QPoint, const QColor&, const QColor&);
+    void bresenham(QImage&, QPoint, QPoint, QRgb, QRgb, int);
     void drawBackground(const QSize&);
     void drawGrid(const QSize&, int&, int&, int&);
     void drawFrequencies(int);
     void drawDecibels(int, int);
     double valueToDisp(double) const;
+
     QVector<double> m_spectrum;
-    QPixmap m_labels;       // deprecate, remove
+    bool m_showFrequencies;
     QPixmap m_background;   // background including grid
     QPixmap m_frequencies;  // frequency labels
     QPixmap m_decibels;     // decibel labels

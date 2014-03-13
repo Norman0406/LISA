@@ -38,7 +38,7 @@ SpectrumToolBar::SpectrumToolBar(QWidget* parent)
     connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SIGNAL(widgetSelected(int)));
     toolBarLayout->addWidget(m_cmbSpecType);
 
-    m_lblFrqText = new QLabel(QString(tr("Mouse Frequency:")));
+    m_lblFrqText = new QLabel(QString(tr("Frequency:")));
     m_lblFrqText->setMargin(5);
     toolBarLayout->addWidget(m_lblFrqText);
     m_lblFrq = new QLabel(QLatin1String("0 Hz"));

@@ -33,13 +33,13 @@ using namespace Digital::Internal;
 
 SpectrumGraph::SpectrumGraph(QWidget* parent)
     : SpectrumWidget(parent),
+      m_showFrequencies(true),
       m_fontSize(11),
       m_fontBorder(5),
       m_fontColor(Qt::yellow),
       m_gridColor(QColor(47, 47, 57)),
       m_spectrumLineColor(QColor(200, 200, 200)),
-      m_spectrumFillColor(QColor(114, 114, 135))
-      //m_spectrumFillColor(QColor(114, 114, 135, 150))
+      m_spectrumFillColor(QColor(114, 114, 135, 150))
 {
 }
 
@@ -48,46 +48,36 @@ SpectrumGraph::~SpectrumGraph(void)
 
 }
 
+void SpectrumGraph::setShowFrequencies(bool showFrequencies)
+{
+    m_showFrequencies = showFrequencies;
+}
+
+bool SpectrumGraph::getShowFrequencies() const
+{
+    return m_showFrequencies;
+}
+
 void SpectrumGraph::iInit()
 {
 }
 
 void SpectrumGraph::paint(QPainter& painter)
 {
+    painter.setBackgroundMode(Qt::OpaqueMode);
+
     // draw spectrum with background
     if (!m_showFrequencies) {
+        painter.drawPixmap(0, 0, m_background);
         painter.drawImage(0, 0, m_spectrumGraph);
         painter.drawPixmap(m_fontBorder, 0, m_decibels);
     }
     else {
         painter.drawPixmap(0, 0, m_frequencies);
+        painter.drawPixmap(0, m_frequencies.height(), m_background);
         painter.drawImage(0, m_frequencies.height(), m_spectrumGraph);
         painter.drawPixmap(m_fontBorder, m_frequencies.height(), m_decibels);
     }
-}
-
-void SpectrumGraph::beginDraw(QPainter& painter)
-{
-    //painter.drawPixmap(0, 0, m_background);
-}
-
-void SpectrumGraph::drawSpectrum(QPainter& painter, const QRect& rect)
-{
-    painter.drawImage(rect, m_spectrumGraph);
-}
-
-QRect SpectrumGraph::drawFrequencies(QPainter& painter)
-{
-    return QRect();
-    /*if (m_frequencies.isNull())
-        return QRect();
-
-    painter.drawPixmap(0, 0, m_frequencies);
-    return QRect(m_frequencies.rect());*/
-}
-
-void SpectrumGraph::drawFrequencies()
-{
 }
 
 void SpectrumGraph::drawMarkers(QPainter& painter, qreal frequency, const QColor& frqCol, const QColor& bwCol)
@@ -101,7 +91,6 @@ void SpectrumGraph::drawMarkers(QPainter& painter, qreal frequency, const QColor
     qreal pos = frqToScreen(frequency);
 
     // the position where the markers start
-    //qreal upPos = m_frequencies.height();
     qreal upPos = 0;
 
     // determine the distance of the bandwidth markers
@@ -119,12 +108,6 @@ void SpectrumGraph::drawMarkers(QPainter& painter, qreal frequency, const QColor
 
     QColor bwAlpha = bwCol;
     bwAlpha.setAlpha(50);
-
-    // draw bandwidth alpha
-    /*QRectF bwAlphaRect(pos - bwScreen, upPos, bwScreen * 2.0, m_size.height());
-    painter.setBrush(QBrush(QColor(255, 255, 255, 50)));
-    painter.setPen(Qt::NoPen);
-    painter.drawRect(bwAlphaRect);*/
 
     // draw upper bandwidth limit
     lineStart.setX(pos + bwScreen);
@@ -168,7 +151,7 @@ void SpectrumGraph::sizeChanged(const QSize& size)
 
     if (spectrumSize.width() >= 0 && spectrumSize.height() >= 0) {
         // create new spectrograph image
-        m_spectrumGraph = QImage(spectrumSize, QImage::Format_RGB32);
+        m_spectrumGraph = QImage(spectrumSize, QImage::Format_ARGB32_Premultiplied);
 
         // draw background gradient
         drawBackground(spectrumSize);
@@ -355,7 +338,7 @@ void SpectrumGraph::drawDecibels(int dbStep, int dbTextWidth)
     }
 }
 
-void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const QColor& lineCol, const QColor& fillCol)
+void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, QRgb lineCol, QRgb fillCol, int mode)
 {
     int dx = abs(point2.x() - point1.x());
     int dy = abs(point2.y() - point1.y());
@@ -364,58 +347,26 @@ void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const
     (point1.y() < point2.y()) ? sy = 1 : sy = -1;
     int err = dx - dy;
 
+    // get image data
     const int width = image.width();
     QRgb* data = (QRgb*)image.scanLine(0);
-
-    QRgb fill = 0;
-    float fillAlpha = 0;
-    float fillAlphaInv = 1;
-    if (fillCol.isValid()) {
-        fill = qRgba(fillCol.red(), fillCol.green(), fillCol.blue(), fillCol.alpha());
-        fillAlpha = qAlpha(fill) / 255.0;
-        fillAlphaInv = 1 - fillAlpha;
-    }
-    // premultiplied color
-    int fillRed = fillAlpha * qRed(fill);
-    int fillGreen = fillAlpha * qRed(fill);
-    int fillBlue = fillAlpha * qRed(fill);
-
-    QRgb line = 0;
-    if (lineCol.isValid())
-        line = qRgba(lineCol.red(), lineCol.green(), lineCol.blue(), lineCol.alpha());
 
     while((point1.x() != point2.x()) || (point1.y() != point2.y())) {
         if (point1.x() >= 0 && point1.x() < image.width()) {
 
-            if (point1.y() >= 0 && point1.y() < image.height()) {
-                // draw a bresenham line
-                if (lineCol.isValid())
-                    (data + width * point1.y())[point1.x()] = line;
-
-                // fill the area under the line
-                if (fillCol.isValid()) {
-                    int y = point1.y() < 0 ? -1 : point1.y();
-
-                    if (fillAlpha == 1) {
-                        // only fill if not already filled before
-                        if ((data + width * (image.height() - 1))[point1.x()] != fill) {
-                            for (int i = y; i < image.height(); i++) {
-                                (data + width * i)[point1.x()] = fill;
-                            }
-                        }
-                    }
-                    else {
-                        // only fill if not already filled before
-                        if (qAlpha((data + width * (image.height() - 1))[point1.x()]) == 255) {
-                            for (int i = y; i < image.height(); i++) {
-                                QRgb val = (data + width * i)[point1.x()];
-                                val = qRgba(fillRed + fillAlphaInv * qRed(val),
-                                            fillGreen + fillAlphaInv * qGreen(val),
-                                            fillBlue + fillAlphaInv * qBlue(val),
-                                            254);   // hack: to notify the case when the line has already been filled
-                                (data + width * i)[point1.x()] = val;
-                            }
-                        }
+            // can only have one mode at a time to avoid artifacts
+            if (mode == 0) {
+                // draw a bresenham line (only if inside the image)
+                if (point1.y() >= 0 && point1.y() < image.height()) {
+                    (data + width * point1.y())[point1.x()] = lineCol;
+                }
+            }
+            else if (mode == 1) {
+                // fill the area under the line (always)
+                int y = point1.y() < 0 ? -1 : point1.y();
+                if ((data + width * (image.height() - 1))[point1.x()] != fillCol) {
+                    for (int i = y + 1; i < image.height(); i++) {
+                        (data + width * i)[point1.x()] = fillCol;
                     }
                 }
             }
@@ -435,25 +386,13 @@ void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const
     }
 }
 
-#include <QTime>
-#include <QDebug>
-QTime t;
-
 void SpectrumGraph::iRedraw()
 {
     if (m_spectrum.size() <= 2)
         return;
 
-    t.restart();
-
     if (!m_spectrumGraph.isNull()) {
-        // draw background image
         m_spectrumGraph.fill(Qt::transparent);
-        QPainter painter(&m_spectrumGraph);
-
-        if (!m_background.isNull()) {
-            painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_background);
-        }
 
         // compute array indices for lower and upper passband frequencies
         int lower = m_lowerPassband / m_binSize;
@@ -461,6 +400,14 @@ void SpectrumGraph::iRedraw()
         int upper = m_upperPassband / m_binSize;
         const int spectrumSize = m_spectrum.size();
         upper = upper > spectrumSize ? spectrumSize : upper;
+
+        // create premultiplied color
+        int fillAlpha = m_spectrumFillColor.alpha();
+        float fillAlphaF = fillAlpha / 255.0;
+        QRgb fillCol = qRgba(fillAlphaF * m_spectrumFillColor.red(),
+                             fillAlphaF * m_spectrumFillColor.green(),
+                             fillAlphaF * m_spectrumFillColor.blue(),
+                             fillAlpha);
 
         // fill with background color
         QPoint prevPoint;
@@ -470,9 +417,17 @@ void SpectrumGraph::iRedraw()
             QPoint point(j, (int)valueToDisp(value));
 
             if (!prevPoint.isNull())
-                bresenham(m_spectrumGraph, prevPoint, point, QColor(), m_spectrumFillColor);
+                bresenham(m_spectrumGraph, prevPoint, point, 0, fillCol, 1);
             prevPoint = point;
         }
+
+        // create premultiplied color
+        int lineAlpha = m_spectrumLineColor.alpha();
+        float lineAlphaF = lineAlpha / 255.0;
+        QRgb lineCol = qRgba(lineAlphaF * m_spectrumLineColor.red(),
+                             lineAlphaF * m_spectrumLineColor.green(),
+                             lineAlphaF * m_spectrumLineColor.blue(),
+                             lineAlpha);
 
         // draw spectrum line
         prevPoint = QPoint();
@@ -482,16 +437,10 @@ void SpectrumGraph::iRedraw()
             QPoint point(j, (int)valueToDisp(value));
 
             if (!prevPoint.isNull())
-                bresenham(m_spectrumGraph, prevPoint, point, m_spectrumLineColor, QColor());
+                bresenham(m_spectrumGraph, prevPoint, point, lineCol, 0, 0);
             prevPoint = point;
         }
-
-        /*if (!m_labels.isNull())
-            painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_labels);*/
-        painter.end();
     }
-
-    //qDebug() << t.elapsed();
 }
 
 double SpectrumGraph::valueToDisp(double value) const
@@ -510,10 +459,8 @@ void SpectrumGraph::iAddSpectrumLog(const QVector<double>& spectrum, bool change
 {
     m_spectrum = spectrum;
 
-    if (changed) {
+    if (changed)
         reset();
-        //drawFrequencies();
-    }
 
     requestRedraw();
 }
