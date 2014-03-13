@@ -42,11 +42,17 @@ public:
 
     void addSpectrumWidget(QString);
 
+public slots:
+    void mouseMoved(double);
+    void mouseVisible(bool);
+
 signals:
     void widgetSelected(int);
 
 private:
     QComboBox* m_cmbSpecType;
+    QLabel* m_lblFrqText;
+    QLabel* m_lblFrq;
     QLabel* m_lblInfo;
 };
 

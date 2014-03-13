@@ -82,10 +82,20 @@ SpectrumWindow::SpectrumWindow(QWidget* parent)
     m_waterfallCombined->init(m_fftSpectrum->getSpectrumSize());
     m_graph->init(m_fftSpectrum->getSpectrumSize());
     m_graphCombined->init(m_fftSpectrum->getSpectrumSize());
+    m_graphCombined->setShowFrequencies(false);
 
-    // TODO: init toolbar signals / slots
+    // init toolbar signals / slots
     layout->addWidget(m_toolBar);
     connect(m_toolBar, &SpectrumToolBar::widgetSelected, this, &SpectrumWindow::widgetSelected);
+
+    connect(m_waterfall, &SpectrumWaterfall::mouseMoved, m_toolBar, &SpectrumToolBar::mouseMoved);
+    connect(m_waterfall, &SpectrumWaterfall::mouseVisible, m_toolBar, &SpectrumToolBar::mouseVisible);
+    connect(m_waterfallCombined, &SpectrumWaterfall::mouseMoved, m_toolBar, &SpectrumToolBar::mouseMoved);
+    connect(m_waterfallCombined, &SpectrumWaterfall::mouseVisible, m_toolBar, &SpectrumToolBar::mouseVisible);
+    connect(m_graph, &SpectrumWaterfall::mouseMoved, m_toolBar, &SpectrumToolBar::mouseMoved);
+    connect(m_graph, &SpectrumWaterfall::mouseVisible, m_toolBar, &SpectrumToolBar::mouseVisible);
+    connect(m_graphCombined, &SpectrumWaterfall::mouseMoved, m_toolBar, &SpectrumToolBar::mouseMoved);
+    connect(m_graphCombined, &SpectrumWaterfall::mouseVisible, m_toolBar, &SpectrumToolBar::mouseVisible);
 
     m_widget = new QStackedWidget(this);
     m_widget->addWidget(m_waterfall);

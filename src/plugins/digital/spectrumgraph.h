@@ -43,6 +43,7 @@ protected:
     void sizeChanged(const QSize&);
     void iRedraw();
 
+    void paint(QPainter&);
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
     QRect drawFrequencies(QPainter&);
@@ -51,10 +52,23 @@ protected:
 
 private:
     static void bresenham(QImage&, QPoint, QPoint, const QColor&, const QColor&);
+    void drawBackground(const QSize&);
+    void drawGrid(const QSize&, int&, int&, int&);
+    void drawFrequencies(int);
+    void drawDecibels(int, int);
     double valueToDisp(double) const;
     QVector<double> m_spectrum;
-    QPixmap m_background;
-    QImage m_spectrumGraph;
+    QPixmap m_labels;       // deprecate, remove
+    QPixmap m_background;   // background including grid
+    QPixmap m_frequencies;  // frequency labels
+    QPixmap m_decibels;     // decibel labels
+    QImage m_spectrumGraph; // spectrum data
+    int m_fontSize;
+    int m_fontBorder;
+    QColor m_fontColor;
+    QColor m_gridColor;
+    QColor m_spectrumLineColor;
+    QColor m_spectrumFillColor;
 };
 
 } // namespace Internal

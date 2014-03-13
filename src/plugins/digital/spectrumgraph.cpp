@@ -32,7 +32,14 @@
 using namespace Digital::Internal;
 
 SpectrumGraph::SpectrumGraph(QWidget* parent)
-    : SpectrumWidget(parent)
+    : SpectrumWidget(parent),
+      m_fontSize(11),
+      m_fontBorder(5),
+      m_fontColor(Qt::yellow),
+      m_gridColor(QColor(47, 47, 57)),
+      m_spectrumLineColor(QColor(200, 200, 200)),
+      m_spectrumFillColor(QColor(114, 114, 135))
+      //m_spectrumFillColor(QColor(114, 114, 135, 150))
 {
 }
 
@@ -45,8 +52,23 @@ void SpectrumGraph::iInit()
 {
 }
 
-void SpectrumGraph::beginDraw(QPainter&)
+void SpectrumGraph::paint(QPainter& painter)
 {
+    // draw spectrum with background
+    if (!m_showFrequencies) {
+        painter.drawImage(0, 0, m_spectrumGraph);
+        painter.drawPixmap(m_fontBorder, 0, m_decibels);
+    }
+    else {
+        painter.drawPixmap(0, 0, m_frequencies);
+        painter.drawImage(0, m_frequencies.height(), m_spectrumGraph);
+        painter.drawPixmap(m_fontBorder, m_frequencies.height(), m_decibels);
+    }
+}
+
+void SpectrumGraph::beginDraw(QPainter& painter)
+{
+    //painter.drawPixmap(0, 0, m_background);
 }
 
 void SpectrumGraph::drawSpectrum(QPainter& painter, const QRect& rect)
@@ -54,9 +76,14 @@ void SpectrumGraph::drawSpectrum(QPainter& painter, const QRect& rect)
     painter.drawImage(rect, m_spectrumGraph);
 }
 
-QRect SpectrumGraph::drawFrequencies(QPainter&)
+QRect SpectrumGraph::drawFrequencies(QPainter& painter)
 {
     return QRect();
+    /*if (m_frequencies.isNull())
+        return QRect();
+
+    painter.drawPixmap(0, 0, m_frequencies);
+    return QRect(m_frequencies.rect());*/
 }
 
 void SpectrumGraph::drawFrequencies()
@@ -127,15 +154,47 @@ void SpectrumGraph::drawMarkers(QPainter& painter, qreal frequency, const QColor
     lowerGradient.setColorAt(1, bwAlpha);
     painter.setBrush(QBrush(lowerGradient));
     painter.drawRect(lowerGradientRect);
-
 }
 
 void SpectrumGraph::sizeChanged(const QSize& size)
 {
-    // create new spectrograph image
-    m_spectrumGraph = QImage(size, QImage::Format_RGB32);
+    QSize spectrumSize = size;
 
-    // draw background image
+    // create frequencies and adapt the spectrum size
+    if (m_showFrequencies) {
+        m_frequencies = QPixmap(size.width(), 30);
+        spectrumSize.setHeight(size.height() - m_frequencies.height());
+    }
+
+    if (spectrumSize.width() >= 0 && spectrumSize.height() >= 0) {
+        // create new spectrograph image
+        m_spectrumGraph = QImage(spectrumSize, QImage::Format_RGB32);
+
+        // draw background gradient
+        drawBackground(spectrumSize);
+
+        // draw grid and retrieve step sizes needed for text drawing
+        int frqStep = 100;
+        int dbStep = 10;
+        int dbTextWidth = 0;
+        drawGrid(spectrumSize, frqStep, dbStep, dbTextWidth);
+
+        // draw frequencies if required
+        if (m_showFrequencies) {
+            drawFrequencies(frqStep);
+        }
+
+        // draw decibel labels
+        drawDecibels(dbStep, dbTextWidth);
+    }
+}
+
+void SpectrumGraph::drawBackground(const QSize& size)
+{
+    if (size.width() <= 0 || size.height() <= 0)
+        return;
+
+    // draw background gradient
     m_background = QPixmap(size);
     QRect paintRect(0, 0, size.width(), size.height());
     QPainter painter(&m_background);
@@ -146,18 +205,24 @@ void SpectrumGraph::sizeChanged(const QSize& size)
     gradient.setColorAt(1, endCol);
     painter.setBrush(QBrush(gradient));
     painter.drawRect(paintRect);
+}
+
+void SpectrumGraph::drawGrid(const QSize& size, int& frqStep, int& dbStep, int& dbTextWidth)
+{
+    if (size.width() <= 0 || size.height() <= 0)
+        return;
+
+    QPainter painter(&m_background);
 
     // set font
-    const int fontSize = 10;
     QFont font = painter.font();
-    font.setPixelSize(fontSize);
+    font.setPixelSize(m_fontSize);
     painter.setFont(font);
     const int fontHeight = painter.fontMetrics().height();
-    const int fontBorder = 5;
-    const int maxHeight = fontBorder * 2 + fontHeight;
+    const int maxHeight = m_fontBorder * 2 + fontHeight;
 
     // set line color
-    painter.setPen(QColor(47, 47, 57));
+    painter.setPen(m_gridColor);
 
     QVector<int> dbSteps;
     dbSteps.push_back(5);
@@ -166,7 +231,7 @@ void SpectrumGraph::sizeChanged(const QSize& size)
     dbSteps.push_back(50);
 
     // determine space between two db lines
-    int dbStep = dbSteps.last();
+    dbStep = dbSteps.last();
     for (int i = 0; i < dbSteps.size(); i++) {
         int lineSpace = valueToDisp(m_refLevel - dbSteps[i]);
         if (lineSpace > maxHeight) {
@@ -176,7 +241,7 @@ void SpectrumGraph::sizeChanged(const QSize& size)
     }
 
     // draw decibel grid on y-axis
-    for (int i = m_refLevel; i >= -m_ampSpan; i -= dbStep) {
+    for (int i = m_refLevel; i >= m_refLevel - m_ampSpan; i -= dbStep) {
         double dispValue = valueToDisp(i);
         QPointF start(0, dispValue);
         QPointF end(size.width(), dispValue);
@@ -190,7 +255,7 @@ void SpectrumGraph::sizeChanged(const QSize& size)
     frqSteps.push_back(1000);
 
     // determine space between two frequency lines
-    int frqStep = frqSteps.last();
+    frqStep = frqSteps.last();
     for (int i = 0; i < frqSteps.size(); i++) {
 
         double maxWidth = 0;
@@ -199,7 +264,7 @@ void SpectrumGraph::sizeChanged(const QSize& size)
             if (j > m_lowerPassband) {
                 QString text = QString::number(j);
                 double halfWidth = painter.fontMetrics().width(text) / 2.0;
-                maxWidth += halfWidth + fontBorder;
+                maxWidth += halfWidth + m_fontBorder;
                 count++;
             }
         }
@@ -222,25 +287,71 @@ void SpectrumGraph::sizeChanged(const QSize& size)
         }
     }
 
-    painter.setPen(Qt::yellow);
-    const int fontAscent = painter.fontMetrics().ascent();
-
-    // draw decibel labels
-    for (int i = m_refLevel; i >= -m_ampSpan; i -= dbStep) {
-        double dispValue = valueToDisp(i);
+    // get maximum text width of decibel labels
+    dbTextWidth = 0;
+    for (int i = m_refLevel; i >= m_refLevel - m_ampSpan; i -= dbStep) {
         QString text = QString::number(i);
         text += QLatin1String(" db");
-        painter.drawText(QPoint(fontBorder, dispValue + fontAscent + fontBorder), text);
+        int width = painter.fontMetrics().width(text);
+        if (width > dbTextWidth)
+            dbTextWidth = width;
     }
+}
 
-    // draw frequency labels
-    for (int i = 0; i < m_upperPassband; i += frqStep) {
-        if (i > m_lowerPassband) {
-            double frq = frqToScreen(i);
-            QString text = QString::number(i);
-            double pos = frq - painter.fontMetrics().width(text) / 2.0;
-            painter.drawText(QPoint(pos, fontAscent + fontBorder), text);
+void SpectrumGraph::drawFrequencies(int frqStep)
+{
+    if (!m_frequencies.isNull()) {
+        m_frequencies.fill(Qt::black);
+
+        QPainter painter(&m_frequencies);
+
+        // set font
+        QFont font = painter.font();
+        font.setPixelSize(m_fontSize);
+        painter.setFont(font);
+        const int fontAscent = painter.fontMetrics().ascent();
+        const int fontHeight = painter.fontMetrics().height();
+
+        // draw frequency labels
+        for (int i = 0; i < m_upperPassband; i += frqStep) {
+            if (i > m_lowerPassband) {
+                double frq = frqToScreen(i);
+                QString text = QString::number(i);
+                double pos = frq - painter.fontMetrics().width(text) / 2.0;
+
+                // draw text
+                painter.setPen(m_fontColor);
+                painter.drawText(QPoint(pos, fontAscent + m_fontBorder), text);
+
+                // draw line
+                painter.setPen(m_gridColor);
+                QPointF start(frq, m_fontBorder * 2 + fontHeight);
+                QPointF end(frq, m_frequencies.height());
+                painter.drawLine(start, end);
+            }
         }
+    }
+}
+
+void SpectrumGraph::drawDecibels(int dbStep, int dbTextWidth)
+{
+    m_decibels = QPixmap(dbTextWidth, m_spectrumGraph.height());
+    m_decibels.fill(Qt::transparent);
+
+    QPainter painter(&m_decibels);
+    painter.setPen(m_fontColor);
+
+    // set font
+    QFont font = painter.font();
+    font.setPixelSize(m_fontSize);
+    painter.setFont(font);
+    const int fontAscent = painter.fontMetrics().ascent();
+
+    for (int i = m_refLevel; i >= m_refLevel - m_ampSpan; i -= dbStep) {
+        double disp = valueToDisp(i);
+        QString text = QString::number(i);
+        text += QLatin1String(" db");
+        painter.drawText(QPoint(0, disp + fontAscent + m_fontBorder), text);
     }
 }
 
@@ -257,29 +368,55 @@ void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const
     QRgb* data = (QRgb*)image.scanLine(0);
 
     QRgb fill = 0;
-    if (fillCol.isValid())
-        fill = qRgb(fillCol.red(), fillCol.green(), fillCol.blue());
+    float fillAlpha = 0;
+    float fillAlphaInv = 1;
+    if (fillCol.isValid()) {
+        fill = qRgba(fillCol.red(), fillCol.green(), fillCol.blue(), fillCol.alpha());
+        fillAlpha = qAlpha(fill) / 255.0;
+        fillAlphaInv = 1 - fillAlpha;
+    }
+    // premultiplied color
+    int fillRed = fillAlpha * qRed(fill);
+    int fillGreen = fillAlpha * qRed(fill);
+    int fillBlue = fillAlpha * qRed(fill);
 
     QRgb line = 0;
     if (lineCol.isValid())
-        line = qRgb(lineCol.red(), lineCol.green(), lineCol.blue());
+        line = qRgba(lineCol.red(), lineCol.green(), lineCol.blue(), lineCol.alpha());
 
     while((point1.x() != point2.x()) || (point1.y() != point2.y())) {
         if (point1.x() >= 0 && point1.x() < image.width()) {
 
-            // draw a bresenham line
             if (point1.y() >= 0 && point1.y() < image.height()) {
+                // draw a bresenham line
                 if (lineCol.isValid())
                     (data + width * point1.y())[point1.x()] = line;
-            }
 
-            // fill the area under the line
-            if (fillCol.isValid()) {
-                int y = point1.y() < 0 ? -1 : point1.y();
-                // only fill if not already filled before
-                if ((data + width * (image.height() - 1))[point1.x()] != fill) {
-                    for (int i = y + 1; i < image.height(); i++)
-                        (data + width * i)[point1.x()] = fill;
+                // fill the area under the line
+                if (fillCol.isValid()) {
+                    int y = point1.y() < 0 ? -1 : point1.y();
+
+                    if (fillAlpha == 1) {
+                        // only fill if not already filled before
+                        if ((data + width * (image.height() - 1))[point1.x()] != fill) {
+                            for (int i = y; i < image.height(); i++) {
+                                (data + width * i)[point1.x()] = fill;
+                            }
+                        }
+                    }
+                    else {
+                        // only fill if not already filled before
+                        if (qAlpha((data + width * (image.height() - 1))[point1.x()]) == 255) {
+                            for (int i = y; i < image.height(); i++) {
+                                QRgb val = (data + width * i)[point1.x()];
+                                val = qRgba(fillRed + fillAlphaInv * qRed(val),
+                                            fillGreen + fillAlphaInv * qGreen(val),
+                                            fillBlue + fillAlphaInv * qBlue(val),
+                                            254);   // hack: to notify the case when the line has already been filled
+                                (data + width * i)[point1.x()] = val;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -298,73 +435,63 @@ void SpectrumGraph::bresenham(QImage& image, QPoint point1, QPoint point2, const
     }
 }
 
+#include <QTime>
+#include <QDebug>
+QTime t;
+
 void SpectrumGraph::iRedraw()
 {
     if (m_spectrum.size() <= 2)
         return;
 
-    // draw background image
-    QPainter painter(&m_spectrumGraph);
-    painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_background);
-    painter.end();
+    t.restart();
 
-    // compute array indices for lower and upper passband frequencies
-    int lower = m_lowerPassband / m_binSize;
-    lower = lower < 0 ? 0 : lower;
-    int upper = m_upperPassband / m_binSize;
-    const int spectrumSize = m_spectrum.size();
-    upper = upper > spectrumSize ? spectrumSize : upper;
+    if (!m_spectrumGraph.isNull()) {
+        // draw background image
+        m_spectrumGraph.fill(Qt::transparent);
+        QPainter painter(&m_spectrumGraph);
 
-    QColor lineCol(255, 255, 255);
-    QColor fillCol(114, 114, 135);
+        if (!m_background.isNull()) {
+            painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_background);
+        }
 
-    // fill with background color
-    QPoint prevPoint;
-    for (int j = 0; j < m_spectrumGraph.width(); j++) {
-        int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
-        const double& value = m_spectrum[index];
-        QPoint point(j, (int)valueToDisp(value));
+        // compute array indices for lower and upper passband frequencies
+        int lower = m_lowerPassband / m_binSize;
+        lower = lower < 0 ? 0 : lower;
+        int upper = m_upperPassband / m_binSize;
+        const int spectrumSize = m_spectrum.size();
+        upper = upper > spectrumSize ? spectrumSize : upper;
 
-        if (!prevPoint.isNull())
-            bresenham(m_spectrumGraph, prevPoint, point, QColor(), fillCol);
-        prevPoint = point;
+        // fill with background color
+        QPoint prevPoint;
+        for (int j = 0; j < m_spectrumGraph.width(); j++) {
+            int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
+            const double& value = m_spectrum[index];
+            QPoint point(j, (int)valueToDisp(value));
+
+            if (!prevPoint.isNull())
+                bresenham(m_spectrumGraph, prevPoint, point, QColor(), m_spectrumFillColor);
+            prevPoint = point;
+        }
+
+        // draw spectrum line
+        prevPoint = QPoint();
+        for (int j = 0; j < m_spectrumGraph.width(); j++) {
+            int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
+            const double& value = m_spectrum[index];
+            QPoint point(j, (int)valueToDisp(value));
+
+            if (!prevPoint.isNull())
+                bresenham(m_spectrumGraph, prevPoint, point, m_spectrumLineColor, QColor());
+            prevPoint = point;
+        }
+
+        /*if (!m_labels.isNull())
+            painter.drawPixmap(0, 0, m_spectrumGraph.width(), m_spectrumGraph.height(), m_labels);*/
+        painter.end();
     }
 
-    // draw spectrum line
-    prevPoint = QPoint();
-    for (int j = 0; j < m_spectrumGraph.width(); j++) {
-        int index = ((j / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
-        const double& value = m_spectrum[index];
-        QPoint point(j, (int)valueToDisp(value));
-
-        if (!prevPoint.isNull())
-            bresenham(m_spectrumGraph, prevPoint, point, lineCol, QColor());
-        prevPoint = point;
-    }
-
-    // NOTE: very inefficient
-    /*QPolygonF polygon;
-
-    // add a line just outside the drawing area
-    polygon.append(QPointF(-1, m_spectrumGraph.height() + 1));
-    polygon.append(QPointF(-1, valueToDisp(m_spectrum.first())));
-
-    for (int i = 0; i < m_spectrumGraph.width(); i++) {
-        int index = ((i / (double)m_spectrumGraph.width()) * (upper - lower)) + lower;
-        const double& value = m_spectrum[index];
-        polygon.append(QPointF(i, valueToDisp(value)));
-    }
-
-    // add a line just outside the drawing area
-    polygon.append(QPointF(m_spectrumGraph.width() + 1, valueToDisp(m_spectrum.last())));
-    polygon.append(QPointF(m_spectrumGraph.width() + 1, m_spectrumGraph.height() + 1));
-
-    QPainter painter(&m_spectrumGraph);
-
-    painter.setBrush(QBrush(fillCol));
-    painter.setPen(lineCol);
-    m_spectrumGraph.fill(Qt::transparent);
-    painter.drawPolygon(polygon);*/
+    //qDebug() << t.elapsed();
 }
 
 double SpectrumGraph::valueToDisp(double value) const

@@ -51,6 +51,7 @@ protected:
     void sizeChanged(const QSize&);
     void iRedraw();
 
+    void paint(QPainter&);
     void beginDraw(QPainter&);
     void drawSpectrum(QPainter&, const QRect&);
     QRect drawFrequencies(QPainter&);

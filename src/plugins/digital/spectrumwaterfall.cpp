@@ -65,6 +65,17 @@ void SpectrumWaterfall::reset()
     m_scrollPosition = 0;
 }
 
+void SpectrumWaterfall::paint(QPainter& painter)
+{
+    if (m_frequencies.isNull()) {
+        painter.drawImage(0, 0, m_waterfall);
+    }
+    else {
+        painter.drawPixmap(0, 0, m_frequencies);
+        painter.drawImage(0, m_frequencies.height(), m_waterfall);
+    }
+}
+
 void SpectrumWaterfall::beginDraw(QPainter& painter)
 {
     QRect paintRect = rect();

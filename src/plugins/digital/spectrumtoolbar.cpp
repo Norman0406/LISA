@@ -38,6 +38,13 @@ SpectrumToolBar::SpectrumToolBar(QWidget* parent)
     connect(m_cmbSpecType, SIGNAL(currentIndexChanged(int)), this, SIGNAL(widgetSelected(int)));
     toolBarLayout->addWidget(m_cmbSpecType);
 
+    m_lblFrqText = new QLabel(QString(tr("Mouse Frequency:")));
+    m_lblFrqText->setMargin(5);
+    toolBarLayout->addWidget(m_lblFrqText);
+    m_lblFrq = new QLabel(QLatin1String("0 Hz"));
+    toolBarLayout->addWidget(m_lblFrq);
+    mouseVisible(false);
+
     toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
     m_lblInfo = new QLabel(QString::fromAscii("Sound Info"), this);
@@ -47,4 +54,22 @@ SpectrumToolBar::SpectrumToolBar(QWidget* parent)
 void SpectrumToolBar::addSpectrumWidget(QString name)
 {
     m_cmbSpecType->addItem(name);
+}
+
+void SpectrumToolBar::mouseMoved(double frq)
+{
+    // TODO: show MHz when connected to a radio
+    m_lblFrq->setText(QString::number(frq) + QLatin1String(" Hz"));
+}
+
+void SpectrumToolBar::mouseVisible(bool visible)
+{
+    if (visible) {
+        m_lblFrqText->setVisible(true);
+        m_lblFrq->setVisible(true);
+    }
+    else {
+        m_lblFrqText->setVisible(false);
+        m_lblFrq->setVisible(false);
+    }
 }

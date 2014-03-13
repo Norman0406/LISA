@@ -110,6 +110,11 @@ void SpectrumWidget::setAmpSpan(int value)
     m_ampSpan = value;
 }
 
+void SpectrumWidget::setShowFrequencies(bool showFrequencies)
+{
+    m_showFrequencies = showFrequencies;
+}
+
 double SpectrumWidget::getLowerPass() const
 {
     return m_lowerPassband;
@@ -128,6 +133,11 @@ int SpectrumWidget::getRefLevel() const
 int SpectrumWidget::getAmpSpan() const
 {
     return m_ampSpan;
+}
+
+bool SpectrumWidget::getShowFrequencies() const
+{
+    return m_showFrequencies;
 }
 
 void SpectrumWidget::addSpectrumLog(const QVector<double>& spectrum, double binSize, double maxFrq)
@@ -197,7 +207,7 @@ void SpectrumWidget::paintEvent(QPaintEvent*)
     // TODO: only draw what has changed
 
     // begin drawing, i.e. draw background etc
-    beginDraw(painter);
+    /*beginDraw(painter);
 
     QRect spectrumRect = rect();
 
@@ -210,7 +220,9 @@ void SpectrumWidget::paintEvent(QPaintEvent*)
     }
 
     // draw actual spectrum data
-    drawSpectrum(painter, spectrumRect);
+    drawSpectrum(painter, spectrumRect);*/
+
+    paint(painter);
 
     // draw modem markers
     if (m_showMarkers || m_showMouse) {
