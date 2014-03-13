@@ -46,7 +46,7 @@ SpectrumWidget::SpectrumWidget(QWidget* parent)
 {
     m_updateTimer = new QTimer(this);
     m_updateTimer->setTimerType(Qt::PreciseTimer);
-    m_updateTimer->setInterval(30);   // time in ms
+    m_updateTimer->setInterval(60);   // time in ms
     connect(m_updateTimer, &QTimer::timeout, this, &SpectrumWidget::redraw);
 
     m_size = size();
@@ -198,7 +198,6 @@ void SpectrumWidget::paintEvent(QPaintEvent*)
 
     // draw modem markers
     if (m_showMarkers || m_showMouse) {
-        //painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter.drawPixmap(0, 0, m_markers);
     }
 }
@@ -218,11 +217,8 @@ void SpectrumWidget::drawMarkers()
 
     if (!m_markers.isNull()) {
         // draw markers overlay
+        m_markers.fill(Qt::transparent);
         QPainter painter(&m_markers);
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.setBackgroundMode(Qt::TransparentMode);
-        painter.fillRect(m_markers.rect(), QColor(255, 255, 255, 0));
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
         QColor frqCol(255, 255, 255, 255);
         QColor bwCol(255, 0, 0, 255);
@@ -255,7 +251,6 @@ void SpectrumWidget::resizeEvent(QResizeEvent*)
 
         if (m_showMarkers || m_showMouse) {
             m_markers = QPixmap(m_size);
-            m_markers.fill(Qt::transparent);
             drawMarkers();
         }
 
@@ -281,9 +276,9 @@ void SpectrumWidget::iRedraw()
 void SpectrumWidget::mouseMoveEvent(QMouseEvent* event)
 {
     if (m_showMouse) {
-        const QPointF& pos = event->pos();
+        m_mousePos = event->pos();
 
-        qreal frequency = m_lowerPassband + (m_upperPassband - m_lowerPassband) * pos.x() / qreal(m_size.width());
+        qreal frequency = screenToFrq(m_mousePos.x());
         m_mouseFrequency = frequency;
 
         moveMouse(frequency);

@@ -81,13 +81,12 @@ void SpectrumWaterfall::paint(QPainter& painter)
     }
 }
 
-
 void SpectrumWaterfall::drawFrequencies()
 {
     if (!m_frequencies.isNull()) {
 
-        QPainter painter(&m_frequencies);
         m_frequencies.fill(Qt::black);
+        QPainter painter(&m_frequencies);
 
         // set font
         QFont font = painter.font();
@@ -124,7 +123,6 @@ void SpectrumWaterfall::drawFrequencies()
                 break;
             }
         }
-
 
         // draw frequency labels
         for (int i = 0; i < m_upperPassband; i += frqStep) {
@@ -218,6 +216,8 @@ void SpectrumWaterfall::sizeChanged(const QSize& size)
     drawFrequencies();
 
     m_waterfall = QImage(waterfallSize, QImage::Format_RGB32);
+    m_waterfall.fill(Qt::black);
+
     m_scrollPosition = 0;
 
     delete[] m_scrollBuffer;
@@ -298,7 +298,6 @@ void SpectrumWaterfall::iAddSpectrumLog(const QVector<double>& spectrum, bool ch
 
     if (changed) {
         reset();
-        //drawFrequencies();
     }
 
     requestRedraw();

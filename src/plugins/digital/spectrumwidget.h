@@ -95,6 +95,7 @@ protected:
     float       m_frequency;
     float       m_bandwidth;
     float       m_mouseFrequency;
+    QPointF     m_mousePos;
     bool        m_showMouse;
     bool        m_showMarkers;
     double		m_lowerPassband;
