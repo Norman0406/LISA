@@ -151,16 +151,8 @@ void SpectrumGraph::sizeChanged(const QSize& size)
 
     if (spectrumSize.width() >= 0 && spectrumSize.height() >= 0) {
         // create new spectrograph image
-        QImage newGraph = QImage(spectrumSize, QImage::Format_ARGB32_Premultiplied);
-        newGraph.fill(Qt::transparent);
-
-        // copy old image
-        if (!m_spectrumGraph.isNull()) {
-            QPainter painter(&newGraph);
-            painter.drawImage(0, 0, m_spectrumGraph);
-        }
-
-        m_spectrumGraph = newGraph;
+        m_spectrumGraph = QImage(spectrumSize, QImage::Format_ARGB32_Premultiplied);
+        iRedraw();
 
         // draw background gradient
         drawBackground(spectrumSize);
