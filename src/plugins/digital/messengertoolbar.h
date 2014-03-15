@@ -29,6 +29,7 @@
 
 #include <QToolButton>
 #include <QComboBox>
+#include <QLabel>
 
 namespace Digital {
 namespace Internal {
@@ -40,6 +41,9 @@ class MessengerToolBar
 
 public:
     MessengerToolBar(QWidget*);
+
+public slots:
+    void frequencyChanged(double);
 
 private slots:
     void modemIndexChanged(int);
@@ -61,6 +65,7 @@ private:
     QToolButton* m_btClear;
     QComboBox* m_cmbModems;
     QComboBox* m_cmbConfig;
+    QLabel* m_lblFrq;
 };
 
 } // namespace Internal

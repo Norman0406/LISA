@@ -306,7 +306,7 @@ void ModemRTTY::iRxProcess(const QVector<double>& buffer)
     };
 }
 
-void ModemRTTY::iTxProcess()
+void ModemRTTY::iTxProcess(ModemTransmitter* transmitter)
 {
     int c;
 
@@ -315,15 +315,15 @@ void ModemRTTY::iTxProcess()
         m_symShaperSpace->reset();
 
         for (int i = 0; i < m_bits + 1; i++)
-            sendSymbol(0, m_symbolLen);
+            sendSymbol(0, m_symbolLen, transmitter);
 
-        sendStop();
+        sendStop(transmitter);
 
         for (int i = 0; i < m_bits + 1; i++)
-            sendSymbol(1, m_symbolLen);
+            sendSymbol(1, m_symbolLen, transmitter);
 
-        sendStop();
-        sendIdle();
+        sendStop(transmitter);
+        sendIdle(transmitter);
         m_preamble = false;
         // freq1 = get_txfreq_woffset() + shift / 2.0;
     }
@@ -338,15 +338,15 @@ void ModemRTTY::iTxProcess()
         if (m_bits != 5) {
             /*if (progdefaults.rtty_crcrlf)
                 send_char('\r');*/
-            sendChar('\r');
-            sendChar('\n');
+            sendChar('\r', transmitter);
+            sendChar('\n', transmitter);
         } else {
             /*if (progdefaults.rtty_crcrlf)
                 send_char(0x08);*/
-            sendChar(0x08);
-            sendChar(0x02);
+            sendChar(0x08, transmitter);
+            sendChar(0x02, transmitter);
         }
-        flushStream();
+        flushStream(transmitter);
         //cwid();
         //return -1;
         return;
@@ -355,14 +355,14 @@ void ModemRTTY::iTxProcess()
     // send idle character if c == -1
     //if (c == GET_TX_CHAR_NODATA) {
     if (false) {
-        sendIdle();
+        sendIdle(transmitter);
         return;
     }
 
     // if NOT Baudot
     if (m_bits != 5) {
         //acc_symbols = 0;
-        sendChar(c);
+        sendChar(c, transmitter);
         //xmt_samples = char_samples = acc_symbols;
         //return 0;
         return;
@@ -374,7 +374,7 @@ void ModemRTTY::iTxProcess()
 
     if (c == '\r') {
         //line_char_count = 0;
-        sendChar(0x08);
+        sendChar(0x08, transmitter);
         //return 0;
         return;
     }
@@ -384,8 +384,8 @@ void ModemRTTY::iTxProcess()
     if (c == '\n') {
         //line_char_count = 0;
         if (crcCRLF)
-            sendChar(0x08); // CR-CR-LF triplet
-        sendChar(0x02);
+            sendChar(0x08, transmitter); // CR-CR-LF triplet
+        sendChar(0x02, transmitter);
         //return 0;
         return;
     }
@@ -393,11 +393,11 @@ void ModemRTTY::iTxProcess()
     // unshift-on-space
     if (c == ' ') {
         if (m_unshiftOnSpace) {
-            sendChar(MODE_LETTERS);
-            sendChar(0x04); // coded value for a space
+            sendChar(MODE_LETTERS, transmitter);
+            sendChar(0x04, transmitter); // coded value for a space
             m_txMode = MODE_LETTERS;
         } else
-            sendChar(0x04);
+            sendChar(0x04, transmitter);
         //return 0;
         return;
     }
@@ -411,16 +411,16 @@ void ModemRTTY::iTxProcess()
 
     if ((c & 0x300) != m_txMode) {
         if (m_txMode == MODE_FIGURES) {
-            sendChar(MODE_LETTERS);
+            sendChar(MODE_LETTERS, transmitter);
             m_txMode = MODE_LETTERS;
         } else {
-            sendChar(MODE_FIGURES);
+            sendChar(MODE_FIGURES, transmitter);
             m_txMode = MODE_FIGURES;
         }
     }
 
     //acc_symbols = 0;
-    sendChar(c & 0x1F);
+    sendChar(c & 0x1F, transmitter);
     //xmt_samples = char_samples = acc_symbols;
 }
 
@@ -664,7 +664,7 @@ void ModemRTTY::metric()
     display_metric(metric);*/
 }
 
-void ModemRTTY::sendSymbol(int symbol, int len)
+void ModemRTTY::sendSymbol(int symbol, int len, ModemTransmitter* transmitter)
 {
     //acc_symbols += len;
 #if 0
@@ -698,6 +698,7 @@ void ModemRTTY::sendSymbol(int symbol, int len)
     for(int i = 0; i < len; ++i) {
         mark  = m_symShaperMark->update(symbol) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(!symbol) * m_oscSpace->update(freq2);
+        transmitter->writeSample(mark + space);
         /*outbuf[i] = mark + space;
 
         if (minamp > outbuf[i])
@@ -710,7 +711,7 @@ void ModemRTTY::sendSymbol(int symbol, int len)
     //ModulateXmtr(outbuf, symbollen);
 }
 
-void ModemRTTY::sendChar(int c)
+void ModemRTTY::sendChar(int c, ModemTransmitter* transmitter)
 {
     int i;
 
@@ -722,16 +723,16 @@ void ModemRTTY::sendChar(int c)
     }
 
     // start bit
-    sendSymbol(0, m_symbolLen);
+    sendSymbol(0, m_symbolLen, transmitter);
     // data bits
     for (i = 0; i < m_bits; i++) {
-        sendSymbol((c >> i) & 1, m_symbolLen);
+        sendSymbol((c >> i) & 1, m_symbolLen, transmitter);
     }
     // parity bit
     if (m_parity != PARITY_NONE)
-        sendSymbol(rttyParity(c), m_symbolLen);
+        sendSymbol(rttyParity(c), m_symbolLen, transmitter);
     // stop bit(s)
-    sendStop();
+    sendStop(transmitter);
 
     if (m_bits == 5) {
         if (c == 0x1F || c == 0x1B)
@@ -748,7 +749,7 @@ void ModemRTTY::sendChar(int c)
         put_echo_char(c);*/
 }
 
-void ModemRTTY::sendStop()
+void ModemRTTY::sendStop(ModemTransmitter* transmitter)
 {
     //acc_symbols += len;
 #if 0
@@ -784,6 +785,7 @@ void ModemRTTY::sendStop()
     for (int i = 0; i < m_stopLen; ++i) {
         mark  = m_symShaperMark->update(symbol) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(!symbol) * m_oscSpace->update(freq2);
+        transmitter->writeSample(mark + space);
         //outbuf[i] = mark + space;
     }
 #endif
@@ -791,17 +793,17 @@ void ModemRTTY::sendStop()
     //ModulateXmtr(outbuf, symbollen);
 }
 
-void ModemRTTY::sendIdle()
+void ModemRTTY::sendIdle(ModemTransmitter* transmitter)
 {
     if (m_bits == 5) {
-        sendChar(MODE_LETTERS);
+        sendChar(MODE_LETTERS, transmitter);
         m_txMode = MODE_LETTERS;
     }
     else
-        sendChar(0);
+        sendChar(0, transmitter);
 }
 
-void ModemRTTY::flushStream()
+void ModemRTTY::flushStream(ModemTransmitter* transmitter)
 {
     double const freq1 = getFrequency() + m_shift / 2.0;
     double const freq2 = getFrequency() - m_shift / 2.0;
@@ -810,6 +812,7 @@ void ModemRTTY::flushStream()
     for(int i = 0; i < m_symbolLen * 6; ++i) {
         mark  = m_symShaperMark->update(0) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(0) * m_oscSpace->update(freq2);
+        transmitter->writeSample(mark + space);
         //outbuf[i] = mark + space;
     }
 

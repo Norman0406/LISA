@@ -50,10 +50,12 @@ void AudioManager::selectInputDevice()
 
 void AudioManager::selectOutputDevice()
 {
-    /*m_deviceOut = m_deviceList->getOutputDevices().first();
+    m_deviceOut = m_deviceList->getOutputDevices().first();
+    m_deviceOut->setSampleRate(8000);
+    m_deviceOut->setSampleSize(16);
     m_deviceOut->init();
     m_deviceOut->start();
-    emit outDeviceReady(m_deviceOut);*/
+    emit outDeviceReady(m_deviceOut);
 }
 
 AudioDeviceIn* AudioManager::getInputDevice()

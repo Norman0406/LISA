@@ -13,6 +13,8 @@ class ModemTransmitter
 
 public:
     ModemTransmitter(QObject*);
+
+    void writeSample(double);
 };
 
 } // Internal

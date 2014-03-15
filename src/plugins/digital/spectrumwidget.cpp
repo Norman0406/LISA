@@ -181,7 +181,7 @@ void SpectrumWidget::modemActive(bool active)
 
     // hide or show the mouse cursor
     if (active) {
-        setCursor(Qt::BlankCursor);
+        //setCursor(Qt::BlankCursor);
         emit frequencySelected(m_frequency);
     }
     else

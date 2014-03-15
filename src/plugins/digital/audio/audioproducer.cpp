@@ -34,3 +34,18 @@ AudioProducer::AudioProducer(QObject* parent)
 AudioProducer::~AudioProducer()
 {
 }
+
+void AudioProducer::create(QAudioFormat format)
+{
+    m_format = format;
+}
+
+void AudioProducer::registered()
+{
+    // not implemented
+}
+
+void AudioProducer::unregistered()
+{
+    // not implemented
+}

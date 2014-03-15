@@ -83,10 +83,10 @@ void Modem::rxProcess(const QVector<double>& buffer)
         iRxProcess(buffer);
 }
 
-void Modem::txProcess()
+void Modem::txProcess(ModemTransmitter* transmitter)
 {
-    if (m_format.isValid())
-        iTxProcess();
+    if (m_format.isValid() && transmitter)
+        iTxProcess(transmitter);
 }
 
 void Modem::setFrequency(double frequency)

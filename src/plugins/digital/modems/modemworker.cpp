@@ -131,7 +131,7 @@ void ModemWorker::send(QString /*message*/)
     // TODO: sending also has to be done within the run() function in order
     // to be processed inside the thread. Maybe signal state changes with conditions?
 
-    m_modem->txProcess(/*message*/);
+    //m_modem->txProcess(/*message*/);
 }
 
 Modem* ModemWorker::getModem()

@@ -23,6 +23,8 @@
  **********************************************************************/
 
 #include "audiodeviceout.h"
+#include "audioproducer.h"
+#include "audioproducerlist.h"
 
 #include <QDebug>
 #include <QAudioDeviceInfo>
@@ -34,7 +36,7 @@ using namespace Digital::Internal;
 AudioDeviceOut::AudioDeviceOut(QObject* parent, QAudioDeviceInfo deviceInfo)
     : AudioDevice(parent, deviceInfo),
       m_audioOutput(0),
-      m_audioBuffer(0)
+      m_producerList(0)
 {
 }
 
@@ -44,9 +46,7 @@ AudioDeviceOut::~AudioDeviceOut()
 
 void AudioDeviceOut::iInit(const QAudioDeviceInfo& info)
 {
-    // create audio buffer
-    const double bufferLengthSec = 1.0;
-    m_audioBuffer = new AudioRingBuffer(getFormat(), bufferLengthSec, this);
+    m_producerList = new AudioProducerList(this);
 
     // create the input
     m_audioOutput = new QAudioOutput(info, getFormat(), this);
@@ -55,18 +55,19 @@ void AudioDeviceOut::iInit(const QAudioDeviceInfo& info)
 
 void AudioDeviceOut::start()
 {
-    if (!m_audioBuffer->isOpen())
-        m_audioBuffer->open(QIODevice::ReadWrite);
+    if (!m_producerList->isOpen())
+        m_producerList->open(QIODevice::ReadOnly);
 
-    m_audioOutput->start(m_audioBuffer);
+    // start
+    m_audioOutput->start(m_producerList);
 }
 
 void AudioDeviceOut::stop()
 {
     m_audioOutput->stop();
 
-    if (m_audioBuffer->isOpen())
-        m_audioBuffer->close();
+    if (m_producerList->isOpen())
+        m_producerList->close();
 }
 
 void AudioDeviceOut::setVolume(float volume)
@@ -77,6 +78,17 @@ void AudioDeviceOut::setVolume(float volume)
 float AudioDeviceOut::getVolume() const
 {
     return m_audioOutput->volume();
+}
+
+void AudioDeviceOut::registerProducer(AudioProducer* producer)
+{
+    producer->create(getFormat());
+    m_producerList->add(producer);
+}
+
+void AudioDeviceOut::unregisterProducer(AudioProducer* producer)
+{
+    m_producerList->remove(producer);
 }
 
 void AudioDeviceOut::stateChanged(QAudio::State state)
@@ -93,9 +105,4 @@ void AudioDeviceOut::stateChanged(QAudio::State state)
     case QAudio::IdleState:
         break;
     }
-}
-
-AudioRingBuffer* AudioDeviceOut::getBuffer() const
-{
-    return m_audioBuffer;
 }

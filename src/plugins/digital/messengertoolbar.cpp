@@ -75,10 +75,15 @@ MessengerToolBar::MessengerToolBar(QWidget* parent)
     m_cmbConfig->addItem(tr("<Configuration>"));
     //m_cmbConfig->addItems(Factory<Modem>::enumerateTypes());
     //connect(m_cmbModems, SIGNAL(currentIndexChanged(int)), this, SLOT(modemIndexChanged(int)));
+    toolBarLayout->addWidget(m_cmbConfig);
 
     //ConfigAction* act = new ConfigAction(m_cmbConfig);
 
-    toolBarLayout->addWidget(m_cmbConfig);
+    QLabel* lblFrqText = new QLabel(QString(tr("Frequency:")));
+    lblFrqText->setMargin(5);
+    toolBarLayout->addWidget(lblFrqText);
+    m_lblFrq = new QLabel(QLatin1String("0 Hz"));
+    toolBarLayout->addWidget(m_lblFrq);
 
     toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 }
@@ -123,4 +128,10 @@ void MessengerToolBar::txStopped()
 {
     m_btTxStart->setEnabled(true);
     m_btTxStop->setEnabled(false);
+}
+
+void MessengerToolBar::frequencyChanged(double frq)
+{
+    // TODO: show MHz when connected to a radio
+    m_lblFrq->setText(QString::number(frq) + QLatin1String(" Hz"));
 }

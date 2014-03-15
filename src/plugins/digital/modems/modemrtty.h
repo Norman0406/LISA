@@ -86,7 +86,7 @@ protected:
     void iRestart();
     void iShutdown();
     void iRxProcess(const QVector<double>&);
-    void iTxProcess();
+    void iTxProcess(ModemTransmitter*);
     double getBandwidth() const;
 
 private:
@@ -102,11 +102,11 @@ private:
     char    baudotDec(unsigned char data);
     void    metric();
 
-    void    sendSymbol(int symbol, int len);
-    void    sendChar(int);
-    void    sendStop();
-    void    sendIdle();
-    void    flushStream();
+    void    sendSymbol(int symbol, int len, ModemTransmitter*);
+    void    sendChar(int, ModemTransmitter*);
+    void    sendStop(ModemTransmitter*);
+    void    sendIdle(ModemTransmitter*);
+    void    flushStream(ModemTransmitter*);
 
     // constants
     static const char   LETTERS[32];

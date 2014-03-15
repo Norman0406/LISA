@@ -26,11 +26,13 @@
 #define AUDIODEVICEOUT_H
 
 #include "AudioDevice.h"
-#include "AudioRingBuffer.h"
 #include <QAudioOutput>
 
 namespace Digital {
 namespace Internal {
+
+class AudioProducer;
+class AudioProducerList;
 
 class AudioDeviceOut
         : public AudioDevice
@@ -46,7 +48,8 @@ public:
     void setVolume(float);
     float getVolume() const;
 
-    AudioRingBuffer* getBuffer() const;
+    void registerProducer(AudioProducer*);
+    void unregisterProducer(AudioProducer*);
 
 private slots:
     void stateChanged(QAudio::State);
@@ -56,7 +59,7 @@ protected:
 
 private:
     QAudioOutput*       m_audioOutput;
-    AudioRingBuffer*    m_audioBuffer;
+    AudioProducerList*  m_producerList;
 };
 
 } // namespace Internal

@@ -6,3 +6,8 @@ ModemTransmitter::ModemTransmitter(QObject* parent)
     : AudioProducer(parent)
 {
 }
+
+void ModemTransmitter::writeSample(double sample)
+{
+}
+

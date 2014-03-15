@@ -55,6 +55,7 @@ MessengerWindow::MessengerWindow(QWidget* parent)
     setMinimumHeight(100);
 
     connect(m_modemManager, &ModemManager::received, this, &MessengerWindow::received);
+    connect(m_modemManager, &ModemManager::frequencyChanged, m_toolBar, &MessengerToolBar::frequencyChanged);
 }
 
 MessengerWindow::~MessengerWindow()
@@ -66,9 +67,9 @@ void MessengerWindow::inDeviceReady(AudioDeviceIn* inputDevice)
     inputDevice->registerConsumer(m_modemManager);
 }
 
-void MessengerWindow::outDeviceReady(AudioDeviceOut*)
+void MessengerWindow::outDeviceReady(AudioDeviceOut* outputDevice)
 {
-
+    //outputDevice->registerProducer(m_modemManager);
 }
 
 void MessengerWindow::received(int modemIndex, char character)

@@ -32,6 +32,8 @@
 
 #include <QAudioFormat>
 
+#include "modemtransmitter.h"
+
 namespace Digital {
 namespace Internal {
 
@@ -73,7 +75,7 @@ public:
     bool init(const QAudioFormat&);
     void restart();
     void rxProcess(const QVector<double>&);
-    void txProcess();
+    void txProcess(ModemTransmitter*);
     void shutdown();
 
     virtual QString getType() const = 0;
@@ -103,7 +105,8 @@ protected:
     virtual void iRestart() = 0;
     virtual void iShutdown() = 0;
     virtual void iRxProcess(const QVector<double>&) = 0;
-    virtual void iTxProcess() = 0;
+    virtual void iTxProcess(ModemTransmitter*) = 0;
+    void writeSample(double);
 
     double getFrqErr() const;
     void adjustFrequency(double);   // AFC

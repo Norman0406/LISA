@@ -22,47 +22,47 @@
  *
  **********************************************************************/
 
-#ifndef AUDIODEVICEIN_H
-#define AUDIODEVICEIN_H
+#include "audioproducerlist.h"
+#include "audioproducer.h"
 
-#include "AudioDevice.h"
-#include <QAudioInput>
+#include <QDebug>
 
-namespace Digital {
-namespace Internal {
+using namespace Digital::Internal;
 
-class AudioConsumer;
-class AudioConsumerList;
-
-class AudioDeviceIn
-        : public AudioDevice
+AudioProducerList::AudioProducerList(QObject* parent)
+    : QIODevice(parent)
 {
-    Q_OBJECT
 
-public:
-    AudioDeviceIn(QObject* parent, QAudioDeviceInfo deviceInfo);
-    ~AudioDeviceIn();
+}
 
-    void start();
-    void stop();
-    void setVolume(float);
-    float getVolume() const;
+AudioProducerList::~AudioProducerList()
+{
 
-    void registerConsumer(AudioConsumer*);
-    void unregisterConsumer(AudioConsumer*);
+}
 
-private slots:
-    void stateChanged(QAudio::State);
+void AudioProducerList::add(AudioProducer* producer)
+{
+    m_producerList.push_back(producer);
+    producer->registered();
+}
 
-protected:
-    void iInit(const QAudioDeviceInfo&);
+void AudioProducerList::remove(AudioProducer* producer)
+{
+    m_producerList.removeAll(producer);
+    producer->unregistered();
+}
 
-private:
-    QAudioInput*            m_audioInput;
-    AudioConsumerList*      m_consumerList;
-};
+qint64 AudioProducerList::writeData(const char* data, qint64 len)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(len);
+    qDebug() << "writing to audio producer list is not implemented";
+    return 0;
+}
 
-} // namespace Internal
-} // namespace Digital
+qint64 AudioProducerList::readData(char* data, qint64 maxlen)
+{
+    // TODO: the audio device reads data from each of the registered consumers
 
-#endif // AUDIODEVICEIN_H
+    return 0;
+}

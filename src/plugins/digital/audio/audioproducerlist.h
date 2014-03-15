@@ -22,47 +22,35 @@
  *
  **********************************************************************/
 
-#ifndef AUDIODEVICEIN_H
-#define AUDIODEVICEIN_H
+#ifndef AUDIOPRODUCERLIST_H
+#define AUDIOPRODUCERLIST_H
 
-#include "AudioDevice.h"
-#include <QAudioInput>
+#include <QIODevice>
 
 namespace Digital {
 namespace Internal {
 
-class AudioConsumer;
-class AudioConsumerList;
+class AudioProducer;
 
-class AudioDeviceIn
-        : public AudioDevice
+class AudioProducerList
+        : public QIODevice
 {
-    Q_OBJECT
-
 public:
-    AudioDeviceIn(QObject* parent, QAudioDeviceInfo deviceInfo);
-    ~AudioDeviceIn();
+    AudioProducerList(QObject* parent);
+    ~AudioProducerList();
 
-    void start();
-    void stop();
-    void setVolume(float);
-    float getVolume() const;
-
-    void registerConsumer(AudioConsumer*);
-    void unregisterConsumer(AudioConsumer*);
-
-private slots:
-    void stateChanged(QAudio::State);
+    void add(AudioProducer*);
+    void remove(AudioProducer*);
 
 protected:
-    void iInit(const QAudioDeviceInfo&);
+    qint64 writeData(const char* data, qint64 len);
+    qint64 readData(char* data, qint64 maxlen);
 
 private:
-    QAudioInput*            m_audioInput;
-    AudioConsumerList*      m_consumerList;
+    QList<AudioProducer*> m_producerList;
 };
 
 } // namespace Internal
 } // namespace Digital
 
-#endif // AUDIODEVICEIN_H
+#endif // AUDIOPRODUCERLIST_H

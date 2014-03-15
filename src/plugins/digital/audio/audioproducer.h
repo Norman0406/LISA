@@ -26,20 +26,34 @@
 #define AUDIOPRODUCER_H
 
 #include <QObject>
+#include "audioringbuffer.h"
 
 namespace Digital {
 namespace Internal {
+
+class AudioProducerList;
 
 class AudioProducer
         : public QObject
 {
     Q_OBJECT
 
+    friend class AudioProducerList;
+
 public:
     ~AudioProducer();
 
+    virtual void create(QAudioFormat);
+
 protected:
     AudioProducer(QObject* parent);
+
+    virtual void registered();
+    virtual void unregistered();
+
+private:
+    QAudioFormat m_format;
+    AudioRingBuffer* m_buffer;
 };
 
 } // namespace Internal
