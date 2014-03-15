@@ -171,7 +171,7 @@ qreal AudioDevice::pcmToReal(const QAudioFormat& format, const char* data)
         }
         else if (format.sampleType() == QAudioFormat::SignedInt) {
             qint16 value = convertByteOrder<qint16>(format.byteOrder(), ptr);
-            realValue = qreal(value) / qreal(32768); // [-1, 1]
+            realValue = qreal(value) / qreal(32767); // [-1, 1]
         }
         else {
             qCritical() << "unsupported sample type";
@@ -204,6 +204,36 @@ qreal AudioDevice::pcmToReal(const QAudioFormat& format, const char* data)
     }
 
     return realValue;
+}
+
+void AudioDevice::realToPcm(const QAudioFormat& format, qreal real, char* data)
+{
+    if (format.codec() != QString::fromAscii("audio/pcm")) {
+        qCritical() << "format is not pcm";
+        return;
+    }
+
+    if (!data) {
+        qCritical() << "invalid data";
+        return;
+    }
+
+    // UNDONE
+    if (format.sampleSize() == 16) {
+        if (format.sampleType() == QAudioFormat::UnSignedInt) {
+            quint16 value = (quint16)(((real + 1) / 2.0) * qreal(65535));
+            *(quint16*)data = value;
+
+        }
+        else if (format.sampleType() == QAudioFormat::SignedInt) {
+            qint16 value = (qint16)(real * qreal(32767));
+            *(quint16*)data = value;
+        }
+        else {
+            qCritical() << "unsupported sample type";
+            return;
+        }
+    }
 }
 
 qint64 AudioDevice::audioLength(const QAudioFormat& format, qint64 microSeconds)

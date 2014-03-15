@@ -68,6 +68,6 @@ qint64 AudioConsumerList::readData(char* data, qint64 maxlen)
 {
     Q_UNUSED(data);
     Q_UNUSED(maxlen);
-    qDebug() << "reading from audio consumer list is not implemented";
+    qDebug() << "reading from audio consumer list is not supported";
     return 0;
 }

@@ -24,13 +24,15 @@
 
 #include "audioproducerlist.h"
 #include "audioproducer.h"
+#include "audiodevice.h"
 
 #include <QDebug>
 
 using namespace Digital::Internal;
 
-AudioProducerList::AudioProducerList(QObject* parent)
-    : QIODevice(parent)
+AudioProducerList::AudioProducerList(AudioDevice* parent)
+    : QIODevice(parent),
+      m_device(parent)
 {
 
 }
@@ -56,13 +58,21 @@ qint64 AudioProducerList::writeData(const char* data, qint64 len)
 {
     Q_UNUSED(data);
     Q_UNUSED(len);
-    qDebug() << "writing to audio producer list is not implemented";
+    qDebug() << "writing to audio producer list is not supported";
     return 0;
 }
 
 qint64 AudioProducerList::readData(char* data, qint64 maxlen)
 {
-    // TODO: the audio device reads data from each of the registered consumers
+    // TODO: add up read data such that multiple signals can be
+    // added on the same channel
 
-    return 0;
+    // write data into each registered audio consumer
+    qint64 bytesRead = 0;
+    foreach (AudioProducer* producer, m_producerList) {
+        qint64 read = producer->readData(data, maxlen);
+        bytesRead = qMax(bytesRead, read);
+    }
+
+    return bytesRead;
 }

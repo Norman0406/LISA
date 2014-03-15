@@ -65,7 +65,8 @@ public:
     virtual float getVolume() const = 0;
 
     qreal pcmToReal(const char*);
-    static qreal pcmToReal(const QAudioFormat& format, const char* ptr);
+    static qreal pcmToReal(const QAudioFormat& format, const char* data);
+    static void realToPcm(const QAudioFormat& format, qreal real, char* data);
     static qint64 audioLength(const QAudioFormat& format, qint64 microSeconds);
 
     template <typename T>

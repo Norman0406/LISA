@@ -41,12 +41,16 @@ class AudioProducer
     friend class AudioProducerList;
 
 public:
+    AudioProducer(QObject* parent);
     ~AudioProducer();
 
     virtual void create(QAudioFormat);
 
+    qint64 readData(char* data, qint64 len);
+
 protected:
-    AudioProducer(QObject* parent);
+    //AudioProducer(QObject* parent);
+    const QAudioFormat& getFormat() const;
 
     virtual void registered();
     virtual void unregistered();

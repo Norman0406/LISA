@@ -48,13 +48,20 @@ void AudioManager::selectInputDevice()
     emit inDeviceReady(m_deviceIn);
 }
 
+#include "audio/audioproducer.h"
+
 void AudioManager::selectOutputDevice()
 {
     m_deviceOut = m_deviceList->getOutputDevices().first();
     m_deviceOut->setSampleRate(8000);
     m_deviceOut->setSampleSize(16);
     m_deviceOut->init();
+
+    AudioProducer* prod = new AudioProducer(this);
+    m_deviceOut->registerProducer(prod);
+
     m_deviceOut->start();
+
     emit outDeviceReady(m_deviceOut);
 }
 

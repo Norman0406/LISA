@@ -31,12 +31,13 @@ namespace Digital {
 namespace Internal {
 
 class AudioProducer;
+class AudioDevice;
 
 class AudioProducerList
         : public QIODevice
 {
 public:
-    AudioProducerList(QObject* parent);
+    AudioProducerList(AudioDevice* parent);
     ~AudioProducerList();
 
     void add(AudioProducer*);
@@ -47,6 +48,7 @@ protected:
     qint64 readData(char* data, qint64 maxlen);
 
 private:
+    AudioDevice* m_device;
     QList<AudioProducer*> m_producerList;
 };
 

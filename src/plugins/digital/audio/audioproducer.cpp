@@ -35,9 +35,44 @@ AudioProducer::~AudioProducer()
 {
 }
 
+
 void AudioProducer::create(QAudioFormat format)
 {
     m_format = format;
+}
+
+const QAudioFormat& AudioProducer::getFormat() const
+{
+    return m_format;
+}
+
+#include "audiodevice.h"
+#include <QtMath>
+
+const double frq = 1000;
+int sampleIndex = 0;
+
+qint64 AudioProducer::readData(char* data, qint64 len)
+{
+    const int bytesPerSample = (getFormat().sampleSize() / 8) * getFormat().channelCount();
+
+    if (m_format.isValid()) {
+        qint64 bytesReadTotal = 0;
+
+        qint64 bytesLeft = len;
+        while (bytesLeft > 0) {
+            const qreal value = qSin(2 * M_PI * frq * qreal(sampleIndex % getFormat().sampleRate()) / getFormat().sampleRate());
+            AudioDevice::realToPcm(getFormat(), value, data + bytesReadTotal);
+
+            bytesReadTotal += bytesPerSample;
+            bytesLeft -= bytesPerSample;
+            sampleIndex++;
+        };
+
+        return bytesReadTotal;
+    }
+
+    return 0;
 }
 
 void AudioProducer::registered()
