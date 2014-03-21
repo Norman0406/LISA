@@ -208,7 +208,8 @@ qreal AudioDevice::pcmToReal(const QAudioFormat& format, const char* data)
 
 void AudioDevice::realToPcm(const QAudioFormat& format, qreal real, char* data)
 {
-    if (format.codec() != QString::fromAscii("audio/pcm")) {
+    QString codec = QLatin1String("audio/pcm");
+    if (format.codec() != codec) {
         qCritical() << "format is not pcm";
         return;
     }
@@ -223,7 +224,6 @@ void AudioDevice::realToPcm(const QAudioFormat& format, qreal real, char* data)
         if (format.sampleType() == QAudioFormat::UnSignedInt) {
             quint16 value = (quint16)(((real + 1) / 2.0) * qreal(65535));
             *(quint16*)data = value;
-
         }
         else if (format.sampleType() == QAudioFormat::SignedInt) {
             qint16 value = (qint16)(real * qreal(32767));

@@ -26,6 +26,8 @@
 #define AUDIOPRODUCER_H
 
 #include <QObject>
+#include <QTimer>
+#include <QThread>
 #include "audioringbuffer.h"
 
 namespace Digital {
@@ -41,23 +43,32 @@ class AudioProducer
     friend class AudioProducerList;
 
 public:
-    AudioProducer(QObject* parent);
+    AudioProducer(QObject* parent, double frq, double interval);
     ~AudioProducer();
 
-    virtual void create(QAudioFormat);
+    virtual void create(QAudioFormat, AudioProducerList*);
 
-    qint64 readData(char* data, qint64 len);
+    AudioRingBuffer* m_buffer;
+
+public slots:
+    void fill();
+
+signals:
+    void newDataAvailable();
 
 protected:
-    //AudioProducer(QObject* parent);
     const QAudioFormat& getFormat() const;
 
     virtual void registered();
     virtual void unregistered();
 
 private:
+    AudioProducerList* m_producerList;
     QAudioFormat m_format;
-    AudioRingBuffer* m_buffer;
+    double m_frq;
+    double m_bufferLengthSec;
+    QTimer* m_timer;
+    QThread* m_timerThread;
 };
 
 } // namespace Internal

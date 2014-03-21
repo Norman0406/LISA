@@ -24,17 +24,16 @@
 
 #include "audioproducerlist.h"
 #include "audioproducer.h"
-#include "audiodevice.h"
+#include "audiodeviceout.h"
 
 #include <QDebug>
 
 using namespace Digital::Internal;
 
-AudioProducerList::AudioProducerList(AudioDevice* parent)
-    : QIODevice(parent),
-      m_device(parent)
+AudioProducerList::AudioProducerList(AudioDeviceOut* device)
+    : QIODevice(device),
+      m_device(device)
 {
-
 }
 
 AudioProducerList::~AudioProducerList()
@@ -44,6 +43,7 @@ AudioProducerList::~AudioProducerList()
 
 void AudioProducerList::add(AudioProducer* producer)
 {
+    connect(producer, &AudioProducer::newDataAvailable, this, &AudioProducerList::requestSoundcard);
     m_producerList.push_back(producer);
     producer->registered();
 }
@@ -54,25 +54,70 @@ void AudioProducerList::remove(AudioProducer* producer)
     producer->unregistered();
 }
 
+void AudioProducerList::requestSoundcard()
+{
+    m_mutex.lock();
+    if (m_device && !m_device->isOpen()) {
+        m_device->start();
+    }
+    m_mutex.unlock();
+}
+
+void AudioProducerList::bytesWritten(qint64 bytes)
+{
+    qDebug() << "written " << bytes;
+}
+
 qint64 AudioProducerList::writeData(const char* data, qint64 len)
 {
     Q_UNUSED(data);
     Q_UNUSED(len);
-    qDebug() << "writing to audio producer list is not supported";
+    qDebug() << "writing to audio consumer list is not supported";
     return 0;
 }
 
 qint64 AudioProducerList::readData(char* data, qint64 maxlen)
 {
-    // TODO: add up read data such that multiple signals can be
-    // added on the same channel
+    const QAudioFormat& format = m_device->getFormat();
+    const int bytesPerSample = format.channelCount() * format.sampleSize() / 8;
 
-    // write data into each registered audio consumer
+    int bytesToRead = qMin(m_device->getDevice()->periodSize(), (int)maxlen);
+    int numSamples = bytesToRead / bytesPerSample;
+
+    // the sample buffer that will contain the mixed audio chunk
+    QVector<qreal> sampleBuffer(numSamples);
+    sampleBuffer.fill(0);
+
+    char* localBuffer = new char[bytesToRead];
+
     qint64 bytesRead = 0;
+
+    // read data from all producers
     foreach (AudioProducer* producer, m_producerList) {
-        qint64 read = producer->readData(data, maxlen);
-        bytesRead = qMax(bytesRead, read);
+        qint64 bytesReadLocal = producer->m_buffer->read(localBuffer, bytesToRead);
+        int numLocalSamples = bytesReadLocal / bytesPerSample;
+
+        bytesRead = qMax(bytesRead, bytesReadLocal);
+
+        for (int i = 0; i < numLocalSamples; i++) {
+            qreal value = AudioDevice::pcmToReal(format, localBuffer + i * bytesPerSample);
+            sampleBuffer[i] += value;
+        }
     }
+    delete[] localBuffer;
+
+    int samples = bytesRead / bytesPerSample;
+
+    // mix samples and write to output buffer
+    for (int i = 0; i < samples; i++) {
+        qreal value = sampleBuffer[i];
+        double normalization = (double)m_producerList.size();
+        AudioDevice::realToPcm(format, value / normalization, data + i * bytesPerSample);
+    }
+
+    // TODO: wait for empty buffer and stop the device then
+    /*if (bytesRead == 0)
+        m_device->stop();*/
 
     return bytesRead;
 }

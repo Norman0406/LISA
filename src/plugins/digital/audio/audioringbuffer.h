@@ -47,11 +47,15 @@ public:
     qint64 writeData(const char*, qint64);
     qint64 readData(char*, qint64);
 
+    bool isEmpty() const;
+
+    // TODO: write samples
     qint64 writeData(const QVector<double>&);
 
     qint64 getBuffer(QVector<double>&) const;
     qint64 getBuffer(QVector<double>&, qint64) const;
     qint64 getBufferLength() const;
+    qint64 getBufferSize() const;
 
 private:
     const QAudioFormat m_format;
@@ -59,6 +63,10 @@ private:
     qint64 m_bufferSize;
     qint64 m_bufferLength;
     qint64 m_position;
+
+    //qint64 m_begin;
+    //qint64 m_end;
+
     mutable QMutex m_lock;
 };
 

@@ -45,8 +45,12 @@ public:
 
     void start();
     void stop();
+    void resume();
+    bool isOpen();
     void setVolume(float);
     float getVolume() const;
+
+    QAudioOutput* getDevice();
 
     void registerProducer(AudioProducer*);
     void unregisterProducer(AudioProducer*);

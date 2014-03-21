@@ -93,7 +93,7 @@ void AudioDeviceIn::unregisterConsumer(AudioConsumer* consumer)
 
 void AudioDeviceIn::stateChanged(QAudio::State state)
 {
-    qDebug() << "state changed: " << state;
+    qDebug() << "in state changed: " << state;
 
     switch (state) {
     case QAudio::ActiveState:

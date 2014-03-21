@@ -26,30 +26,39 @@
 #define AUDIOPRODUCERLIST_H
 
 #include <QIODevice>
+#include <QMutex>
+#include "audioringbuffer.h"
 
 namespace Digital {
 namespace Internal {
 
 class AudioProducer;
-class AudioDevice;
+class AudioDeviceOut;
 
 class AudioProducerList
         : public QIODevice
 {
+    Q_OBJECT
+
 public:
-    AudioProducerList(AudioDevice* parent);
+    AudioProducerList(AudioDeviceOut* device);
     ~AudioProducerList();
 
     void add(AudioProducer*);
     void remove(AudioProducer*);
+
+public slots:
+    void requestSoundcard();
+    void bytesWritten(qint64);
 
 protected:
     qint64 writeData(const char* data, qint64 len);
     qint64 readData(char* data, qint64 maxlen);
 
 private:
-    AudioDevice* m_device;
+    AudioDeviceOut* m_device;
     QList<AudioProducer*> m_producerList;
+    QMutex m_mutex;
 };
 
 } // namespace Internal

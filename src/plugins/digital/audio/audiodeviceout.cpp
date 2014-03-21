@@ -58,16 +58,26 @@ void AudioDeviceOut::start()
     if (!m_producerList->isOpen())
         m_producerList->open(QIODevice::ReadOnly);
 
-    // start
     m_audioOutput->start(m_producerList);
 }
 
 void AudioDeviceOut::stop()
 {
     m_audioOutput->stop();
-
     if (m_producerList->isOpen())
         m_producerList->close();
+}
+
+bool AudioDeviceOut::isOpen()
+{
+    return m_audioOutput->state() != QAudio::StoppedState;
+}
+
+void AudioDeviceOut::resume()
+{
+    if (m_producerList->isOpen()) {
+        m_audioOutput->resume();
+    }
 }
 
 void AudioDeviceOut::setVolume(float volume)
@@ -80,9 +90,14 @@ float AudioDeviceOut::getVolume() const
     return m_audioOutput->volume();
 }
 
+QAudioOutput* AudioDeviceOut::getDevice()
+{
+    return m_audioOutput;
+}
+
 void AudioDeviceOut::registerProducer(AudioProducer* producer)
 {
-    producer->create(getFormat());
+    producer->create(getFormat(), m_producerList);
     m_producerList->add(producer);
 }
 
@@ -93,7 +108,7 @@ void AudioDeviceOut::unregisterProducer(AudioProducer* producer)
 
 void AudioDeviceOut::stateChanged(QAudio::State state)
 {
-    qDebug() << "state changed: " << state;
+    qDebug() << "out state changed: " << state;
 
     switch (state) {
     case QAudio::ActiveState:
@@ -103,6 +118,7 @@ void AudioDeviceOut::stateChanged(QAudio::State state)
     case QAudio::StoppedState:
         break;
     case QAudio::IdleState:
+        stop(); // TODO: may be stop it directly?
         break;
     }
 }

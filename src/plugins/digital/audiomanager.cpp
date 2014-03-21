@@ -57,10 +57,14 @@ void AudioManager::selectOutputDevice()
     m_deviceOut->setSampleSize(16);
     m_deviceOut->init();
 
-    AudioProducer* prod = new AudioProducer(this);
-    m_deviceOut->registerProducer(prod);
+    AudioProducer* prod1 = new AudioProducer(this, 1000, 2);
+    m_deviceOut->registerProducer(prod1);
 
-    m_deviceOut->start();
+    AudioProducer* prod2 = new AudioProducer(this, 1500, 2.5);
+    m_deviceOut->registerProducer(prod2);
+
+    AudioProducer* prod3 = new AudioProducer(this, 2000, 1.34);
+    m_deviceOut->registerProducer(prod3);
 
     emit outDeviceReady(m_deviceOut);
 }
