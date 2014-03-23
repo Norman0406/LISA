@@ -29,6 +29,7 @@
 #include <QAudioFormat>
 #include <QMutex>
 #include <QVector>
+#include <QWaitCondition>
 
 namespace Digital {
 namespace Internal {
@@ -64,10 +65,8 @@ private:
     qint64 m_bufferLength;
     qint64 m_position;
 
-    //qint64 m_begin;
-    //qint64 m_end;
-
     mutable QMutex m_lock;
+    QWaitCondition m_canWrite;
 };
 
 } // namespace Internal

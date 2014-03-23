@@ -76,6 +76,7 @@ qint64 AudioProducerList::writeData(const char* data, qint64 len)
     return 0;
 }
 
+#include <cmath>
 qint64 AudioProducerList::readData(char* data, qint64 maxlen)
 {
     const QAudioFormat& format = m_device->getFormat();
@@ -87,6 +88,10 @@ qint64 AudioProducerList::readData(char* data, qint64 maxlen)
     // the sample buffer that will contain the mixed audio chunk
     QVector<qreal> sampleBuffer(numSamples);
     sampleBuffer.fill(0);
+
+    // stores the number of currently active producers for later normalization
+    QVector<int> activeProducers(numSamples);
+    activeProducers.fill(0);
 
     char* localBuffer = new char[bytesToRead];
 
@@ -102,16 +107,19 @@ qint64 AudioProducerList::readData(char* data, qint64 maxlen)
         for (int i = 0; i < numLocalSamples; i++) {
             qreal value = AudioDevice::pcmToReal(format, localBuffer + i * bytesPerSample);
             sampleBuffer[i] += value;
+            activeProducers[i]++;
         }
     }
     delete[] localBuffer;
 
     int samples = bytesRead / bytesPerSample;
 
+    // TODO: find a better mixing technique for multiple audio streams
+
     // mix samples and write to output buffer
     for (int i = 0; i < samples; i++) {
         qreal value = sampleBuffer[i];
-        double normalization = (double)m_producerList.size();
+        double normalization = (double)activeProducers[i];;
         AudioDevice::realToPcm(format, value / normalization, data + i * bytesPerSample);
     }
 

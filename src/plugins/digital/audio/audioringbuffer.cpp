@@ -62,11 +62,14 @@ AudioRingBuffer::~AudioRingBuffer()
 
 qint64 AudioRingBuffer::writeData(const QVector<double>& data)
 {
-    //const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
+    m_lock.lock();
+    // UNDONE: FFT still writes data on the gui thread
+    /*while (m_bufferLength == m_bufferSize)
+        m_canWrite.wait(&m_lock);*/
+
     qint64 samplesWrittenTotal = 0;
 
     qint64 samplesLeft = data.size();
-    m_lock.lock();
     while (samplesLeft > 0) {
         m_buffer[m_position] = data[samplesWrittenTotal];
         m_position = (m_position + 1) % m_buffer.size();
@@ -78,23 +81,24 @@ qint64 AudioRingBuffer::writeData(const QVector<double>& data)
     m_bufferLength += samplesWrittenTotal;
     if (m_bufferLength > m_bufferSize)
         m_bufferLength = m_bufferSize;
-    m_lock.unlock();
 
-    //emit bytesWritten(samplesWrittenTotal * bytesPerSample);
-    //emit readyRead();
+    m_lock.unlock();
 
     return samplesWrittenTotal;
 }
 
 qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
 {
+    m_lock.lock();
+    /*while (m_bufferLength == m_bufferSize)
+        m_canWrite.wait(&m_lock);*/
+
     const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
 
     qint64 bytesWrittenTotal = 0;
     qint64 samplesWrittenTotal = 0;
 
     // signal that a block of data is available as soon as the buffer is full
-    m_lock.lock();
     qint64 bytesLeft = len;
     while (bytesLeft > 0) {
         qreal pcmSample = AudioDevice::pcmToReal(m_format, data + bytesWrittenTotal);
@@ -109,9 +113,8 @@ qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
     m_bufferLength += samplesWrittenTotal;
     if (m_bufferLength > m_bufferSize)
         m_bufferLength = m_bufferSize;
-    m_lock.unlock();
 
-    //emit bytesWritten(bytesWrittenTotal);
+    m_lock.unlock();
 
     return bytesWrittenTotal;
 }
@@ -123,6 +126,8 @@ bool AudioRingBuffer::isEmpty() const
 
 qint64 AudioRingBuffer::readData(char* data, qint64 maxSize)
 {
+    m_lock.lock();
+
     const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
 
     qint64 bytesToRead = qMin(maxSize, m_bufferLength * bytesPerSample);
@@ -130,25 +135,24 @@ qint64 AudioRingBuffer::readData(char* data, qint64 maxSize)
     qint64 bytesReadTotal = 0;
     qint64 samplesReadTotal = 0;
 
-    m_lock.lock();
     qint64 bytesLeft = bytesToRead;
+    int position = (m_position - m_bufferLength + m_buffer.size()) % m_buffer.size();
     while (bytesLeft > 0) {
-        int position = (m_position - m_bufferLength + m_buffer.size()) % m_buffer.size();
         const double& value = m_buffer[position];
         AudioDevice::realToPcm(m_format, value, data + bytesReadTotal);
 
-        m_bufferLength--;
-
+        position = (position + 1) % m_buffer.size();
         bytesReadTotal += bytesPerSample;
         samplesReadTotal++;
         bytesLeft -= bytesPerSample;
     };
 
+    m_bufferLength -= samplesReadTotal;
     if (m_bufferLength < 0)
         m_bufferLength = 0;
 
-    // reset position pointer
-    m_position = (m_position - m_bufferLength + m_buffer.size()) % m_buffer.size();
+    m_canWrite.wakeAll();
+
     m_lock.unlock();
 
     return bytesReadTotal;
@@ -162,6 +166,7 @@ qint64 AudioRingBuffer::getBuffer(QVector<double>& buffer) const
 qint64 AudioRingBuffer::getBuffer(QVector<double>& buffer, qint64 size) const
 {
     m_lock.lock();
+
     buffer.resize(m_buffer.size());
 
     size = size > m_bufferSize ? m_bufferSize : size;

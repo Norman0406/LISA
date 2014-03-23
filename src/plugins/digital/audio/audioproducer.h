@@ -43,7 +43,7 @@ class AudioProducer
     friend class AudioProducerList;
 
 public:
-    AudioProducer(QObject* parent, double frq, double interval);
+    AudioProducer(QObject* parent, double frq, double interval, double length);
     ~AudioProducer();
 
     virtual void create(QAudioFormat, AudioProducerList*);

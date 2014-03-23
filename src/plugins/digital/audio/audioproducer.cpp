@@ -27,9 +27,9 @@
 
 using namespace Digital::Internal;
 
-AudioProducer::AudioProducer(QObject* parent, double frq, double interval)
+AudioProducer::AudioProducer(QObject* parent, double frq, double interval, double length)
     : QObject(parent),
-      m_bufferLengthSec(1),
+      m_bufferLengthSec(length),
       m_frq(frq),
       m_producerList(0)
 {
@@ -43,6 +43,8 @@ AudioProducer::AudioProducer(QObject* parent, double frq, double interval)
 
 AudioProducer::~AudioProducer()
 {
+    m_timerThread->quit();
+    m_timerThread->wait();
 }
 
 #include <QtMath>
@@ -61,14 +63,14 @@ void AudioProducer::fill()
     int numSamples = m_bufferLengthSec * getFormat().sampleRate();
 
     QVector<double> data(numSamples);
-    int sampleIndex = 0;
     double frq = m_frq;
     double endFrq = frq + 100;
     double frqStep = (endFrq - frq) / (double)data.size();
+    double deltaT = 0;
     for (int i = 0; i < (int)data.size(); i++) {
-        const qreal value = qSin(2 * M_PI * frq * qreal(sampleIndex % getFormat().sampleRate()) / getFormat().sampleRate());
+        deltaT = i / (double)getFormat().sampleRate();
+        const qreal value = qSin(2 * M_PI * frq * deltaT);
         data[i] = value;
-        sampleIndex++;
         frq += frqStep;
     }
 
