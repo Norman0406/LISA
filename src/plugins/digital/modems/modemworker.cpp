@@ -22,8 +22,10 @@
  *
  **********************************************************************/
 
-#include "modemworker.h"
 #include "modemrtty.h"
+#include "modemworker.h"
+#include "modemreceiver.h"
+#include "modemtransmitter.h"
 #include "../factory.h"
 #include "../audio/audiodevicein.h"
 #include "../audio/audiodeviceout.h"
@@ -36,6 +38,8 @@ using namespace Digital::Internal;
 ModemWorker::ModemWorker()
     : QObject(0),
       m_modem(0),
+      m_receiver(0),
+      m_transmitter(0),
       m_terminate(false),
       m_isBufferEmpty(true)
 {
@@ -45,6 +49,29 @@ ModemWorker::~ModemWorker()
 {
     terminate();
     delete m_modem;
+}
+
+void ModemWorker::initReceiver(AudioDeviceIn* inputDevice)
+{
+    if (!m_receiver) {
+        //m_receiver = new ModemReceiver(this);
+        inputDevice->registerConsumer(m_receiver);
+        init(inputDevice->getFormat());
+    }
+    else {
+        // TODO: reset receiver
+    }
+}
+
+void ModemWorker::initTransmitter(AudioDeviceOut* outputDevice)
+{
+    if (!m_transmitter) {
+        m_transmitter = new ModemTransmitter(this);
+        outputDevice->registerProducer(m_transmitter);
+    }
+    else {
+        // TODO: reset transmitter
+    }
 }
 
 bool ModemWorker::create(QString type)
@@ -60,7 +87,7 @@ bool ModemWorker::init(const QAudioFormat& format)
 {
     if (m_modem && m_modem->getState() == Modem::STATE_PREINIT) {
         if (m_modem->init(format)) {
-            connect(m_modem, &ModemRTTY::received, this, &ModemWorker::received);
+            connect(m_modem, &Modem::received, this, &ModemWorker::received);
             return true;
         }
     }

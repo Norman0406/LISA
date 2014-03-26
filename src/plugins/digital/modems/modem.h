@@ -95,6 +95,7 @@ public:
 
 signals:
     void received(char);
+    void sent(char);
     void frequencyChanged(double);
     void bandwidthChanged(double);
 

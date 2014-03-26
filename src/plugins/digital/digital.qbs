@@ -7,6 +7,7 @@ LISAPlugin {
     Depends { name: "libfftw3-3" }
     Depends { name: "Core" }
     Depends { name: "Qt"; submodules: ["widgets", "xml", "network", "script", "multimedia"] }
+    Depends { name: "cpp" }
 
     Group {
         name: "Audio"

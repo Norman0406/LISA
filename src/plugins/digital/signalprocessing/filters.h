@@ -134,8 +134,8 @@ private:
 	int first;
 	int last;
 	int ptr;
-	struct vrot_bins_pair ;
-	vrot_bins_pair * __restrict__ vrot_bins ;
+    struct vrot_bins_pair;
+    vrot_bins_pair * __restrict__ vrot_bins ;
     std::complex<double>* __restrict__ delay;
 	double k2;
 public:

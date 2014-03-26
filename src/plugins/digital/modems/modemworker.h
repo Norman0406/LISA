@@ -37,6 +37,8 @@ namespace Internal {
 class AudioDeviceIn;
 class AudioDeviceOut;
 class Modem;
+class ModemReceiver;
+class ModemTransmitter;
 
 class ModemWorker
         : public QObject
@@ -57,6 +59,8 @@ public:
     Modem* getModem();
 
 public slots:
+    void initReceiver(AudioDeviceIn*);
+    void initTransmitter(AudioDeviceOut*);
     void run();
 
 signals:
@@ -65,6 +69,8 @@ signals:
 
 private:
     Modem* m_modem;
+    ModemReceiver* m_receiver;
+    ModemTransmitter* m_transmitter;
     bool m_terminate;
 
     QMutex m_mutex;

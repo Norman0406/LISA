@@ -26,6 +26,9 @@
 #include "messengertoolbar.h"
 #include "messenger.h"
 
+#include "modems/modemrtty.h"
+#include "modems/modemreceiver.h"
+#include "modems/modemtransmitter.h"
 #include "modems/modemmanager.h"
 #include "audio/audiodevicein.h"
 #include "audio/audiodeviceout.h"
@@ -39,7 +42,10 @@ MessengerWindow::MessengerWindow(QWidget* parent)
     : QWidget(parent),
       m_toolBar(new MessengerToolBar(this)),
       m_messenger(new Messenger(this)),
-      m_modemManager(new ModemManager(this))
+      m_modem(new ModemRTTY(this)),
+      m_modemReceiver(0),
+      m_modemTransmitter(0)
+      //m_modemManager(new ModemManager(this))
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
@@ -54,8 +60,13 @@ MessengerWindow::MessengerWindow(QWidget* parent)
 
     setMinimumHeight(100);
 
-    connect(m_modemManager, &ModemManager::received, this, &MessengerWindow::received);
-    connect(m_modemManager, &ModemManager::frequencyChanged, m_toolBar, &MessengerToolBar::frequencyChanged);
+    //connect(m_modemManager, &ModemManager::received, this, &MessengerWindow::received);
+    //connect(m_modemManager, &ModemManager::frequencyChanged, m_toolBar, &MessengerToolBar::frequencyChanged);
+
+    connect(m_modem, &Modem::received, this, &MessengerWindow::received);
+    connect(m_modem, &Modem::frequencyChanged, m_toolBar, &MessengerToolBar::frequencyChanged);
+    connect(m_modem, &Modem::frequencyChanged, this, &MessengerWindow::frequencyChanged);
+    connect(m_modem, &Modem::bandwidthChanged, this, &MessengerWindow::bandwidthChanged);
 }
 
 MessengerWindow::~MessengerWindow()
@@ -64,37 +75,49 @@ MessengerWindow::~MessengerWindow()
 
 void MessengerWindow::inDeviceReady(AudioDeviceIn* inputDevice)
 {
-    inputDevice->registerConsumer(m_modemManager);
+    //m_modemManager->inDeviceReady(inputDevice);
+
+    m_modem->init(inputDevice->getFormat());
+    m_modemReceiver = new ModemReceiver(this, m_modem);
+    inputDevice->registerConsumer(m_modemReceiver);
+
+    emit modemActive(true); // TEMP
 }
 
 void MessengerWindow::outDeviceReady(AudioDeviceOut* outputDevice)
 {
-    //outputDevice->registerProducer(m_modemManager);
+    //m_modemManager->outDeviceReady(outputDevice);
+    m_modemTransmitter = new ModemTransmitter(this);
+    outputDevice->registerProducer(m_modemTransmitter);
+
+    m_modem->txProcess(m_modemTransmitter);
 }
 
-void MessengerWindow::received(int modemIndex, char character)
+void MessengerWindow::frequencySelected(double frequency)
+{
+    m_modem->setFrequency(frequency);
+}
+
+void MessengerWindow::received(char character)
 {
     // UNDONE: create multiple messagers for each modem and
     // route the decoded data accordingly
 
-    Q_UNUSED(modemIndex);
     m_messenger->received(character);
 }
 
 void MessengerWindow::modemSelected(QString type)
 {
     if (type.isEmpty()) {
-        m_modemManager->terminateAll();
+        //m_modemManager->terminateAll();
         emit modemActive(false);
     }
     else {
-        m_modemManager->create(type);
-        m_modemManager->startAll();
-        emit modemActive(true);
+        /*m_modemManager->create(type);
+        m_modemManager->startAll();*/
+        /*m_modem = Factory<Modem>::createByType(type, this);
+        if (m_modem)
+            emit modemActive(true);*/
     }
 }
 
-ModemManager* MessengerWindow::getModemManager()
-{
-    return m_modemManager;
-}

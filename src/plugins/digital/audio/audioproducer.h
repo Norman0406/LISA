@@ -43,15 +43,14 @@ class AudioProducer
     friend class AudioProducerList;
 
 public:
-    AudioProducer(QObject* parent, double frq, double interval, double length);
+    AudioProducer(QObject* parent, double);
     ~AudioProducer();
 
     virtual void create(QAudioFormat, AudioProducerList*);
 
-    AudioRingBuffer* m_buffer;
+    void write(QVector<double>&);
 
-public slots:
-    void fill();
+    AudioRingBuffer* m_buffer;
 
 signals:
     void newDataAvailable();
@@ -65,10 +64,7 @@ protected:
 private:
     AudioProducerList* m_producerList;
     QAudioFormat m_format;
-    double m_frq;
     double m_bufferLengthSec;
-    QTimer* m_timer;
-    QThread* m_timerThread;
 };
 
 } // namespace Internal

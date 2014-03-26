@@ -7,8 +7,7 @@ namespace Digital {
 namespace Internal {
 
 class ModemTransmitter
-        //: public AudioProducer
-        : public QObject
+        : public AudioProducer
 {
     Q_OBJECT
 

@@ -695,10 +695,12 @@ void ModemRTTY::sendSymbol(int symbol, int len, ModemTransmitter* transmitter)
     if (getReverse())
         symbol = !symbol;
 
+    QVector<double> buffer(len);
     for(int i = 0; i < len; ++i) {
         mark  = m_symShaperMark->update(symbol) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(!symbol) * m_oscSpace->update(freq2);
-        transmitter->writeSample(mark + space);
+        //transmitter->writeSample(mark + space);
+        buffer[i] = mark + space;
         /*outbuf[i] = mark + space;
 
         if (minamp > outbuf[i])
@@ -706,6 +708,7 @@ void ModemRTTY::sendSymbol(int symbol, int len, ModemTransmitter* transmitter)
         if (maxamp < outbuf[i])
             maxamp = outbuf[i];*/
     }
+    transmitter->write(buffer);
 #endif
 
     //ModulateXmtr(outbuf, symbollen);
@@ -742,11 +745,11 @@ void ModemRTTY::sendChar(int c, ModemTransmitter* transmitter)
         else
             c = FIGURES[c];
 
-        /*if (c)
-            put_echo_char(progdefaults.rx_lowercase ? tolower(c) : c);*/
+        if (c)
+            emit sent(c);
     }
-    /*else if (c)
-        put_echo_char(c);*/
+    else if (c)
+        emit sent(c);
 }
 
 void ModemRTTY::sendStop(ModemTransmitter* transmitter)
@@ -782,12 +785,14 @@ void ModemRTTY::sendStop(ModemTransmitter* transmitter)
     if (getReverse())
         symbol = !symbol;
 
+    QVector<double> buffer(m_stopLen);
     for (int i = 0; i < m_stopLen; ++i) {
         mark  = m_symShaperMark->update(symbol) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(!symbol) * m_oscSpace->update(freq2);
-        transmitter->writeSample(mark + space);
+        buffer[i] = mark + space;
         //outbuf[i] = mark + space;
     }
+    transmitter->write(buffer);
 #endif
 
     //ModulateXmtr(outbuf, symbollen);
@@ -809,12 +814,14 @@ void ModemRTTY::flushStream(ModemTransmitter* transmitter)
     double const freq2 = getFrequency() - m_shift / 2.0;
     double mark = 0, space = 0;
 
+    QVector<double> buffer(m_symbolLen * 6);
     for(int i = 0; i < m_symbolLen * 6; ++i) {
         mark  = m_symShaperMark->update(0) * m_oscMark->update(freq1);
         space = m_symShaperSpace->update(0) * m_oscSpace->update(freq2);
-        transmitter->writeSample(mark + space);
+        buffer[i] = mark + space;
         //outbuf[i] = mark + space;
     }
+    transmitter->write(buffer);
 
     //ModulateXmtr(outbuf, symbollen * 6);
 }

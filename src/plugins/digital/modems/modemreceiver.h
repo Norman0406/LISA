@@ -6,13 +6,21 @@
 namespace Digital {
 namespace Internal {
 
+class Modem;
+
 class ModemReceiver
         : public AudioConsumer
 {
     Q_OBJECT
 
 public:
-    ModemReceiver(QObject*);
+    ModemReceiver(QObject*, Modem*);
+
+protected:
+    void audioDataReady(const QVector<double>& data);
+
+private:
+    Modem* m_modem;
 };
 
 } // namespace Internal

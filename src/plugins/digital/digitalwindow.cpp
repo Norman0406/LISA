@@ -46,9 +46,9 @@ DigitalWindow::DigitalWindow(QWidget *parent)
     m_spectrum = new SpectrumWindow(this);
     m_messenger = new MessengerWindow(this);
 
-    connect(m_spectrum, &SpectrumWindow::frequencySelected, m_messenger->getModemManager(), &ModemManager::frequencySelected);
-    connect(m_messenger->getModemManager(), &ModemManager::frequencyChanged, m_spectrum, &SpectrumWindow::frequencyChanged);
-    connect(m_messenger->getModemManager(), &ModemManager::bandwidthChanged, m_spectrum, &SpectrumWindow::bandwidthChanged);
+    connect(m_spectrum, &SpectrumWindow::frequencySelected, m_messenger, &MessengerWindow::frequencySelected);
+    connect(m_messenger, &MessengerWindow::frequencyChanged, m_spectrum, &SpectrumWindow::frequencyChanged);
+    connect(m_messenger, &MessengerWindow::bandwidthChanged, m_spectrum, &SpectrumWindow::bandwidthChanged);
     connect(m_messenger, &MessengerWindow::modemActive, m_spectrum, &SpectrumWindow::modemActive);
 
     Core::MiniSplitter* splitter = new Core::MiniSplitter(Qt::Vertical);

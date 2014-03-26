@@ -27,56 +27,30 @@
 
 using namespace Digital::Internal;
 
-AudioProducer::AudioProducer(QObject* parent, double frq, double interval, double length)
+AudioProducer::AudioProducer(QObject* parent, double length)
     : QObject(parent),
       m_bufferLengthSec(length),
-      m_frq(frq),
       m_producerList(0)
 {
-    m_timerThread = new QThread(this);
-    m_timer = new QTimer(0);
-    m_timer->moveToThread(m_timerThread);
-    m_timer->setInterval(1000 * interval);
-    connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
-    connect(m_timer, &QTimer::timeout, this, &AudioProducer::fill, Qt::DirectConnection);
 }
 
 AudioProducer::~AudioProducer()
 {
-    m_timerThread->quit();
-    m_timerThread->wait();
 }
-
-#include <QtMath>
-#include <QDebug>
 
 void AudioProducer::create(QAudioFormat format, AudioProducerList* producerList)
 {
     m_format = format;
     m_producerList = producerList;
     m_buffer = new AudioRingBuffer(m_format, m_bufferLengthSec, this);
-    m_timerThread->start();
 }
 
-void AudioProducer::fill()
+#include <QDebug>
+
+void AudioProducer::write(QVector<double>& data)
 {
-    int numSamples = m_bufferLengthSec * getFormat().sampleRate();
-
-    QVector<double> data(numSamples);
-    double frq = m_frq;
-    double endFrq = frq + 100;
-    double frqStep = (endFrq - frq) / (double)data.size();
-    double deltaT = 0;
-    for (int i = 0; i < (int)data.size(); i++) {
-        deltaT = i / (double)getFormat().sampleRate();
-        const qreal value = qSin(2 * M_PI * frq * deltaT);
-        data[i] = value;
-        frq += frqStep;
-    }
-
-    // TODO: when full, wait until empty (wait condition)
-    m_buffer->writeData(data);
-
+    qint64 written = m_buffer->writeData(data);
+    Q_UNUSED(written);
     emit newDataAvailable();
 }
 

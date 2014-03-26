@@ -37,6 +37,10 @@ class AudioDeviceIn;
 class AudioDeviceOut;
 class ModemManager;
 
+class Modem;
+class ModemReceiver;
+class ModemTransmitter;
+
 class MessengerWindow
         : public QWidget
 {
@@ -46,23 +50,27 @@ public:
     MessengerWindow(QWidget*);
     ~MessengerWindow();
 
-    ModemManager* getModemManager();
-
 public slots:
+    void received(char);
+    void frequencySelected(double);
     void inDeviceReady(AudioDeviceIn*);
     void outDeviceReady(AudioDeviceOut*);
-    void received(int, char);
 
 private slots:
     void modemSelected(QString);
 
 signals:
     void modemActive(bool);
+    void frequencyChanged(double);
+    void bandwidthChanged(double);
 
 private:
     MessengerToolBar*   m_toolBar;
     Messenger*          m_messenger;
-    ModemManager*       m_modemManager;
+    Modem*              m_modem;
+    ModemReceiver*      m_modemReceiver;
+    ModemTransmitter*   m_modemTransmitter;
+    //ModemManager*       m_modemManager;
 };
 
 } // namespace Internal

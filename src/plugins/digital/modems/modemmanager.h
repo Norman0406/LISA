@@ -33,16 +33,21 @@
 namespace Digital {
 namespace Internal {
 
+class AudioDeviceIn;
+class AudioDeviceOut;
 class ModemWorker;
 
 class ModemManager
-        : public AudioConsumer
+        : public QObject
 {
     Q_OBJECT
 
 public:
     ModemManager(QObject*);
     ~ModemManager();
+
+    void inDeviceReady(AudioDeviceIn*);
+    void outDeviceReady(AudioDeviceOut*);
 
     int create(QString);    // creates and initializes a new modem
     bool terminate(int);    // completely removes the modem
@@ -67,11 +72,13 @@ signals:
     void received(int, char);
     void frequencyChanged(double);
     void bandwidthChanged(double);
+    void initReceiver(AudioDeviceIn*);
+    void initTransmitter(AudioDeviceOut*);
 
 protected:
-    void registered();
+    /*void registered();
     void unregistered();
-    void audioDataReady(const QVector<double>&);
+    void audioDataReady(const QVector<double>&);*/
 
 private:
     enum ModemState {
@@ -80,6 +87,8 @@ private:
         MODEMSTATE_ISTERMINATING,
     };
 
+    AudioDeviceIn*      m_inputDevice;
+    AudioDeviceOut*     m_outputDevice;
     QMutex              m_finishedMutex;
     QList<ModemWorker*> m_modems;
     QList<QThread*>     m_modemThreads;

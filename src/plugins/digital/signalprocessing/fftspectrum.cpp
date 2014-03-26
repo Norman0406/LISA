@@ -78,7 +78,7 @@ void FFTSpectrum::unregistered()
 void FFTSpectrum::audioDataReady(const QVector<double>& data)
 {
     if (m_buffer) {
-        m_buffer->writeData(data);
+        //m_buffer->writeData(data);
     }
 }
 

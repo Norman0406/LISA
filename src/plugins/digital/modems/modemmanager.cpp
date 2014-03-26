@@ -27,13 +27,18 @@
 #include "modemrtty.h"
 #include "../factory.h"
 #include "../audio/audiodevice.h"
+#include "../audio/audiodevicein.h"
+#include "../audio/audiodeviceout.h"
 
 #include <QDebug>
 
 using namespace Digital::Internal;
 
 ModemManager::ModemManager(QObject* parent)
-    : AudioConsumer(512, parent)
+    : QObject(parent),
+      m_inputDevice(0),
+      m_outputDevice(0)
+    //: AudioConsumer(512, parent)
 {
 }
 
@@ -46,7 +51,7 @@ ModemManager::~ModemManager()
     }
 }
 
-void ModemManager::registered()
+/*void ModemManager::registered()
 {
     foreach (ModemWorker* worker, m_modems) {
         worker->init(getFormat());
@@ -56,9 +61,9 @@ void ModemManager::registered()
 void ModemManager::unregistered()
 {
     shutdownAll();
-}
+}*/
 
-void ModemManager::audioDataReady(const QVector<double>& data)
+/*void ModemManager::audioDataReady(const QVector<double>& data)
 {
     m_finishedMutex.lock();
     // process active modem workers
@@ -68,19 +73,51 @@ void ModemManager::audioDataReady(const QVector<double>& data)
         }
     }
     m_finishedMutex.unlock();
+}*/
+
+
+void ModemManager::inDeviceReady(AudioDeviceIn* inputDevice)
+{
+    if (!m_inputDevice) {
+        m_inputDevice = inputDevice;
+    }
+
+    emit initReceiver(inputDevice);
+}
+
+void ModemManager::outDeviceReady(AudioDeviceOut* outputDevice)
+{
+    if (!m_outputDevice) {
+        m_outputDevice = outputDevice;
+    }
+
+    emit initTransmitter(outputDevice);
 }
 
 int ModemManager::create(QString type)
 {
     // create new worker with the specified modem type
     ModemWorker* worker = new ModemWorker();
+
+    connect(this, &ModemManager::initReceiver, worker, &ModemWorker::initReceiver);
+    connect(this, &ModemManager::initTransmitter, worker, &ModemWorker::initTransmitter);
+
     if (worker->create(type)) {
         connect(worker->getModem(), &Modem::frequencyChanged, this, &ModemManager::frequencyChanged);
         connect(worker->getModem(), &Modem::bandwidthChanged, this, &ModemManager::bandwidthChanged);
 
         // Try to init the modem. This can fail if create() is called before the soundcard
         // is available. In this case, init() will be called again in registered().
-        worker->init(getFormat());
+        //worker->init();
+
+        // TODO: maybe also use signal/slots instead of a direct call?
+        if (m_inputDevice) {
+            worker->initReceiver(m_inputDevice);
+        }
+
+        if (m_outputDevice) {
+            worker->initTransmitter(m_outputDevice);
+        }
 
         // create a new thread for the worker class
         QThread* thread = new QThread(this);

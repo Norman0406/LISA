@@ -49,6 +49,6 @@ private:
 };
 
 } // namespace Internal
-} // namespace HelloWorld
+} // namespace Digital
 
 #endif // DIGITALWINDOW_H
