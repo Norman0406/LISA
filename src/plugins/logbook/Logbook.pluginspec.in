@@ -1,0 +1,11 @@
+<plugin name=\"Logbook\" version=\"$$LISA_VERSION\" compatVersion=\"$$LISA_COMPAT_VERSION\" experimental=\"false\">
+    <vendor>Norman Link</vendor>
+    <copyright>(C) Norman Link</copyright>
+    <license>
+    TODO
+    </license>
+    <category>Logbook</category>
+    <description>Plugin for logbook management.</description>
+    <url>TODO</url>
+    $$dependencyList
+</plugin>

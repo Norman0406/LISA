@@ -7,6 +7,7 @@ Project {
         "coreplugin/coreplugin.qbs",
         "coreplugin/images/logo/logo.qbs",
         "helloworld/helloworld.qbs",
-        "digital/digital.qbs"
+        "digital/digital.qbs",
+        "logbook/logbook.qbs"
     ].concat(project.additionalPlugins)
 }
