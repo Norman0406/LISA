@@ -26,7 +26,7 @@
 #include "fftspectrum.h"
 #include "../audio/audiodevice.h"
 #include <math.h>
-#include <fftw/fftw3.h>
+#include <fftw3.h>
 
 #include <QtMath>
 #include <QtNumeric>

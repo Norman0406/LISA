@@ -89,8 +89,7 @@ FORMS += \
     soundsettings.ui
 
 win32 {
-    INCLUDEPATH += $$LISA_SOURCE_TREE/external/include
-    #LIBS += -L$$LISA_SOURCE_TREE/external/bin -llibfftw3-3.dll
+    INCLUDEPATH += $$LISA_SOURCE_TREE/external/include/fftw
     LIBS += $$LISA_SOURCE_TREE/external/bin/libfftw3-3.dll
 
     COPYTARGET = $${LISA_SOURCE_TREE}/external/bin/libfftw3-3.dll
