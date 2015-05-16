@@ -89,6 +89,9 @@ protected:
     void iTxProcess(ModemTransmitter*);
     double getBandwidth() const;
 
+private slots:
+    void send(char, ModemTransmitter*);
+
 private:
     void    resetFilters();
     std::complex<double> mix(double& phase, double frq, std::complex<double> in);

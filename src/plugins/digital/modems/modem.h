@@ -31,6 +31,7 @@
 #include <cmath>
 
 #include <QAudioFormat>
+#include <QWaitCondition>
 
 #include "modemtransmitter.h"
 
@@ -60,7 +61,8 @@ public:
         STATE_PREINIT,
         STATE_READY,
         STATE_RX,
-        STATE_TX
+        STATE_TX,
+        STATE_SHUTDOWN
     };
 
     enum AFCSpeed
@@ -93,6 +95,16 @@ public:
     bool            getReverse() const;
     State           getState() const;
 
+    void receive(const QVector<double>&);
+    void startTx();
+    void transmit(QString, ModemTransmitter*);
+    void stopTx();
+
+public slots:
+    void process();
+    //virtual void send(QString, ModemTransmitter*);
+    virtual void send(char, ModemTransmitter*) = 0;
+
 signals:
     void received(char);
     void sent(char);
@@ -115,6 +127,13 @@ protected:
     double squelchOpen() const; // metric > squelch ? true : false
 
 private:
+    QMutex      m_lock;
+    QWaitCondition m_waitForData;
+    QVector<double> m_inputBlock;
+
+    ModemTransmitter* m_transmitter;
+    QString m_message;
+
     QAudioFormat    m_format;
     unsigned    m_capability;
     double      m_frequency;

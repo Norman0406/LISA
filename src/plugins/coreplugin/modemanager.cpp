@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -35,6 +36,7 @@
 #include "mainwindow.h"
 
 #include <coreplugin/actionmanager/actionmanager.h>
+#include <coreplugin/actionmanager/command.h>
 #include <coreplugin/coreconstants.h>
 #include <coreplugin/imode.h>
 
@@ -47,7 +49,6 @@
 #include <QVector>
 
 #include <QSignalMapper>
-#include <QShortcut>
 #include <QAction>
 
 namespace Core {
@@ -68,11 +69,10 @@ struct ModeManagerPrivate
     Internal::FancyActionBar *m_actionBar;
     QMap<QAction*, int> m_actions;
     QVector<IMode*> m_modes;
-    QVector<Command*> m_modeShortcuts;
+    QVector<Command*> m_modeCommands;
     QSignalMapper *m_signalMapper;
     Context m_addedContexts;
     int m_oldCurrent;
-    bool m_saveSettingsOnModeChange;
     bool m_modeSelectorVisible;
 };
 
@@ -100,15 +100,12 @@ ModeManager::ModeManager(Internal::MainWindow *mainWindow,
     d->m_oldCurrent = -1;
     d->m_actionBar = new Internal::FancyActionBar(modeStack);
     d->m_modeStack->addCornerWidget(d->m_actionBar);
-    d->m_saveSettingsOnModeChange = false;
     d->m_modeSelectorVisible = true;
     d->m_modeStack->setSelectionWidgetVisible(d->m_modeSelectorVisible);
 
     connect(d->m_modeStack, SIGNAL(currentAboutToShow(int)), SLOT(currentTabAboutToChange(int)));
     connect(d->m_modeStack, SIGNAL(currentChanged(int)), SLOT(currentTabChanged(int)));
     connect(d->m_signalMapper, SIGNAL(mapped(int)), this, SLOT(slotActivateMode(int)));
-    connect(ExtensionSystem::PluginManager::instance(), SIGNAL(initializationDone()), this, SLOT(handleStartup()));
-    connect(ICore::instance(), SIGNAL(coreAboutToClose()), this, SLOT(handleShutdown()));
 }
 
 void ModeManager::init()
@@ -124,14 +121,6 @@ ModeManager::~ModeManager()
     delete d;
     d = 0;
     m_instance = 0;
-}
-
-void ModeManager::addWidget(QWidget *widget)
-{
-    // We want the actionbar to stay on the bottom
-    // so d->m_modeStack->cornerWidgetCount() -1 inserts it at the position immediately above
-    // the actionbar
-    d->m_modeStack->insertCornerWidget(d->m_modeStack->cornerWidgetCount() -1, widget);
 }
 
 IMode *ModeManager::currentMode()
@@ -165,7 +154,7 @@ void ModeManager::activateMode(Id id)
 
 void ModeManager::objectAdded(QObject *obj)
 {
-    IMode *mode = Aggregation::query<IMode>(obj);
+    IMode *mode = qobject_cast<IMode *>(obj);
     if (!mode)
         return;
 
@@ -182,15 +171,14 @@ void ModeManager::objectAdded(QObject *obj)
     d->m_modeStack->setTabEnabled(index, mode->isEnabled());
 
     // Register mode shortcut
-    const Id shortcutId = mode->id().withPrefix("QtCreator.Mode.");
-    QShortcut *shortcut = new QShortcut(d->m_mainWindow);
-    shortcut->setWhatsThis(tr("Switch to <b>%1</b> mode").arg(mode->displayName()));
-    Command *cmd = ActionManager::registerShortcut(shortcut, shortcutId, Context(Constants::C_GLOBAL));
+    const Id actionId = mode->id().withPrefix("QtCreator.Mode.");
+    QAction *action = new QAction(tr("Switch to <b>%1</b> mode").arg(mode->displayName()), this);
+    Command *cmd = ActionManager::registerAction(action, actionId);
 
-    d->m_modeShortcuts.insert(index, cmd);
+    d->m_modeCommands.insert(index, cmd);
     connect(cmd, SIGNAL(keySequenceChanged()), m_instance, SLOT(updateModeToolTip()));
-    for (int i = 0; i < d->m_modeShortcuts.size(); ++i) {
-        Command *currentCmd = d->m_modeShortcuts.at(i);
+    for (int i = 0; i < d->m_modeCommands.size(); ++i) {
+        Command *currentCmd = d->m_modeCommands.at(i);
         // we need this hack with currentlyHasDefaultSequence
         // because we call setDefaultShortcut multiple times on the same cmd
         // and still expect the current shortcut to change with it
@@ -202,8 +190,8 @@ void ModeManager::objectAdded(QObject *obj)
             currentCmd->setKeySequence(currentCmd->defaultKeySequence());
     }
 
-    d->m_signalMapper->setMapping(shortcut, mode->id().uniqueIdentifier());
-    connect(shortcut, SIGNAL(activated()), d->m_signalMapper, SLOT(map()));
+    d->m_signalMapper->setMapping(action, mode->id().uniqueIdentifier());
+    connect(action, SIGNAL(triggered()), d->m_signalMapper, SLOT(map()));
     connect(mode, SIGNAL(enabledStateChanged(bool)),
             m_instance, SLOT(enabledStateChanged()));
 }
@@ -212,9 +200,9 @@ void ModeManager::updateModeToolTip()
 {
     Command *cmd = qobject_cast<Command *>(sender());
     if (cmd) {
-        int index = d->m_modeShortcuts.indexOf(cmd);
+        int index = d->m_modeCommands.indexOf(cmd);
         if (index != -1)
-            d->m_modeStack->setTabToolTip(index, cmd->stringWithAppendedShortcut(cmd->shortcut()->whatsThis()));
+            d->m_modeStack->setTabToolTip(index, cmd->action()->toolTip());
     }
 }
 
@@ -239,21 +227,15 @@ void ModeManager::enabledStateChanged()
     }
 }
 
-void ModeManager::handleStartup()
-{ d->m_saveSettingsOnModeChange = true; }
-
-void ModeManager::handleShutdown()
-{ d->m_saveSettingsOnModeChange = false; }
-
 void ModeManager::aboutToRemoveObject(QObject *obj)
 {
-    IMode *mode = Aggregation::query<IMode>(obj);
+    IMode *mode = qobject_cast<IMode *>(obj);
     if (!mode)
         return;
 
     const int index = d->m_modes.indexOf(mode);
     d->m_modes.remove(index);
-    d->m_modeShortcuts.remove(index);
+    d->m_modeCommands.remove(index);
     d->m_modeStack->removeTab(index);
 
     d->m_mainWindow->removeContextObject(mode);
@@ -283,11 +265,8 @@ void ModeManager::currentTabAboutToChange(int index)
 {
     if (index >= 0) {
         IMode *mode = d->m_modes.at(index);
-        if (mode) {
-            if (d->m_saveSettingsOnModeChange)
-                ICore::saveSettings();
+        if (mode)
             emit currentModeAboutToChange(mode);
-        }
     }
 }
 
@@ -321,7 +300,6 @@ void ModeManager::setFocusToCurrentMode()
         if (!focusWidget)
             focusWidget = widget;
         focusWidget->setFocus();
-        ICore::raiseWindow(focusWidget);
     }
 }
 
@@ -336,7 +314,7 @@ bool ModeManager::isModeSelectorVisible()
     return d->m_modeSelectorVisible;
 }
 
-QObject *ModeManager::instance()
+ModeManager *ModeManager::instance()
 {
     return m_instance;
 }

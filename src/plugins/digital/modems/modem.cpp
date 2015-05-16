@@ -89,6 +89,12 @@ void Modem::txProcess(ModemTransmitter* transmitter)
         iTxProcess(transmitter);
 }
 
+/*void Modem::send(QString message, ModemTransmitter* transmitter)
+{
+    for (int i = 0; i < message.count(); i++)
+        send(message[i].toAscii(), transmitter);
+}*/
+
 void Modem::setFrequency(double frequency)
 {
     m_frequency = frequency;
@@ -128,6 +134,68 @@ void Modem::adjustFrequency(double frqerr)
         setFrequency(m_frequency - m_freqErr);
         //qDebug() << m_frequency;
     }
+}
+
+void Modem::process()
+{
+    while (m_state != STATE_SHUTDOWN) {
+        m_lock.lock();
+        while (m_state != STATE_RX && m_state != STATE_TX)
+            m_waitForData.wait(&m_lock);
+
+        if (m_state == STATE_RX) {
+            rxProcess(m_inputBlock);
+            m_inputBlock.clear();
+            m_state = STATE_READY;
+        }
+        else if (m_state == STATE_TX) {
+            for (int i = 0; i < m_message.count(); i++) {
+                send(m_message[i].toLatin1(), m_transmitter);
+                qDebug() << m_message[i];
+                m_transmitter->flush();
+            }
+            m_message.clear();
+            m_transmitter = 0;
+            m_state = STATE_READY;
+        }
+
+        m_lock.unlock();
+    }
+}
+
+void Modem::receive(const QVector<double>& data)
+{
+    /*m_lock.lock();
+    if (m_state == STATE_READY) {
+        m_state = STATE_RX;
+        m_inputBlock = data;
+        m_waitForData.wakeAll();
+    }
+    m_lock.unlock();*/
+}
+
+void Modem::startTx()
+{
+    // TODO: maybe introduce a STATE_IDLE that is set when tx is started but
+    // no data is yet available to send. In this case, the modem would only send
+    // idle signals
+}
+
+void Modem::transmit(QString message, ModemTransmitter* transmitter)
+{
+    m_lock.lock();
+    m_state = STATE_TX;
+
+    m_message = message;
+    m_transmitter = transmitter;
+
+    m_waitForData.wakeAll();
+    m_lock.unlock();
+}
+
+void Modem::stopTx()
+{
+    // TODO: stop tx, i.e. stop any idle or character signals and go back to STATE_RX
 }
 
 double Modem::getFrqErr() const

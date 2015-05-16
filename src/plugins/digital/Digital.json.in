@@ -1,0 +1,13 @@
+{
+    \"Name\" : \"Digital\",
+    \"Version\" : \"$$LISA_VERSION\",
+    \"CompatVersion\" : \"$$LISA_COMPAT_VERSION\",
+    \"Experimental\" : false,
+    \"Authors\" : \"Norman Link (DM6LN)\",
+    \"Copyright\" : \"(C) 2015 Norman Link (DM6LN)\",
+    \"License\" : [],
+    \"Category\" : \"Digital\",
+    \"Description\" : \"Plugin supporting digital operating modes.\",
+    \"Url\" : \"TODO\",
+    $$dependencyList
+}

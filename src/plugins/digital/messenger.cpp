@@ -32,21 +32,28 @@ using namespace Digital::Internal;
 
 Messenger::Messenger(QWidget* parent)
     : QWidget(parent),
-      m_textChanged(false)
+      m_receivedChanged(false),
+      m_sentChanged(false)
 {
     m_ui = new Ui::Messenger();
     m_ui->setupUi(this);
 
     // use a timer to trigger the text update
-    m_updateTimer = new QTimer(this);
-    m_updateTimer->setTimerType(Qt::PreciseTimer);
-    m_updateTimer->setInterval(100);   // time in ms
-    connect(m_updateTimer, &QTimer::timeout, this, &Messenger::updateText);
+    m_receivedTimer = new QTimer(this);
+    m_receivedTimer->setTimerType(Qt::PreciseTimer);
+    m_receivedTimer->setInterval(100);   // time in ms
+    connect(m_receivedTimer, &QTimer::timeout, this, &Messenger::updateReceived);
+
+    m_sentTimer = new QTimer(this);
+    m_sentTimer->setTimerType(Qt::PreciseTimer);
+    m_sentTimer->setInterval(100);   // time in ms
+    connect(m_sentTimer, &QTimer::timeout, this, &Messenger::updateSent);
 }
 
 void Messenger::clear()
 {
-    m_message.clear();
+    m_sent.clear();
+    m_received.clear();
     m_ui->txtReceived->clear();
     m_ui->txtSent->clear();
 }
@@ -54,19 +61,38 @@ void Messenger::clear()
 void Messenger::received(char character)
 {
     if (m_ui->txtReceived->isEnabled()) {
-        m_message += QChar::fromAscii(character);
-        m_textChanged = true;
+        m_received+= QChar::fromLatin1(character);
+        m_receivedChanged = true;
     }
 }
 
-void Messenger::updateText()
+void Messenger::sent(char character)
 {
-    if (m_textChanged) {
-        m_ui->txtReceived->setText(m_message);
+    if (m_ui->txtSent->isEnabled()) {
+        m_sent += QChar::fromLatin1(character);
+        m_sentChanged = true;
+    }
+}
+
+void Messenger::updateReceived()
+{
+    if (m_receivedChanged) {
+        m_ui->txtReceived->setText(m_received);
         QScrollBar* sb = m_ui->txtReceived->verticalScrollBar();
         sb->setValue(sb->maximum());
 
-        m_textChanged = false;
+        m_receivedChanged = false;
+    }
+}
+
+void Messenger::updateSent()
+{
+    if (m_sentChanged) {
+        m_ui->txtSent->setText(m_sent);
+        QScrollBar* sb = m_ui->txtSent->verticalScrollBar();
+        sb->setValue(sb->maximum());
+
+        m_sentChanged = false;
     }
 }
 
@@ -75,11 +101,13 @@ void Messenger::modemSelected(QString modemType)
     if (modemType.isEmpty()) {
         m_ui->txtReceived->setEnabled(false);
         m_ui->txtSent->setEnabled(false);
-        m_updateTimer->stop();
+        m_receivedTimer->stop();
+        m_sentTimer->stop();
     }
     else {
         m_ui->txtReceived->setEnabled(true);
         m_ui->txtSent->setEnabled(true);
-        m_updateTimer->start();
+        m_receivedTimer->start();
+        m_sentTimer->start();
     }
 }

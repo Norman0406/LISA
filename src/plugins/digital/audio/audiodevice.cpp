@@ -137,7 +137,7 @@ qreal AudioDevice::pcmToReal(const QAudioFormat& format, const char* data)
 {
     qreal realValue = 0;
 
-    if (format.codec() != QString::fromAscii("audio/pcm")) {
+    if (format.codec() != QString::fromLatin1("audio/pcm")) {
         qCritical() << "format is not pcm";
         return 0;
     }

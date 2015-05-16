@@ -24,7 +24,7 @@
 #ifndef _MISC_H
 #define _MISC_H
 
-#include <cmath>
+#include <qmath.h>
 
 extern unsigned long hweight32(unsigned long w);
 extern unsigned short int hweight16(unsigned short int w);

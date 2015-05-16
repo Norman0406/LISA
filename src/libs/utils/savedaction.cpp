@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -61,7 +62,7 @@ SavedAction::SavedAction(QObject *parent)
   : QAction(parent)
 {
     m_widget = 0;
-    connect(this, SIGNAL(triggered(bool)), this, SLOT(actionTriggered(bool)));
+    connect(this, &QAction::triggered, this, &SavedAction::actionTriggered);
 }
 
 
@@ -280,38 +281,36 @@ void SavedAction::connectWidget(QWidget *widget, ApplyMode applyMode)
     if (QAbstractButton *button = qobject_cast<QAbstractButton *>(widget)) {
         if (button->isCheckable()) {
             button->setChecked(m_value.toBool());
-            connect(button, SIGNAL(clicked(bool)),
-                this, SLOT(checkableButtonClicked(bool)));
+            connect(button, &QAbstractButton::clicked,
+                    this, &SavedAction::checkableButtonClicked);
         } else {
-            connect(button, SIGNAL(clicked()),
-                this, SLOT(uncheckableButtonClicked()));
+            connect(button, &QAbstractButton::clicked,
+                    this, &SavedAction::uncheckableButtonClicked);
         }
     } else if (QSpinBox *spinBox = qobject_cast<QSpinBox *>(widget)) {
         spinBox->setValue(m_value.toInt());
         //qDebug() << "SETTING VALUE" << spinBox->value();
-        connect(spinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(spinBoxValueChanged(int)));
-        connect(spinBox, SIGNAL(valueChanged(QString)),
-            this, SLOT(spinBoxValueChanged(QString)));
+        connect(spinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+                this, &SavedAction::spinBoxValueChanged);
     } else if (QLineEdit *lineEdit = qobject_cast<QLineEdit *>(widget)) {
         lineEdit->setText(m_value.toString());
         //qDebug() << "SETTING TEXT" << lineEdit->text();
-        connect(lineEdit, SIGNAL(editingFinished()),
-            this, SLOT(lineEditEditingFinished()));
+        connect(lineEdit, &QLineEdit::editingFinished,
+                this, &SavedAction::lineEditEditingFinished);
     } else if (PathChooser *pathChooser = qobject_cast<PathChooser *>(widget)) {
         pathChooser->setPath(m_value.toString());
-        connect(pathChooser, SIGNAL(editingFinished()),
-            this, SLOT(pathChooserEditingFinished()));
-        connect(pathChooser, SIGNAL(browsingFinished()),
-            this, SLOT(pathChooserEditingFinished()));
+        connect(pathChooser, &PathChooser::editingFinished,
+                this, &SavedAction::pathChooserEditingFinished);
+        connect(pathChooser, &PathChooser::browsingFinished,
+                this, &SavedAction::pathChooserEditingFinished);
     } else if (QGroupBox *groupBox = qobject_cast<QGroupBox *>(widget)) {
         if (!groupBox->isCheckable())
             qDebug() << "connectWidget to non-checkable group box" << widget << toString();
         groupBox->setChecked(m_value.toBool());
-        connect(groupBox, SIGNAL(toggled(bool)), this, SLOT(groupBoxToggled(bool)));
+        connect(groupBox, &QGroupBox::toggled, this, &SavedAction::groupBoxToggled);
     } else if (QTextEdit *textEdit = qobject_cast<QTextEdit *>(widget)) {
         textEdit->setPlainText(m_value.toString());
-        connect(textEdit, SIGNAL(textChanged()), this, SLOT(textEditTextChanged()));
+        connect(textEdit, &QTextEdit::textChanged, this, &SavedAction::textEditTextChanged);
     } else if (PathListEditor *editor = qobject_cast<PathListEditor *>(widget)) {
         editor->setPathList(m_value.toStringList());
     } else {
@@ -382,14 +381,6 @@ void SavedAction::spinBoxValueChanged(int value)
         setValue(value);
 }
 
-void SavedAction::spinBoxValueChanged(QString value)
-{
-    QSpinBox *spinBox = qobject_cast<QSpinBox *>(sender());
-    QTC_ASSERT(spinBox, return);
-    if (m_applyMode == ImmediateApply)
-        setValue(value);
-}
-
 void SavedAction::pathChooserEditingFinished()
 {
     PathChooser *pathChooser = qobject_cast<PathChooser *>(sender());
@@ -453,18 +444,5 @@ void SavedActionSet::finish()
 {
     foreach (SavedAction *action, m_list)
         action->disconnectWidget();
-}
-
-QString SavedActionSet::searchKeyWords() const
-{
-    const QChar blank = QLatin1Char(' ');
-    QString rc;
-    foreach (SavedAction *action, m_list) {
-        if (!rc.isEmpty())
-            rc += blank;
-        rc += action->text();
-    }
-    rc.remove(QLatin1Char('&'));
-    return rc;
 }
 

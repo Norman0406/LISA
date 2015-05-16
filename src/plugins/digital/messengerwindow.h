@@ -51,12 +51,12 @@ public:
     ~MessengerWindow();
 
 public slots:
-    void received(char);
     void frequencySelected(double);
     void inDeviceReady(AudioDeviceIn*);
     void outDeviceReady(AudioDeviceOut*);
 
 private slots:
+    void transmit();
     void modemSelected(QString);
 
 signals:
@@ -67,10 +67,11 @@ signals:
 private:
     MessengerToolBar*   m_toolBar;
     Messenger*          m_messenger;
+
+    QThread*            m_modemThread;
     Modem*              m_modem;
     ModemReceiver*      m_modemReceiver;
     ModemTransmitter*   m_modemTransmitter;
-    //ModemManager*       m_modemManager;
 };
 
 } // namespace Internal

@@ -112,6 +112,8 @@ qint64 AudioProducerList::readData(char* data, qint64 maxlen)
     }
     delete[] localBuffer;
 
+    //qDebug() << bytesRead;
+
     int samples = bytesRead / bytesPerSample;
 
     // TODO: find a better mixing technique for multiple audio streams

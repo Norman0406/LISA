@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -30,16 +31,39 @@
 #include "fileutils.h"
 #include "savefile.h"
 
+#include "algorithm.h"
 #include "hostosinfo.h"
 #include "qtcassert.h"
 
 #include <QDir>
 #include <QDebug>
 #include <QDateTime>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QMessageBox>
+#include <QTimer>
+#include <QUrl>
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
+#include <shlobj.h>
+#endif
+
+QT_BEGIN_NAMESPACE
+QDebug operator<<(QDebug dbg, const Utils::FileName &c)
+{
+    return dbg << c.toString();
+}
+
+QT_END_NAMESPACE
+
+#ifdef Q_OS_OSX
+// for file drops from Finder, working around QTBUG-40449
+namespace Utils {
+namespace Internal {
+extern QUrl filePathUrl(const QUrl &url);
+} // Internal
+} // Utils
 #endif
 
 namespace Utils {
@@ -90,7 +114,7 @@ bool FileUtils::removeRecursively(const FileName &filePath, QString *error)
         }
         if (!QDir::root().rmdir(dir.path())) {
             if (error) {
-                *error = QCoreApplication::translate("Utils::FileUtils", "Failed to remove directory '%1'.")
+                *error = QCoreApplication::translate("Utils::FileUtils", "Failed to remove directory \"%1\".")
                         .arg(filePath.toUserOutput());
             }
             return false;
@@ -98,7 +122,7 @@ bool FileUtils::removeRecursively(const FileName &filePath, QString *error)
     } else {
         if (!QFile::remove(filePath.toString())) {
             if (error) {
-                *error = QCoreApplication::translate("Utils::FileUtils", "Failed to remove file '%1'.")
+                *error = QCoreApplication::translate("Utils::FileUtils", "Failed to remove file \"%1\".")
                         .arg(filePath.toUserOutput());
             }
             return false;
@@ -125,18 +149,20 @@ bool FileUtils::removeRecursively(const FileName &filePath, QString *error)
   Returns whether the operation succeeded.
 */
 bool FileUtils::copyRecursively(const FileName &srcFilePath, const FileName &tgtFilePath,
-                                QString *error)
+                                QString *error, const std::function<bool (QFileInfo, QFileInfo, QString *)> &copyHelper)
 {
     QFileInfo srcFileInfo = srcFilePath.toFileInfo();
     if (srcFileInfo.isDir()) {
-        QDir targetDir(tgtFilePath.toString());
-        targetDir.cdUp();
-        if (!targetDir.mkdir(tgtFilePath.toFileInfo().fileName())) {
-            if (error) {
-                *error = QCoreApplication::translate("Utils::FileUtils", "Failed to create directory '%1'.")
-                        .arg(tgtFilePath.toUserOutput());
+        if (!tgtFilePath.exists()) {
+            QDir targetDir(tgtFilePath.toString());
+            targetDir.cdUp();
+            if (!targetDir.mkdir(tgtFilePath.fileName())) {
+                if (error) {
+                    *error = QCoreApplication::translate("Utils::FileUtils", "Failed to create directory \"%1\".")
+                            .arg(tgtFilePath.toUserOutput());
+                }
+                return false;
             }
-            return false;
         }
         QDir sourceDir(srcFilePath.toString());
         QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
@@ -146,16 +172,21 @@ bool FileUtils::copyRecursively(const FileName &srcFilePath, const FileName &tgt
             newSrcFilePath.appendPath(fileName);
             FileName newTgtFilePath = tgtFilePath;
             newTgtFilePath.appendPath(fileName);
-            if (!copyRecursively(newSrcFilePath, newTgtFilePath, error))
+            if (!copyRecursively(newSrcFilePath, newTgtFilePath, error, copyHelper))
                 return false;
         }
     } else {
-        if (!QFile::copy(srcFilePath.toString(), tgtFilePath.toString())) {
-            if (error) {
-                *error = QCoreApplication::translate("Utils::FileUtils", "Could not copy file '%1' to '%2'.")
-                        .arg(srcFilePath.toUserOutput(), tgtFilePath.toUserOutput());
+        if (copyHelper) {
+            if (!copyHelper(srcFileInfo, tgtFilePath.toFileInfo(), error))
+                return false;
+        } else {
+            if (!QFile::copy(srcFilePath.toString(), tgtFilePath.toString())) {
+                if (error) {
+                    *error = QCoreApplication::translate("Utils::FileUtils", "Could not copy file \"%1\" to \"%2\".")
+                            .arg(srcFilePath.toUserOutput(), tgtFilePath.toUserOutput());
+                }
+                return false;
             }
-            return false;
         }
     }
     return true;
@@ -235,65 +266,76 @@ QString FileUtils::fileSystemFriendlyName(const QString &name)
     return result;
 }
 
+int FileUtils::indexOfQmakeUnfriendly(const QString &name, int startpos)
+{
+    static QRegExp checkRegExp(QLatin1String("[^a-zA-Z0-9_.-]"));
+    return checkRegExp.indexIn(name, startpos);
+}
+
+QString FileUtils::qmakeFriendlyName(const QString &name)
+{
+    QString result = name;
+
+    // Remove characters that might trip up a build system (especially qmake):
+    int pos = indexOfQmakeUnfriendly(result);
+    while (pos >= 0) {
+        result[pos] = QLatin1Char('_');
+        pos = indexOfQmakeUnfriendly(result, pos);
+    }
+    return fileSystemFriendlyName(result);
+}
+
 bool FileUtils::makeWritable(const FileName &path)
 {
     const QString fileName = path.toString();
     return QFile::setPermissions(fileName, QFile::permissions(fileName) | QFile::WriteUser);
 }
 
-#ifdef Q_OS_WIN
-static QString getShortPathName(const QString &name)
-{
-    if (name.isEmpty())
-        return name;
-
-    // Determine length, then convert.
-    const LPCTSTR nameC = reinterpret_cast<LPCTSTR>(name.utf16()); // MinGW
-    const DWORD length = GetShortPathNameW(nameC, NULL, 0);
-    if (length == 0)
-        return name;
-    QScopedArrayPointer<TCHAR> buffer(new TCHAR[length]);
-    GetShortPathNameW(nameC, buffer.data(), length);
-    const QString rc = QString::fromUtf16(reinterpret_cast<const ushort *>(buffer.data()), length - 1);
-    return rc;
-}
-
-static QString getLongPathName(const QString &name)
-{
-    if (name.isEmpty())
-        return name;
-
-    // Determine length, then convert.
-    const LPCTSTR nameC = reinterpret_cast<LPCTSTR>(name.utf16()); // MinGW
-    const DWORD length = GetLongPathNameW(nameC, NULL, 0);
-    if (length == 0)
-        return name;
-    QScopedArrayPointer<TCHAR> buffer(new TCHAR[length]);
-    GetLongPathNameW(nameC, buffer.data(), length);
-    const QString rc = QString::fromUtf16(reinterpret_cast<const ushort *>(buffer.data()), length - 1);
-    return rc;
-}
-#endif // Q_OS_WIN
-
 // makes sure that capitalization of directories is canonical on Windows.
 // This mimics the logic in QDeclarative_isFileCaseCorrect
 QString FileUtils::normalizePathName(const QString &name)
 {
 #ifdef Q_OS_WIN
-    QString canonicalName = getShortPathName(name);
-    if (canonicalName.isEmpty())
+    const QString nativeSeparatorName(QDir::toNativeSeparators(name));
+    const LPCTSTR nameC = reinterpret_cast<LPCTSTR>(nativeSeparatorName.utf16()); // MinGW
+    PIDLIST_ABSOLUTE file;
+    HRESULT hr = SHParseDisplayName(nameC, NULL, &file, 0, NULL);
+    if (FAILED(hr))
         return name;
-    canonicalName = getLongPathName(canonicalName);
-    if (canonicalName.isEmpty())
+    TCHAR buffer[MAX_PATH];
+    if (!SHGetPathFromIDList(file, buffer))
         return name;
-    // Upper case drive letter
-    if (canonicalName.size() > 2 && canonicalName.at(1) == QLatin1Char(':'))
-        canonicalName[0] = canonicalName.at(0).toUpper();
-    return canonicalName;
+    return QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const ushort *>(buffer)));
 #else // Filesystem is case-insensitive only on Windows
     return name;
 #endif
 }
+
+bool FileUtils::isRelativePath(const QString &path)
+{
+    if (path.startsWith(QLatin1Char('/')))
+        return false;
+    if (HostOsInfo::isWindowsHost()) {
+        if (path.startsWith(QLatin1Char('\\')))
+            return false;
+        // Unlike QFileInfo, this won't accept a relative path with a drive letter.
+        // Such paths result in a royal mess anyway ...
+        if (path.length() >= 3 && path.at(1) == QLatin1Char(':') && path.at(0).isLetter()
+                && (path.at(2) == QLatin1Char('/') || path.at(2) == QLatin1Char('\\')))
+            return false;
+    }
+    return true;
+}
+
+QString FileUtils::resolvePath(const QString &baseDir, const QString &fileName)
+{
+    if (fileName.isEmpty())
+        return QString();
+    if (isAbsolutePath(fileName))
+        return QDir::cleanPath(fileName);
+    return QDir::cleanPath(baseDir + QLatin1Char('/') + fileName);
+}
+
 
 QByteArray FileReader::fetchQrc(const QString &fileName)
 {
@@ -506,9 +548,9 @@ QFileInfo FileName::toFileInfo() const
 }
 
 /// \returns a QString for passing on to QString based APIs
-QString FileName::toString() const
+const QString &FileName::toString() const
 {
-    return QString(*this);
+    return *this;
 }
 
 /// \returns a QString to display to the user
@@ -518,9 +560,40 @@ QString FileName::toUserOutput() const
     return QDir::toNativeSeparators(toString());
 }
 
+QString FileName::fileName(int pathComponents) const
+{
+    if (pathComponents < 0)
+        return *this;
+    const QChar slash = QLatin1Char('/');
+    QTC_CHECK(!endsWith(slash));
+    int i = lastIndexOf(slash);
+    if (pathComponents == 0 || i == -1)
+        return mid(i + 1);
+    int component = i + 1;
+    // skip adjacent slashes
+    while (i > 0 && at(--i) == slash);
+    while (i >= 0 && --pathComponents >= 0) {
+        i = lastIndexOf(slash, i);
+        component = i + 1;
+        while (i > 0 && at(--i) == slash);
+    }
+
+    // If there are no more slashes before the found one, return the entire string
+    if (i > 0 && lastIndexOf(slash, i) != -1)
+        return mid(component);
+    return *this;
+}
+
+/// \returns a bool indicating whether a file with this
+/// FileName exists.
+bool FileName::exists() const
+{
+    return QFileInfo::exists(*this);
+}
+
 /// Find the parent directory of a given directory.
 
-/// Returns an empty FileName if the current dirctory is already
+/// Returns an empty FileName if the current directory is already
 /// a root level directory.
 
 /// \returns \a FileName with the last segment removed.
@@ -540,11 +613,38 @@ FileName FileName::parentDir() const
     return FileName::fromString(parent);
 }
 
-/// Constructs a FileName from \a fileName
-/// \a fileName is not checked for validity.
+/// Constructs a FileName from \a filename
+/// \a filename is not checked for validity.
 FileName FileName::fromString(const QString &filename)
 {
     return FileName(filename);
+}
+
+/// Constructs a FileName from \a fileName. The \a defaultExtension is appended
+/// to \a filename if that does not have an extension already.
+/// \a fileName is not checked for validity.
+FileName FileName::fromString(const QString &filename, const QString &defaultExtension)
+{
+    if (filename.isEmpty() || defaultExtension.isEmpty())
+        return filename;
+
+    QString rc = filename;
+    QFileInfo fi(filename);
+    // Add extension unless user specified something else
+    const QChar dot = QLatin1Char('.');
+    if (!fi.fileName().contains(dot)) {
+        if (!defaultExtension.startsWith(dot))
+            rc += dot;
+        rc += defaultExtension;
+    }
+    return rc;
+}
+
+/// Constructs a FileName from \a fileName
+/// \a fileName is not checked for validity.
+FileName FileName::fromLatin1(const QByteArray &filename)
+{
+    return FileName(QString::fromLatin1(filename));
 }
 
 /// Constructs a FileName from \a fileName
@@ -555,6 +655,13 @@ FileName FileName::fromUserInput(const QString &filename)
     if (clean.startsWith(QLatin1String("~/")))
         clean = QDir::homePath() + clean.mid(1);
     return FileName(clean);
+}
+
+/// Constructs a FileName from \a fileName, which is encoded as UTF-8.
+/// \a fileName is not checked for validity.
+FileName FileName::fromUtf8(const char *filename, int filenameSize)
+{
+    return FileName(QString::fromUtf8(filename, filenameSize));
 }
 
 FileName::FileName(const QString &string)
@@ -612,7 +719,7 @@ bool FileName::isChildOf(const FileName &s) const
 /// \overload
 bool FileName::isChildOf(const QDir &dir) const
 {
-    return isChildOf(Utils::FileName::fromString(dir.absolutePath()));
+    return isChildOf(FileName::fromString(dir.absolutePath()));
 }
 
 /// \returns whether FileName endsWith \a s
@@ -627,29 +734,201 @@ bool FileName::endsWith(const QString &s) const
 FileName FileName::relativeChildPath(const FileName &parent) const
 {
     if (!isChildOf(parent))
-        return Utils::FileName();
+        return FileName();
     return FileName(QString::mid(parent.size() + 1, -1));
 }
 
 /// Appends \a s, ensuring a / between the parts
 FileName &FileName::appendPath(const QString &s)
 {
+    if (s.isEmpty())
+        return *this;
     if (!isEmpty() && !QString::endsWith(QLatin1Char('/')))
-        append(QLatin1Char('/'));
-    append(s);
+        appendString(QLatin1Char('/'));
+    appendString(s);
     return *this;
 }
 
-FileName &FileName::append(const QString &str)
+FileName &FileName::appendString(const QString &str)
 {
     QString::append(str);
     return *this;
 }
 
-FileName &FileName::append(QChar str)
+FileName &FileName::appendString(QChar str)
 {
     QString::append(str);
     return *this;
+}
+
+QTextStream &operator<<(QTextStream &s, const FileName &fn)
+{
+    return s << fn.toString();
+}
+
+int FileNameList::removeDuplicates()
+{
+    QSet<FileName> seen;
+    int removed = 0;
+
+    for (int i = 0; i < size(); ) {
+        const FileName &fn = at(i);
+        if (seen.contains(fn)) {
+            removeAt(i);
+            ++removed;
+        } else {
+            seen.insert(fn);
+            ++i;
+        }
+    }
+
+    return removed;
+}
+
+static bool isFileDrop(const QMimeData *d, QList<FileDropSupport::FileSpec> *files = 0)
+{
+    // internal drop
+    if (const FileDropMimeData *internalData = qobject_cast<const FileDropMimeData *>(d)) {
+        if (files)
+            *files = internalData->files();
+        return true;
+    }
+
+    // external drop
+    if (files)
+        files->clear();
+    // Extract dropped files from Mime data.
+    if (!d->hasUrls())
+        return false;
+    const QList<QUrl> urls = d->urls();
+    if (urls.empty())
+        return false;
+    // Try to find local files
+    bool hasFiles = false;
+    const QList<QUrl>::const_iterator cend = urls.constEnd();
+    for (QList<QUrl>::const_iterator it = urls.constBegin(); it != cend; ++it) {
+        QUrl url = *it;
+#ifdef Q_OS_OSX
+        // for file drops from Finder, working around QTBUG-40449
+        url = Internal::filePathUrl(url);
+#endif
+        const QString fileName = url.toLocalFile();
+        if (!fileName.isEmpty()) {
+            hasFiles = true;
+            if (files)
+                files->append(FileDropSupport::FileSpec(fileName));
+            else
+                break; // No result list, sufficient for checking
+        }
+    }
+    return hasFiles;
+}
+
+FileDropSupport::FileDropSupport(QWidget *parentWidget, const DropFilterFunction &filterFunction)
+    : QObject(parentWidget),
+      m_filterFunction(filterFunction)
+{
+    QTC_ASSERT(parentWidget, return);
+    parentWidget->setAcceptDrops(true);
+    parentWidget->installEventFilter(this);
+}
+
+QStringList FileDropSupport::mimeTypesForFilePaths()
+{
+    return QStringList() << QStringLiteral("text/uri-list");
+}
+
+bool FileDropSupport::eventFilter(QObject *obj, QEvent *event)
+{
+    Q_UNUSED(obj)
+    if (event->type() == QEvent::DragEnter) {
+        auto dee = static_cast<QDragEnterEvent *>(event);
+        if (isFileDrop(dee->mimeData())
+                && (!m_filterFunction || m_filterFunction(dee)))
+            event->accept();
+        else
+            event->ignore();
+        return true;
+    } else if (event->type() == QEvent::DragMove) {
+        event->accept();
+        return true;
+    } else if (event->type() == QEvent::Drop) {
+        auto de = static_cast<QDropEvent *>(event);
+        QList<FileSpec> tempFiles;
+        if (isFileDrop(de->mimeData(), &tempFiles)
+                && (!m_filterFunction || m_filterFunction(de))) {
+            const FileDropMimeData *fileDropMimeData = qobject_cast<const FileDropMimeData *>(de->mimeData());
+            event->accept();
+            if (fileDropMimeData && fileDropMimeData->isOverridingFileDropAction())
+                de->setDropAction(fileDropMimeData->overrideFileDropAction());
+            else
+                de->acceptProposedAction();
+            bool needToScheduleEmit = m_files.isEmpty();
+            m_files.append(tempFiles);
+            if (needToScheduleEmit) { // otherwise we already have a timer pending
+                // Delay the actual drop, to avoid conflict between
+                // actions that happen when opening files, and actions that the item views do
+                // after the drag operation.
+                // If we do not do this, e.g. dragging from Outline view crashes if the editor and
+                // the selected item changes
+                QTimer::singleShot(100, this, SLOT(emitFilesDropped()));
+            }
+        } else {
+            event->ignore();
+        }
+        return true;
+    }
+    return false;
+}
+
+void FileDropSupport::emitFilesDropped()
+{
+    QTC_ASSERT(!m_files.isEmpty(), return);
+    emit filesDropped(m_files);
+    m_files.clear();
+}
+
+/*!
+    Sets the drop action to effectively use, instead of the "proposed" drop action from the
+    drop event. This can be useful when supporting move drags within an item view, but not
+    "moving" an item from the item view into a split.
+ */
+FileDropMimeData::FileDropMimeData()
+    : m_overrideDropAction(Qt::IgnoreAction),
+      m_isOverridingDropAction(false)
+{
+
+}
+
+void FileDropMimeData::setOverrideFileDropAction(Qt::DropAction action)
+{
+    m_isOverridingDropAction = true;
+    m_overrideDropAction = action;
+}
+
+Qt::DropAction FileDropMimeData::overrideFileDropAction() const
+{
+    return m_overrideDropAction;
+}
+
+bool FileDropMimeData::isOverridingFileDropAction() const
+{
+    return m_isOverridingDropAction;
+}
+
+void FileDropMimeData::addFile(const QString &filePath, int line, int column)
+{
+    // standard mime data
+    QList<QUrl> currentUrls = urls();
+    currentUrls.append(QUrl::fromLocalFile(filePath));
+    setUrls(currentUrls);
+    // special mime data
+    m_files.append(FileDropSupport::FileSpec(filePath, line, column));
+}
+
+QList<FileDropSupport::FileSpec> FileDropMimeData::files() const
+{
+    return m_files;
 }
 
 } // namespace Utils
@@ -657,7 +936,7 @@ FileName &FileName::append(QChar str)
 QT_BEGIN_NAMESPACE
 uint qHash(const Utils::FileName &a)
 {
-    if (Utils::HostOsInfo::isWindowsHost())
+    if (Utils::HostOsInfo::fileNameCaseSensitivity() == Qt::CaseInsensitive)
         return qHash(a.toString().toUpper());
     return qHash(a.toString());
 }

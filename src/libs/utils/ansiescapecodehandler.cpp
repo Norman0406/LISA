@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Petar Perisin <petar.perisin@gmail.com>
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 Petar Perisin <petar.perisin@gmail.com>
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -70,29 +71,48 @@ static QColor ansiColor(uint code)
     return QColor(red, green, blue);
 }
 
-QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
-                                                         const QTextCharFormat &defaultFormat)
+QList<FormattedText> AnsiEscapeCodeHandler::parseText(const FormattedText &input)
 {
-    QList<StringFormatPair> outputData;
+    enum AnsiEscapeCodes {
+        ResetFormat            =  0,
+        BoldText               =  1,
+        TextColorStart         = 30,
+        TextColorEnd           = 37,
+        RgbTextColor           = 38,
+        DefaultTextColor       = 39,
+        BackgroundColorStart   = 40,
+        BackgroundColorEnd     = 47,
+        RgbBackgroundColor     = 48,
+        DefaultBackgroundColor = 49
+    };
 
-    QTextCharFormat charFormat = m_previousFormatClosed ? defaultFormat : m_previousFormat;
+    QList<FormattedText> outputData;
+
+    QTextCharFormat charFormat = m_previousFormatClosed ? input.format : m_previousFormat;
 
     const QString escape = QLatin1String("\x1b[");
-    if (!text.contains(escape)) {
-        outputData << StringFormatPair(text, charFormat);
+    const int escapePos = input.text.indexOf(escape);
+    if (escapePos < 0) {
+        outputData << FormattedText(input.text, charFormat);
         return outputData;
-    } else if (!text.startsWith(escape)) {
-        outputData << StringFormatPair(text.left(text.indexOf(escape)), charFormat);
+    } else if (escapePos != 0) {
+        outputData << FormattedText(input.text.left(escapePos), charFormat);
     }
 
     const QChar semicolon       = QLatin1Char(';');
     const QChar colorTerminator = QLatin1Char('m');
+    const QChar eraseToEol      = QLatin1Char('K');
     // strippedText always starts with "\e["
-    QString strippedText = text.mid(text.indexOf(escape));
+    QString strippedText = input.text.mid(escapePos);
     while (!strippedText.isEmpty()) {
         while (strippedText.startsWith(escape)) {
             strippedText.remove(0, 2);
 
+            // \e[K is not supported. Just strip it.
+            if (strippedText.startsWith(eraseToEol)) {
+                strippedText.remove(0, 1);
+                continue;
+            }
             // get the number
             QString strNumber;
             QStringList numbers;
@@ -116,7 +136,7 @@ QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
             strippedText.remove(0, 1);
 
             if (numbers.isEmpty()) {
-                charFormat = defaultFormat;
+                charFormat = input.format;
                 endFormatScope();
             }
 
@@ -132,7 +152,7 @@ QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
                 } else {
                     switch (code) {
                     case ResetFormat:
-                        charFormat = defaultFormat;
+                        charFormat = input.format;
                         endFormatScope();
                         break;
                     case BoldText:
@@ -140,18 +160,20 @@ QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
                         setFormatScope(charFormat);
                         break;
                     case DefaultTextColor:
-                        charFormat.setForeground(defaultFormat.foreground());
+                        charFormat.setForeground(input.format.foreground());
                         setFormatScope(charFormat);
                         break;
                     case DefaultBackgroundColor:
-                        charFormat.setBackground(defaultFormat.background());
+                        charFormat.setBackground(input.format.background());
                         setFormatScope(charFormat);
                         break;
                     case RgbTextColor:
                     case RgbBackgroundColor:
+                        // See http://en.wikipedia.org/wiki/ANSI_escape_code#Colors
                         if (++i >= numbers.size())
                             break;
-                        if (numbers.at(i).toInt() == 2) {
+                        switch (numbers.at(i).toInt()) {
+                        case 2:
                             // RGB set with format: 38;2;<r>;<g>;<b>
                             if ((i + 3) < numbers.size()) {
                                 (code == RgbTextColor) ?
@@ -164,10 +186,36 @@ QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
                                 setFormatScope(charFormat);
                             }
                             i += 3;
-                        } else if (numbers.at(i).toInt() == 5) {
-                            // rgb set with format: 38;5;<i>
-                            // unsupported because of unclear documentation, so we just skip <i>
+                            break;
+                        case 5:
+                            // 256 color mode with format: 38;5;<i>
+                            uint index = numbers.at(i + 1).toInt();
+
+                            QColor color;
+                            if (index < 8) {
+                                // The first 8 colors are standard low-intensity ANSI colors.
+                                color = ansiColor(index);
+                            } else if (index < 16) {
+                                // The next 8 colors are standard high-intensity ANSI colors.
+                                color = ansiColor(index - 8).lighter(150);
+                            } else if (index < 232) {
+                                // The next 216 colors are a 6x6x6 RGB cube.
+                                uint o = index - 16;
+                                color = QColor((o / 36) * 51, ((o / 6) % 6) * 51, (o % 6) * 51);
+                            } else {
+                                // The last 24 colors are a greyscale gradient.
+                                uint grey = (index - 232) * 11;
+                                color = QColor(grey, grey, grey);
+                            }
+
+                            if (code == RgbTextColor)
+                                charFormat.setForeground(color);
+                            else
+                                charFormat.setBackground(color);
+
+                            setFormatScope(charFormat);
                             ++i;
+                            break;
                         }
                         break;
                     default:
@@ -181,10 +229,10 @@ QList<StringFormatPair> AnsiEscapeCodeHandler::parseText(const QString &text,
             break;
         int index = strippedText.indexOf(escape);
         if (index > 0) {
-            outputData << StringFormatPair(strippedText.left(index), charFormat);
+            outputData << FormattedText(strippedText.left(index), charFormat);
             strippedText.remove(0, index);
         } else if (index == -1) {
-            outputData << StringFormatPair(strippedText, charFormat);
+            outputData << FormattedText(strippedText, charFormat);
             break;
         }
     }

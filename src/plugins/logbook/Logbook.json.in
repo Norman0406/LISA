@@ -1,0 +1,13 @@
+{
+    \"Name\" : \"Logbook\",
+    \"Version\" : \"$$LISA_VERSION\",
+    \"CompatVersion\" : \"$$LISA_COMPAT_VERSION\",
+    \"Experimental\" : false,
+    \"Authors\" : \"Norman Link (DM6LN)\",
+    \"Copyright\" : \"(C) 2015 Norman Link (DM6LN)\",
+    \"License\" : [],
+    \"Category\" : \"Logbook\",
+    \"Description\" : \"Plugin for logbook management.\",
+    \"Url\" : \"TODO\",
+    $$dependencyList
+}

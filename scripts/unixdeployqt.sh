@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# Copyright (C) 2014 Digia Plc
+# Copyright (C) 2015 The Qt Company Ltd
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
 #   * Redistributions in binary form must reproduce the above copyright notice,
 #     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-#   * Neither the name of Digia Plc, nor the names of its contributors
+#   * Neither the name of The Qt Company Ltd, nor the names of its contributors
 #     may be used to endorse or promote products derived from this software
 #     without specific prior written permission.
 #
@@ -54,7 +54,7 @@ QT_INSTALL_TRANSLATIONS="$($QMAKE_BIN -query QT_INSTALL_TRANSLATIONS)"
 plugins="accessible designer iconengines imageformats sqldrivers"
 imports="Qt QtWebKit"
 tr_catalogs="assistant designer qt qt_help"
-tr_languages="$(cd $INSTALL_DIR/share/list/translations; echo lisa_* | sed -e 's,[^_]*_\([^.]*\)\.,\1 ,g')"
+tr_languages="$(cd $INSTALL_DIR/share/qtcreator/translations; echo qtcreator_* | sed -e 's,[^_]*_\([^.]*\)\.,\1 ,g')"
 
 function fix_rpaths()
 {
@@ -89,7 +89,7 @@ function copy_translations()
 {
     for language in $tr_languages; do
         for catalog in $tr_catalogs; do
-            cp -a $QT_INSTALL_TRANSLATIONS/${catalog}_${language}.qm $INSTALL_DIR/share/lisa/translations
+            cp -a $QT_INSTALL_TRANSLATIONS/${catalog}_${language}.qm $INSTALL_DIR/share/qtcreator/translations
         done
     done
 }

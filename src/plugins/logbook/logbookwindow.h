@@ -26,6 +26,10 @@
 #define LOGBOOKWINDOW_H
 
 #include <QWidget>
+#include <QTableWidget>
+#include "logbookproxymodel.h"
+
+#include <QtSql>
 
 namespace Logbook {
 namespace Internal {
@@ -37,6 +41,14 @@ class LogbookWindow
 
 public:
     LogbookWindow(QWidget *parent = 0);
+    ~LogbookWindow();
+
+private:
+    QTableView* m_logbookView;
+
+    QSqlDatabase m_database;
+    QSqlRelationalTableModel* m_model;
+    LogbookProxyModel* m_proxyModel;
 };
 
 } // namespace Internal

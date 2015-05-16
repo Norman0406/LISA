@@ -11,5 +11,6 @@ ModemReceiver::ModemReceiver(QObject* parent, Modem* modem)
 
 void ModemReceiver::audioDataReady(const QVector<double>& data)
 {
-    m_modem->rxProcess(data);
+    //m_modem->rxProcess(data);
+    m_modem->receive(data);
 }

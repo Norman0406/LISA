@@ -47,14 +47,20 @@ public slots:
     void modemSelected(QString);
     void clear();
     void received(char);
-    void updateText();
+    void sent(char);
+    void updateReceived();
+    void updateSent();
 
 private:
     Ui::Messenger* m_ui;
 
-    QString m_message;
-    QTimer* m_updateTimer;
-    bool m_textChanged;
+    QString m_received;
+    QTimer* m_receivedTimer;
+    bool m_receivedChanged;
+
+    QString m_sent;
+    QTimer* m_sentTimer;
+    bool m_sentChanged;
 };
 
 } // namespace Internal

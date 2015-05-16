@@ -58,6 +58,10 @@ public:
     qint64 getBufferLength() const;
     qint64 getBufferSize() const;
 
+signals:
+    void bytesRead(qint64);
+    void bytesWritten(qint64);
+
 private:
     const QAudioFormat m_format;
     QVector<double> m_buffer;

@@ -1,6 +1,6 @@
 #! /usr/bin/env python2
 ################################################################################
-# Copyright (C) 2014 Digia Plc
+# Copyright (C) 2015 The Qt Company Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
 #   * Redistributions in binary form must reproduce the above copyright notice,
 #     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-#   * Neither the name of Digia Plc, nor the names of its contributors
+#   * Neither the name of The Qt Company Ltd, nor the names of its contributors
 #     may be used to endorse or promote products derived from this software
 #     without specific prior written permission.
 #
@@ -223,7 +223,7 @@ class BinaryDirExaminer:
         self._findPlugins(path)
 
     def _findLibraries(self, path):
-        libdir = glob.glob(os.path.join(path, "lib", "qtcreator", "lib*"))
+        libdir = glob.glob(os.path.join(path, "lib", "lisa", "lib*"))
         for l in libdir:
             if os.path.islink(l):
                 continue
@@ -231,12 +231,10 @@ class BinaryDirExaminer:
             self.libraries.append(Library(l))
 
     def _findPlugins(self, path):
-        vendordirs = glob.glob(os.path.join(path, "lib", "qtcreator", "plugins", "*"))
-        for dir in vendordirs:
-            pluginspecs = glob.glob(os.path.join(dir, "*.pluginspec"))
-            for spec in pluginspecs:
-                log.debug('   Looking at plugin "%s".', spec)
-                self.plugins.append(Plugin(spec))
+        pluginspecs = glob.glob(os.path.join(path, "lib", "lisa", "plugins", "*.pluginspec"))
+        for spec in pluginspecs:
+            log.debug('   Looking at plugin "%s".', spec)
+            self.plugins.append(Plugin(spec))
 
 
 
@@ -254,7 +252,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Sanity check:
-    if not(os.path.exists(os.path.join(os.getcwd(), "bin", "qtcreator"))):
+    if not(os.path.exists(os.path.join(os.getcwd(), "bin", "lisa"))):
         log.critical('Not a top level Qt Creator build directory.')
         sys.exit(1)
 

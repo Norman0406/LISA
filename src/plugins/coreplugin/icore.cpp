@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,25 +9,27 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
 
 #include "icore.h"
+#include "windowsupport.h"
 
 #include <app/app_version.h>
 #include <extensionsystem/pluginmanager.h>
@@ -97,12 +99,6 @@
     Returns \c true if the settings dialog was accepted.
 */
 
-
-/*!
-    \fn MimeDatabase *ICore::mimeDatabase()
-
-    Uses the MIME database to manage MIME types.
-*/
 
 /*!
     \fn QSettings *ICore::settings(QSettings::Scope scope = QSettings::UserScope)
@@ -298,6 +294,7 @@
 #include <QStatusBar>
 
 using namespace Core::Internal;
+using namespace ExtensionSystem;
 
 namespace Core {
 
@@ -310,13 +307,20 @@ ICore *ICore::instance()
     return m_instance;
 }
 
+bool ICore::isNewItemDialogRunning()
+{
+    return m_mainwindow->isNewItemDialogRunning();
+}
+
 ICore::ICore(MainWindow *mainwindow)
 {
     m_instance = this;
     m_mainwindow = mainwindow;
     // Save settings once after all plugins are initialized:
-    connect(ExtensionSystem::PluginManager::instance(), SIGNAL(initializationDone()),
-            this, SIGNAL(saveSettingsRequested()));
+    connect(PluginManager::instance(), SIGNAL(initializationDone()),
+            this, SLOT(saveSettings()));
+    connect(m_mainwindow, SIGNAL(newItemDialogRunningChanged()),
+            this, SIGNAL(newItemDialogRunningChanged()));
 }
 
 ICore::~ICore()
@@ -326,32 +330,45 @@ ICore::~ICore()
 }
 
 void ICore::showNewItemDialog(const QString &title,
-                              const QList<IWizard *> &wizards,
+                              const QList<IWizardFactory *> &factories,
                               const QString &defaultLocation,
                               const QVariantMap &extraVariables)
 {
-    m_mainwindow->showNewItemDialog(title, wizards, defaultLocation, extraVariables);
+    m_mainwindow->showNewItemDialog(title, factories, defaultLocation, extraVariables);
 }
 
-bool ICore::showOptionsDialog(const Id group, const Id page, QWidget *parent)
+bool ICore::showOptionsDialog(const Id page, QWidget *parent)
 {
-    return m_mainwindow->showOptionsDialog(group, page, parent);
+    return m_mainwindow->showOptionsDialog(page, parent);
+}
+
+QString ICore::msgShowOptionsDialog()
+{
+    return QCoreApplication::translate("Core", "Configure...", "msgShowOptionsDialog");
+}
+
+QString ICore::msgShowOptionsDialogToolTip()
+{
+    if (Utils::HostOsInfo::isMacHost())
+        return QCoreApplication::translate("Core", "Open Preferences dialog.",
+                                           "msgShowOptionsDialogToolTip (mac version)");
+    else
+        return QCoreApplication::translate("Core", "Open Options dialog.",
+                                           "msgShowOptionsDialogToolTip (non-mac version)");
 }
 
 bool ICore::showWarningWithOptions(const QString &title, const QString &text,
-                                   const QString &details,
-                                   Id settingsCategory,
-                                   Id settingsId,
-                                   QWidget *parent)
+                                   const QString &details, Id settingsId, QWidget *parent)
 {
-    return m_mainwindow->showWarningWithOptions(title, text,
-                                                details, settingsCategory,
-                                                settingsId, parent);
+    return m_mainwindow->showWarningWithOptions(title, text, details, settingsId, parent);
 }
 
 QSettings *ICore::settings(QSettings::Scope scope)
 {
-    return m_mainwindow->settings(scope);
+    if (scope == QSettings::UserScope)
+        return PluginManager::settings();
+    else
+        return PluginManager::globalSettings();
 }
 
 SettingsDatabase *ICore::settingsDatabase()
@@ -382,8 +399,7 @@ QString ICore::userResourcePath()
     const QString configDir = QFileInfo(settings(QSettings::UserScope)->fileName()).path();
     const QString urp = configDir + QLatin1String("/lisa");
 
-    QFileInfo fi(urp + QLatin1Char('/'));
-    if (!fi.exists()) {
+    if (!QFileInfo::exists(urp + QLatin1Char('/'))) {
         QDir dir;
         if (!dir.mkpath(urp))
             qWarning() << "could not create" << urp;
@@ -392,16 +408,9 @@ QString ICore::userResourcePath()
     return urp;
 }
 
-QString ICore::documentationPath()
-{
-    const QString docPath = QLatin1String(Utils::HostOsInfo::isMacHost()
-                                            ? "/../Resources/doc" : "/../share/doc/qtcreator");
-    return QDir::cleanPath(QCoreApplication::applicationDirPath() + docPath);
-}
-
 /*!
     Returns the path to the command line tools that are shipped with \QC (corresponding
-    to the LISA_LIBEXEC_PATH qmake variable).
+    to the IDE_LIBEXEC_PATH qmake variable).
  */
 QString ICore::libexecPath()
 {
@@ -487,6 +496,16 @@ void ICore::updateAdditionalContexts(const Context &remove, const Context &add)
     m_mainwindow->updateAdditionalContexts(remove, add);
 }
 
+void ICore::addAdditionalContext(const Context &context)
+{
+    m_mainwindow->updateAdditionalContexts(Context(), context);
+}
+
+void ICore::removeAdditionalContext(const Context &context)
+{
+    m_mainwindow->updateAdditionalContexts(context, Context());
+}
+
 void ICore::addContextObject(IContext *context)
 {
     m_mainwindow->addContextObject(context);
@@ -495,6 +514,11 @@ void ICore::addContextObject(IContext *context)
 void ICore::removeContextObject(IContext *context)
 {
     m_mainwindow->removeContextObject(context);
+}
+
+void ICore::registerWindow(QWidget *window, const Context &context)
+{
+    new WindowSupport(window, context); // deletes itself when widget is destroyed
 }
 
 void ICore::openFiles(const QStringList &arguments, ICore::OpenFilesFlags flags)

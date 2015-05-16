@@ -49,12 +49,18 @@ void AudioDeviceOut::iInit(const QAudioDeviceInfo& info)
     m_producerList = new AudioProducerList(this);
 
     // create the input
-    m_audioOutput = new QAudioOutput(info, getFormat(), this);
+    m_audioOutput = new QAudioOutput(info, getFormat(), 0);
+
+    m_thread = new QThread(this);
+    m_audioOutput->moveToThread(m_thread);
+
     connect(m_audioOutput, &QAudioOutput::stateChanged, this, &AudioDeviceOut::stateChanged);
 }
 
 void AudioDeviceOut::start()
 {
+    m_thread->start();
+
     if (!m_producerList->isOpen())
         m_producerList->open(QIODevice::ReadOnly);
 

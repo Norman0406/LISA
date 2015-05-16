@@ -43,10 +43,10 @@ class GeneralSettings
 public:
     GeneralSettings();
 
-    QWidget *createPage(QWidget *parent);
+    bool matches(const QString& searchKeyWord) const;
+    QWidget* widget();
     void apply();
     void finish();
-    bool matches(const QString &) const;
 
 private:
     Ui::GeneralSettings* m_page;

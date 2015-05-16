@@ -49,11 +49,15 @@ public:
     virtual void create(QAudioFormat, AudioProducerList*);
 
     void write(QVector<double>&);
+    void flush();
 
     AudioRingBuffer* m_buffer;
 
 signals:
     void newDataAvailable();
+
+private slots:
+    void bytesRead(qint64);
 
 protected:
     const QAudioFormat& getFormat() const;

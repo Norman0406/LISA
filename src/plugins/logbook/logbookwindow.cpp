@@ -23,10 +23,10 @@
  **********************************************************************/
 
 #include "logbookwindow.h"
-
 #include "logbooktoolbar.h"
 
 #include <QVBoxLayout>
+#include <QHeaderView>
 
 using namespace Logbook::Internal;
 
@@ -40,8 +40,37 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     // add the toolbar on the top
     layout->addWidget(new LogbookToolBar(this));
 
-    // create a simple label
-    QLabel* label = new QLabel(tr("Logbook"), this);
-    label->setAlignment(Qt::AlignCenter);
-    layout->addWidget(label);
+    // create the table view
+    m_logbookView = new QTableView(this);
+    m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    m_logbookView->setAlternatingRowColors(true);
+
+    // create database
+    m_database = QSqlDatabase::addDatabase(QString::fromLatin1("QSQLITE"));
+    m_database.setHostName(QString::fromLatin1("localhost"));
+    m_database.setDatabaseName(QString::fromLatin1("logbook.sql"));
+    m_database.open();
+
+    // create model
+    m_model = new QSqlRelationalTableModel(this, m_database);
+    m_model->setTable(QString::fromLatin1("logbook"));
+    m_model->select();
+
+    // create proxy model
+    m_proxyModel = new LogbookProxyModel;
+    m_proxyModel->setSourceModel(m_model);
+
+    // set the view model
+    //m_logbookView->setModel(m_model);
+    m_logbookView->setModel(m_proxyModel);
+    m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+    layout->addWidget(m_logbookView);
+}
+
+LogbookWindow::~LogbookWindow()
+{
+    m_model->submitAll();
+    m_database.close();
 }

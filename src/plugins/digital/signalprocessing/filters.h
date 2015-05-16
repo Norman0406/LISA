@@ -29,6 +29,7 @@
 #define _FILTER_H
 
 #include <complex>
+#include <qmath.h>
 
 //=====================================================================
 // FIR filters

@@ -60,9 +60,14 @@ AudioRingBuffer::~AudioRingBuffer()
     close();
 }
 
+#include <QThread>
+#include <QDebug>
 qint64 AudioRingBuffer::writeData(const QVector<double>& data)
 {
     m_lock.lock();
+    //this->thread()->msleep(10);
+
+    qDebug() << "buffer length: " << m_bufferLength;
     // UNDONE: FFT still writes data on the gui thread
     /*while (m_bufferLength == m_bufferSize)
         m_canWrite.wait(&m_lock);*/
@@ -84,15 +89,18 @@ qint64 AudioRingBuffer::writeData(const QVector<double>& data)
 
     m_lock.unlock();
 
+    const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
+    emit bytesWritten(samplesWrittenTotal * bytesPerSample);
+
     return samplesWrittenTotal;
 }
 
 qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
 {
     m_lock.lock();
+
     /*while (m_bufferLength == m_bufferSize)
         m_canWrite.wait(&m_lock);*/
-
     const int bytesPerSample = (m_format.sampleSize() / 8) * m_format.channelCount();
 
     qint64 bytesWrittenTotal = 0;
@@ -115,6 +123,8 @@ qint64 AudioRingBuffer::writeData(const char* data, qint64 len)
         m_bufferLength = m_bufferSize;
 
     m_lock.unlock();
+
+    emit bytesWritten(bytesWrittenTotal);
 
     return bytesWrittenTotal;
 }
@@ -154,6 +164,8 @@ qint64 AudioRingBuffer::readData(char* data, qint64 maxSize)
     m_canWrite.wakeAll();
 
     m_lock.unlock();
+
+    emit bytesRead(bytesReadTotal);
 
     return bytesReadTotal;
 }

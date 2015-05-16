@@ -47,7 +47,7 @@ SpectrumToolBar::SpectrumToolBar(QWidget* parent)
 
     toolBarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
-    m_lblInfo = new QLabel(QString::fromAscii("Sound Info"), this);
+    m_lblInfo = new QLabel(QString::fromLatin1("Sound Info"), this);
     toolBarLayout->addWidget(m_lblInfo);
 }
 

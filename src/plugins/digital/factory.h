@@ -40,7 +40,7 @@ public:
     {
         T* newInstance = create(type, parent);
         if (!newInstance) {
-            qDebug() << QString::fromAscii("could not create instance: ") + type;
+            qDebug() << QString::fromLatin1("could not create instance: ") + type;
             return 0;
         }
 

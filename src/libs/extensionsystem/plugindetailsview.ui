@@ -152,7 +152,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Vendor:</string>
+      <string>Authors:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -222,7 +222,7 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLabel" name="vendor">
+    <widget class="QLabel" name="authors">
      <property name="textInteractionFlags">
       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>

@@ -43,15 +43,27 @@ void AudioProducer::create(QAudioFormat format, AudioProducerList* producerList)
     m_format = format;
     m_producerList = producerList;
     m_buffer = new AudioRingBuffer(m_format, m_bufferLengthSec, this);
+    connect(m_buffer, &AudioRingBuffer::bytesRead, this, &AudioProducer::bytesRead);
 }
 
 #include <QDebug>
 
 void AudioProducer::write(QVector<double>& data)
 {
+    // TODO: wait until everything has been read
     qint64 written = m_buffer->writeData(data);
     Q_UNUSED(written);
+    //emit newDataAvailable();
+}
+
+void AudioProducer::flush()
+{
     emit newDataAvailable();
+}
+
+void AudioProducer::bytesRead(qint64 bytes)
+{
+    //qDebug() << "read " << bytes << " bytes";
 }
 
 const QAudioFormat& AudioProducer::getFormat() const

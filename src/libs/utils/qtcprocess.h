@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -51,10 +52,26 @@ public:
         { m_environment = env; m_haveEnv = true; }
     void setCommand(const QString &command, const QString &arguments)
         { m_command = command; m_arguments = arguments; }
-    void setUseCtrlCStub(bool enabled) { m_useCtrlCStub = enabled; }
+    void setUseCtrlCStub(bool enabled);
     void start();
     void terminate();
     void interrupt();
+
+    class QTCREATOR_UTILS_EXPORT Arguments
+    {
+    public:
+        static Arguments createWindowsArgs(const QString &args);
+        static Arguments createUnixArgs(const QStringList &args);
+
+        QString toWindowsArgs() const;
+        QStringList toUnixArgs() const;
+        QString toString() const;
+
+    private:
+        QString m_windowsArgs;
+        QStringList m_unixArgs;
+        bool m_isWindows;
+    };
 
     enum SplitError {
         SplitOk = 0, //! All went just fine
@@ -64,45 +81,33 @@ public:
 
     //! Quote a single argument for usage in a unix shell command
     static QString quoteArgUnix(const QString &arg);
-    //! Quote a single argument and append it to a unix shell command
-    static void addArgUnix(QString *args, const QString &arg);
-    //! Join an argument list into a unix shell command
-    static QString joinArgsUnix(const QStringList &args);
-#ifdef Q_OS_WIN
     //! Quote a single argument for usage in a shell command
-    static QString quoteArg(const QString &arg);
+    static QString quoteArg(const QString &arg, OsType osType = HostOsInfo::hostOs());
     //! Quote a single argument and append it to a shell command
-    static void addArg(QString *args, const QString &arg);
+    static void addArg(QString *args, const QString &arg, OsType osType = HostOsInfo::hostOs());
     //! Join an argument list into a shell command
-    static QString joinArgs(const QStringList &args);
+    static QString joinArgs(const QStringList &args, OsType osType = HostOsInfo::hostOs());
     //! Prepare argument of a shell command for feeding into QProcess
-    static QString prepareArgs(const QString &cmd, SplitError *err,
-                               const Environment *env = 0, const QString *pwd = 0);
+    static Arguments prepareArgs(const QString &cmd, SplitError *err,
+                                 OsType osType = HostOsInfo::hostOs(),
+                                 const Environment *env = 0, const QString *pwd = 0);
     //! Prepare a shell command for feeding into QProcess
-    static void prepareCommand(const QString &command, const QString &arguments,
-                               QString *outCmd, QString *outArgs,
-                               const Environment *env = 0, const QString *pwd = 0);
-#else
-    static QString quoteArg(const QString &arg) { return quoteArgUnix(arg); }
-    static void addArg(QString *args, const QString &arg) { addArgUnix(args, arg); }
-    static QString joinArgs(const QStringList &args) { return joinArgsUnix(args); }
-    static QStringList prepareArgs(const QString &cmd, SplitError *err,
-                                   const Environment *env = 0, const QString *pwd = 0)
-        { return splitArgs(cmd, true, err, env, pwd); }
     static bool prepareCommand(const QString &command, const QString &arguments,
-                               QString *outCmd, QStringList *outArgs,
+                               QString *outCmd, Arguments *outArgs, OsType osType = HostOsInfo::hostOs(),
                                const Environment *env = 0, const QString *pwd = 0);
-#endif
     //! Quote and append each argument to a shell command
     static void addArgs(QString *args, const QStringList &inArgs);
     //! Append already quoted arguments to a shell command
     static void addArgs(QString *args, const QString &inArgs);
     //! Split a shell command into separate arguments. ArgIterator is usually a better choice.
-    static QStringList splitArgs(const QString &cmd, bool abortOnMeta = false, SplitError *err = 0,
+    static QStringList splitArgs(const QString &cmd, OsType osType = HostOsInfo::hostOs(),
+                                 bool abortOnMeta = false, SplitError *err = 0,
                                  const Environment *env = 0, const QString *pwd = 0);
     //! Safely replace the expandos in a shell command
-    static bool expandMacros(QString *cmd, AbstractMacroExpander *mx);
-    static QString expandMacros(const QString &str, AbstractMacroExpander *mx);
+    static bool expandMacros(QString *cmd, AbstractMacroExpander *mx,
+                             OsType osType = HostOsInfo::hostOs());
+    static QString expandMacros(const QString &str, AbstractMacroExpander *mx,
+                                OsType osType = HostOsInfo::hostOs());
 
     /*! Iterate over arguments from a command line.
      *  Assumes that the name of the actual command is *not* part of the line.
@@ -110,7 +115,9 @@ public:
      */
     class QTCREATOR_UTILS_EXPORT ArgIterator {
     public:
-        ArgIterator(QString *str) : m_str(str), m_pos(0), m_prev(-1) {}
+        ArgIterator(QString *str, OsType osType = HostOsInfo::hostOs())
+            : m_str(str), m_pos(0), m_prev(-1), m_osType(osType)
+        {}
         //! Get the next argument. Returns false on encountering end of first command.
         bool next();
         //! True iff the argument is a plain string, possibly after unquoting.
@@ -126,11 +133,14 @@ public:
         QString *m_str, m_value;
         int m_pos, m_prev;
         bool m_simple;
+        OsType m_osType;
     };
 
     class QTCREATOR_UTILS_EXPORT ConstArgIterator {
     public:
-        ConstArgIterator(const QString &str) : m_str(str), m_ait(&m_str) {}
+        ConstArgIterator(const QString &str, OsType osType = HostOsInfo::hostOs())
+            : m_str(str), m_ait(&m_str, osType)
+        {}
         bool next() { return m_ait.next(); }
         bool isSimple() const { return m_ait.isSimple(); }
         QString value() const { return m_ait.value(); }

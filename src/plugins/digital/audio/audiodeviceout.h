@@ -27,6 +27,7 @@
 
 #include "AudioDevice.h"
 #include <QAudioOutput>
+#include <QThread>
 
 namespace Digital {
 namespace Internal {
@@ -62,6 +63,7 @@ protected:
     void iInit(const QAudioDeviceInfo&);
 
 private:
+    QThread*            m_thread;
     QAudioOutput*       m_audioOutput;
     AudioProducerList*  m_producerList;
 };

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -31,8 +32,10 @@
 #define SHORTCUTSETTINGS_H
 
 #include <coreplugin/actionmanager/commandmappings.h>
+#include <coreplugin/dialogs/ioptionspage.h>
 
 #include <QKeySequence>
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 class QKeyEvent;
@@ -54,48 +57,54 @@ struct ShortcutItem
     QTreeWidgetItem *m_item;
 };
 
+class ShortcutSettingsWidget : public CommandMappings
+{
+    Q_OBJECT
 
-class ShortcutSettings : public Core::CommandMappings
+public:
+    ShortcutSettingsWidget(QWidget *parent = 0);
+    ~ShortcutSettingsWidget() override;
+
+    void apply();
+
+protected:
+    bool eventFilter(QObject *o, QEvent *e) override;
+
+    void commandChanged(QTreeWidgetItem *current) override;
+    void targetIdentifierChanged() override;
+    void resetTargetIdentifier() override;
+    void removeTargetIdentifier() override;
+    void importAction() override;
+    void exportAction() override;
+    void defaultAction() override;
+    bool hasConflicts() const override;
+
+    bool filterColumn(const QString &filterString, QTreeWidgetItem *item, int column) const override;
+
+private:
+    void initialize();
+    void handleKeyEvent(QKeyEvent *e);
+    void markCollisions(ShortcutItem *);
+    void setKeySequence(const QKeySequence &key);
+    void clear();
+
+    QList<ShortcutItem *> m_scitems;
+    int m_key[4], m_keyNum;
+};
+
+class ShortcutSettings : public IOptionsPage
 {
     Q_OBJECT
 
 public:
     ShortcutSettings(QObject *parent = 0);
 
-    QWidget *createPage(QWidget *parent);
-    void apply();
-    void finish();
-    bool matches(const QString &s) const;
-
-protected:
-    bool eventFilter(QObject *o, QEvent *e);
-
-private slots:
-    void commandChanged(QTreeWidgetItem *current);
-    void targetIdentifierChanged();
-    void resetTargetIdentifier();
-    void removeTargetIdentifier();
-    void importAction();
-    void exportAction();
-    void defaultAction();
-    void initialize();
+    QWidget *widget() override;
+    void apply() override;
+    void finish() override;
 
 private:
-    void setKeySequence(const QKeySequence &key);
-    void clear();
-
-    void handleKeyEvent(QKeyEvent *e);
-    int translateModifiers(Qt::KeyboardModifiers state, const QString &text);
-    using Core::CommandMappings::markPossibleCollisions;
-    void markPossibleCollisions(ShortcutItem *);
-    void resetCollisionMarker(ShortcutItem *);
-    void resetCollisionMarkers();
-
-    QList<ShortcutItem *> m_scitems;
-    int m_key[4], m_keyNum;
-
-    QString m_searchKeywords;
-    bool m_initialized;
+    QPointer<ShortcutSettingsWidget> m_widget;
 };
 
 } // namespace Internal

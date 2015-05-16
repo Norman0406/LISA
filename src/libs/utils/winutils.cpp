@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -31,9 +32,11 @@
 #include "qtcassert.h"
 
 // Enable WinAPI Windows XP and later
+#ifdef Q_OS_WIN
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #include <windows.h>
+#endif
 
 #include <QString>
 #include <QVector>
@@ -47,6 +50,7 @@ namespace Utils {
 QTCREATOR_UTILS_EXPORT QString winErrorMessage(unsigned long error)
 {
     QString rc = QString::fromLatin1("#%1: ").arg(error);
+#ifdef Q_OS_WIN
     ushort *lpMsgBuf;
 
     const int len = FormatMessage(
@@ -58,10 +62,12 @@ QTCREATOR_UTILS_EXPORT QString winErrorMessage(unsigned long error)
     } else {
         rc += QString::fromLatin1("<unknown error>");
     }
+#endif
     return rc;
 }
 
 
+#ifdef Q_OS_WIN
 static inline QString msgCannotLoad(const char *lib, const QString &why)
 {
     return QString::fromLatin1("Unable load %1: %2").arg(QLatin1String(lib), why);
@@ -71,11 +77,13 @@ static inline QString msgCannotResolve(const char *lib)
 {
     return QString::fromLatin1("Unable to resolve all required symbols in  %1").arg(QLatin1String(lib));
 }
+#endif
 
 QTCREATOR_UTILS_EXPORT QString winGetDLLVersion(WinDLLVersionType t,
                                                 const QString &name,
                                                 QString *errorMessage)
 {
+#ifdef Q_OS_WIN
     // Resolve required symbols from the version.dll
     typedef DWORD (APIENTRY *GetFileVersionInfoSizeProtoType)(LPCTSTR, LPDWORD);
     typedef BOOL (APIENTRY *GetFileVersionInfoWProtoType)(LPCWSTR, DWORD, DWORD, LPVOID);
@@ -127,17 +135,26 @@ QTCREATOR_UTILS_EXPORT QString winGetDLLVersion(WinDLLVersionType t,
         break;
     }
     return rc;
+#endif
+    Q_UNUSED(t);
+    Q_UNUSED(name);
+    Q_UNUSED(errorMessage);
+    return QString();
 }
 
-QTCREATOR_UTILS_EXPORT bool winIs64BitSystem()
+QTCREATOR_UTILS_EXPORT bool is64BitWindowsSystem()
 {
+#ifdef Q_OS_WIN
     SYSTEM_INFO systemInfo;
     GetNativeSystemInfo(&systemInfo);
     return systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64
             || systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64;
+#else
+    return false;
+#endif
 }
 
-QTCREATOR_UTILS_EXPORT bool winIs64BitBinary(const QString &binaryIn)
+QTCREATOR_UTILS_EXPORT bool is64BitWindowsBinary(const QString &binaryIn)
 {
        QTC_ASSERT(!binaryIn.isEmpty(), return false);
 #ifdef Q_OS_WIN32
@@ -155,5 +172,23 @@ QTCREATOR_UTILS_EXPORT bool winIs64BitBinary(const QString &binaryIn)
         return false;
 #endif
 }
+
+WindowsCrashDialogBlocker::WindowsCrashDialogBlocker()
+#ifdef Q_OS_WIN
+    : silenceErrorMode(SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS),
+    originalErrorMode(SetErrorMode(silenceErrorMode))
+#endif
+{
+}
+
+WindowsCrashDialogBlocker::~WindowsCrashDialogBlocker()
+{
+#ifdef Q_OS_WIN
+    unsigned int errorMode = SetErrorMode(originalErrorMode);
+    // someone else messed with the error mode in between? Better not touch ...
+    QTC_ASSERT(errorMode == silenceErrorMode, SetErrorMode(errorMode));
+#endif
+}
+
 
 } // namespace Utils

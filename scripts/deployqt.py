@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ################################################################################
-# Copyright (C) 2014 Digia Plc
+# Copyright (C) The Qt Company Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
 #   * Redistributions in binary form must reproduce the above copyright notice,
 #     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-#   * Neither the name of Digia Plc, nor the names of its contributors
+#   * Neither the name of The Qt Company Ltd, nor the names of its contributors
 #     may be used to endorse or promote products derived from this software
 #     without specific prior written permission.
 #
@@ -75,7 +75,7 @@ def is_debug(fpath):
     return coredebug.search(output)
 
 def is_debug_build(install_dir):
-    return is_debug(os.path.join(install_dir, 'bin', 'qtcreator.exe'))
+    return is_debug(os.path.join(install_dir, 'bin', 'lisa.exe'))
 
 def op_failed(details = None):
     if details != None:
@@ -90,7 +90,7 @@ def fix_rpaths_helper(chrpath_bin, install_dir, dirpath, filenames):
     # patch file
     for filename in filenames:
         fpath = os.path.join(dirpath, filename)
-        relpath = os.path.relpath(install_dir+'/lib/qtcreator', dirpath)
+        relpath = os.path.relpath(install_dir+'/lib/lisa', dirpath)
         command = [chrpath_bin, '-r', '$ORIGIN/'+relpath, fpath]
         print fpath, ':', command
         try:
@@ -150,7 +150,7 @@ def copy_qt_libs(install_dir, qt_libs_dir, qt_plugin_dir, qt_import_dir, qt_qml_
     if sys.platform.startswith('win'):
         dest = os.path.join(install_dir, 'bin')
     else:
-        dest = os.path.join(install_dir, 'lib', 'qtcreator')
+        dest = os.path.join(install_dir, 'lib', 'lisa')
 
     if sys.platform.startswith('win'):
         if debug_build:
@@ -200,7 +200,7 @@ def add_qt_conf(install_dir):
     print "Creating qt.conf:"
     f = open(install_dir + '/bin/qt.conf', 'w')
     f.write('[Paths]\n')
-    f.write('Libraries=../lib/qtcreator\n')
+    f.write('Libraries=../lib/lisa\n')
     f.write('Plugins=plugins\n')
     f.write('Imports=imports\n')
     f.write('Qml2Imports=qml\n')
@@ -214,6 +214,25 @@ def copy_translations(install_dir, qt_tr_dir):
     for translation in translations:
         print translation, '->', tr_dir
         shutil.copy(translation, tr_dir)
+
+def copy_libclang(install_dir, llvm_install_dir):
+    libsource = ""
+    libtarget = ""
+    if sys.platform.startswith("win"):
+        libsource = os.path.join(llvm_install_dir, 'bin', 'libclang.dll')
+        libtarget = os.path.join(install_dir, 'bin')
+    else:
+        libsource = os.path.join(llvm_install_dir, 'lib', 'libclang.so')
+        libtarget = os.path.join(install_dir, 'lib', 'lisa')
+    resourcesource = os.path.join(llvm_install_dir, 'lib', 'clang')
+    resourcetarget = os.path.join(install_dir, 'share', 'lisa', 'cplusplus', 'clang')
+    print "copying libclang..."
+    print libsource, '->', libtarget
+    shutil.copy(libsource, libtarget)
+    print resourcesource, '->', resourcetarget
+    if (os.path.exists(resourcetarget)):
+        shutil.rmtree(resourcetarget)
+    shutil.copytree(resourcesource, resourcetarget, symlinks=True)
 
 def readQmakeVar(qmake_bin, var):
     pipe = os.popen(' '.join([qmake_bin, '-query', var]))
@@ -262,7 +281,7 @@ def main():
     QT_INSTALL_QML = readQmakeVar(qmake_bin, 'QT_INSTALL_QML')
     QT_INSTALL_TRANSLATIONS = readQmakeVar(qmake_bin, 'QT_INSTALL_TRANSLATIONS')
 
-    plugins = ['accessible', 'codecs', 'designer', 'iconengines', 'imageformats', 'platforminputcontexts', 'platforms', 'printsupport', 'sqldrivers']
+    plugins = ['accessible', 'codecs', 'designer', 'iconengines', 'imageformats', 'platformthemes', 'platforminputcontexts', 'platforms', 'printsupport', 'sqldrivers']
     imports = ['Qt', 'QtWebKit']
 
     if sys.platform.startswith('win'):
@@ -274,6 +293,8 @@ def main():
     else:
       copy_qt_libs(install_dir, QT_INSTALL_LIBS, QT_INSTALL_PLUGINS, QT_INSTALL_IMPORTS, QT_INSTALL_QML, plugins, imports)
     copy_translations(install_dir, QT_INSTALL_TRANSLATIONS)
+    if "LLVM_INSTALL_DIR" in os.environ:
+      copy_libclang(install_dir, os.environ["LLVM_INSTALL_DIR"])
 
     if not sys.platform.startswith('win'):
         fix_rpaths(chrpath_bin, install_dir)

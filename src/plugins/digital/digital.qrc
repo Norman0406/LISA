@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/digital">
-        <file>images/tx_start.png</file>
-        <file>images/tx_stop.png</file>
-        <file>images/clear.png</file>
-    </qresource>
-</RCC>

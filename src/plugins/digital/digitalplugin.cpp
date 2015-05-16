@@ -1,29 +1,34 @@
-/***********************************************************************
- *
- * LISA: Lightweight Integrated System for Amateur Radio
- * Copyright (C) 2013 - 2014
- *      Norman Link (DM6LN)
- *
- * This file is part of LISA.
- *
- * LISA is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * LISA is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You can find a copy of the GNU General Public License in the file
- * LICENSE.GPL contained in the root directory of this project or
- * under <http://www.gnu.org/licenses/>.
- *
- **********************************************************************/
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
+**
+** This file is part of Qt Creator.
+**
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+****************************************************************************/
 
 #include "digitalplugin.h"
-
 #include "digitalmode.h"
 #include "generalsettings.h"
 #include "soundsettings.h"
@@ -32,40 +37,23 @@
 #include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/coreconstants.h>
 #include <coreplugin/icore.h>
+#include <coreplugin/imode.h>
 #include <coreplugin/modemanager.h>
 #include <coreplugin/id.h>
 
-#include <QDebug>
-#include <QtPlugin>
-#include <QAction>
 #include <QMenu>
-#include <QMessageBox>
 
-using namespace Digital::Internal;
+namespace Digital {
+namespace Internal {
 
-/*! Constructs the Hello World plugin. Normally plugins don't do anything in
-    their constructor except for initializing their member variables. The
-    actual work is done later, in the initialize() and extensionsInitialized()
-    functions.
-*/
 DigitalPlugin::DigitalPlugin()
-    : m_digitalMode(0)
 {
 }
 
-/*! Plugins are responsible for deleting objects they created on the heap, and
-    to unregister objects from the plugin manager that they registered there.
-*/
 DigitalPlugin::~DigitalPlugin()
 {
 }
 
-/*! Initializes the plugin. Returns true on success.
-    Plugins want to register objects with the plugin manager here.
-
-    \a errorMessage can be used to pass an error message to the plugin system,
-       if there was any.
-*/
 bool DigitalPlugin::initialize(const QStringList &arguments, QString *errorMessage)
 {
     Q_UNUSED(arguments)
@@ -97,21 +85,11 @@ bool DigitalPlugin::initialize(const QStringList &arguments, QString *errorMessa
     return true;
 }
 
-/*! Notification that all extensions that this plugin depends on have been
-    initialized. The dependencies are defined in the plugins .pluginspec file.
-
-    Normally this function is used for things that rely on other plugins to have
-    added objects to the plugin manager, that implement interfaces that we're
-    interested in. These objects can now be requested through the
-    PluginManagerInterface.
-
-    The HelloWorldPlugin doesn't need things from other plugins, so it does
-    nothing here.
-*/
 void DigitalPlugin::extensionsInitialized()
 {
     addAutoReleasedObject(new GeneralSettings());
     addAutoReleasedObject(new SoundSettings());
 }
 
-Q_EXPORT_PLUGIN(Digital::Internal::DigitalPlugin)
+} // namespace Internal
+} // namespace Digital

@@ -29,6 +29,8 @@
 using namespace Digital::Internal;
 
 SoundSettings::SoundSettings()
+    : m_page(0),
+      m_widget(0)
 {
     setId(Digital::Constants::SETTINGS_ID_SOUND);
     setDisplayName(tr("Sound"));
@@ -38,11 +40,18 @@ SoundSettings::SoundSettings()
     setCategoryIcon(QLatin1String(Digital::Constants::SETTINGS_CATEGORY_DIGITAL_ICON));
 }
 
-QWidget* SoundSettings::createPage(QWidget *parent)
+bool SoundSettings::matches(const QString& searchKeyWord) const
 {
-    m_page = new Ui::SoundSettings();
-    m_widget = new QWidget(parent);
-    m_page->setupUi(m_widget);
+    return false;
+}
+
+QWidget* SoundSettings::widget()
+{
+    if (!m_widget) {
+        m_page = new Ui::SoundSettings();
+        m_widget = new QWidget;
+        m_page->setupUi(m_widget);
+    }
 
     return m_widget;
 }
@@ -53,9 +62,7 @@ void SoundSettings::apply()
 
 void SoundSettings::finish()
 {
-}
-
-bool SoundSettings::matches(const QString&) const
-{
-    return false;
+    delete m_widget;
+    delete m_page;
+    m_page = 0;
 }

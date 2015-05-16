@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -31,9 +32,11 @@
 #define FANCYLINEEDIT_H
 
 #include "utils_global.h"
+#include "completinglineedit.h"
 
-#include <QLineEdit>
 #include <QAbstractButton>
+
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 class QEvent;
@@ -60,16 +63,27 @@ public:
 
     void setAutoHide(bool hide) { m_autoHide = hide; }
     bool hasAutoHide() const { return m_autoHide; }
+
+    QSize sizeHint() const;
+
+protected:
+    void keyPressEvent(QKeyEvent *ke);
+    void keyReleaseEvent(QKeyEvent *ke);
+
 private:
     float m_iconOpacity;
     bool m_autoHide;
     QPixmap m_pixmap;
 };
 
-class QTCREATOR_UTILS_EXPORT FancyLineEdit : public QLineEdit
+class QTCREATOR_UTILS_EXPORT FancyLineEdit : public CompletingLineEdit
 {
     Q_OBJECT
     Q_ENUMS(Side)
+
+    // Validation.
+    Q_PROPERTY(QString initialText READ initialText WRITE setInitialText DESIGNABLE true)
+    Q_PROPERTY(QColor errorColor READ errorColor WRITE setErrorColor DESIGNABLE true)
 
 public:
     enum Side {Left = 0, Right = 1};
@@ -85,6 +99,7 @@ public:
 
     void setButtonVisible(Side side, bool visible);
     bool isButtonVisible(Side side) const;
+    QAbstractButton *button(Side side) const;
 
     void setButtonToolTip(Side side, const QString &);
     void setButtonFocusPolicy(Side side, Qt::FocusPolicy policy);
@@ -97,36 +112,81 @@ public:
     void setAutoHideButton(Side side, bool h);
     bool hasAutoHideButton(Side side) const;
 
-    // Enable a history completer with a history of entries.
-    void setHistoryCompleter(const QString &historyKey);
 
+    // Completion
+
+    // Enable a history completer with a history of entries.
+    void setHistoryCompleter(const QString &historyKey, bool restoreLastItemFromHistory = false);
     // Sets a completer that is not a history completer.
     void setSpecialCompleter(QCompleter *completer);
+
+
+    // Filtering
+
+    // Enables fitering
+    void setFiltering(bool on);
+
+
+    //  Validation
+
+    // line edit, (out)errorMessage -> valid?
+    typedef std::function<bool(FancyLineEdit *, QString *)> ValidationFunction;
+    enum State { Invalid, DisplayingInitialText, Valid };
+
+    State state() const;
+    bool isValid() const;
+    QString errorMessage() const;
+
+    QString initialText() const;
+    void setInitialText(const QString &);
+
+    QColor errorColor() const;
+    void setErrorColor(const  QColor &);
+
+    // Trigger an update (after changing settings)
+    void triggerChanged();
+
+    static QColor textColor(const QWidget *w);
+    static void setTextColor(QWidget *w, const QColor &c);
+
+    void setValidationFunction(const ValidationFunction &fn);
+    static ValidationFunction defaultValidationFunction();
+
+protected slots:
+    // Custom behaviour can be added here.
+    virtual void handleChanged(const QString &) {}
 
 signals:
     void buttonClicked(Utils::FancyLineEdit::Side side);
     void leftButtonClicked();
     void rightButtonClicked();
 
+    void filterChanged(const QString &);
+
+    void validChanged(bool validState);
+    void validReturnPressed();
+
 private slots:
-    void checkButtons(const QString &);
     void iconClicked();
+    void onTextChanged(const QString &);
+    void onEditingFinished();
 
 protected:
     void resizeEvent(QResizeEvent *e);
-    bool event(QEvent *e);
+
+    virtual QString fixInputString(const QString &string);
 
 private:
+    static bool validateWithValidator(FancyLineEdit *edit, QString *errorMessage);
     // Unimplemented, to force the user to make a decision on
-    // whether to use setHistoryKey() or setSpecialCompleter().
+    // whether to use setHistoryCompleter() or setSpecialCompleter().
     void setCompleter(QCompleter *);
 
     void updateMargins();
     void updateButtonPositions();
-    friend class Utils::FancyLineEditPrivate;
+    friend class FancyLineEditPrivate;
 
     FancyLineEditPrivate *d;
-    QString m_oldText;
 };
 
 } // namespace Utils

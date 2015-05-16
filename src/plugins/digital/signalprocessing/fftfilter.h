@@ -7,6 +7,7 @@
 
 #include <complex>
 #include <fftw/fftw3.h>
+#include <qmath.h>
 
 class FFTFilter {
 public:

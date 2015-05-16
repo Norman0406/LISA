@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -33,11 +34,17 @@
 #include "core_global.h"
 #include "id.h"
 
+#include <utils/fileutils.h>
+
+#include <QDateTime>
+#include <QFlags>
+#include <QHash>
 #include <QObject>
 #include <QString>
-#include <QFlags>
 
 namespace Core {
+
+class ShellCommand;
 
 class CORE_EXPORT IVersionControl : public QObject
 {
@@ -54,9 +61,8 @@ public:
         CreateRepositoryOperation,
         SnapshotOperations,
         AnnotateOperation,
-        CheckoutOperation,
-        GetRepositoryRootOperation
-        };
+        InitialCheckoutOperation
+    };
 
     enum OpenSupportMode {
         NoOpen,        /*!< Files can be edited without noticing the VCS */
@@ -64,8 +70,30 @@ public:
         OpenMandatory  /*!< Files must always be opened by the VCS */
     };
 
-    explicit IVersionControl(QObject *parent = 0) : QObject(parent) {}
-    virtual ~IVersionControl() {}
+    class CORE_EXPORT TopicCache
+    {
+    public:
+        virtual ~TopicCache();
+        QString topic(const QString &topLevel);
+
+    protected:
+        virtual QString trackFile(const QString &repository) = 0;
+        virtual QString refreshTopic(const QString &repository) = 0;
+
+    private:
+        class TopicData
+        {
+        public:
+            QDateTime timeStamp;
+            QString topic;
+        };
+
+        QHash<QString, TopicData> m_cache;
+
+    };
+
+    explicit IVersionControl(TopicCache *topicCache = 0) : m_topicCache(topicCache) {}
+    virtual ~IVersionControl();
 
     virtual QString displayName() const = 0;
     virtual Id id() const = 0;
@@ -100,9 +128,9 @@ public:
     virtual bool supportsOperation(Operation operation) const = 0;
 
     /*!
-     * Returns the open support mode.
+     * Returns the open support mode for \a fileName.
      */
-    virtual OpenSupportMode openSupportMode() const;
+    virtual OpenSupportMode openSupportMode(const QString &fileName) const;
 
     /*!
      * Called prior to save, if the file is read only. Should be implemented if
@@ -146,19 +174,9 @@ public:
     virtual bool vcsCreateRepository(const QString &directory) = 0;
 
     /*!
-     * Called to clone/checkout the version control system in a directory.
-     */
-    virtual bool vcsCheckout(const QString &directory, const QByteArray &url) = 0;
-
-    /*!
-     * Called to get the version control repository root.
-     */
-    virtual QString vcsGetRepositoryURL(const QString &director) = 0;
-
-    /*!
      * Topic (e.g. name of the current branch)
      */
-    virtual QString vcsTopic(const QString &directory);
+    virtual QString vcsTopic(const QString &topLevel);
 
     /*!
      * Display annotation for a file and scroll to line
@@ -175,17 +193,82 @@ public:
      */
     virtual QString vcsMakeWritableText() const;
 
+    /*!
+     * Return a list of paths where tools that came with the VCS may be installed.
+     * This is helpful on windows where e.g. git comes with a lot of nice unix tools.
+     */
+    virtual QStringList additionalToolsPath() const;
+
+    /*!
+     * Return a ShellCommand capable of checking out \a url into \a baseDirectory, where
+     * a new subdirectory with \a localName will be created.
+     *
+     * \a extraArgs are passed on to the command being run.
+     */
+    virtual ShellCommand *createInitialCheckoutCommand(const QString &url,
+                                                       const Utils::FileName &baseDirectory,
+                                                       const QString &localName,
+                                                       const QStringList &extraArgs);
+
 signals:
     void repositoryChanged(const QString &repository);
     void filesChanged(const QStringList &files);
     void configurationChanged();
 
-    // TODO: ADD A WAY TO DETECT WHETHER A FILE IS MANAGED, e.g
-    // virtual bool sccManaged(const QString &filename) = 0;
+private:
+    TopicCache *m_topicCache;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Core::IVersionControl::SettingsFlags)
 
 } // namespace Core
+
+#if defined(WITH_TESTS)
+
+#include <QSet>
+
+namespace Core {
+
+class CORE_EXPORT TestVersionControl : public IVersionControl
+{
+    Q_OBJECT
+public:
+    TestVersionControl(Id id, const QString &name) :
+        m_id(id), m_displayName(name), m_dirCount(0), m_fileCount(0)
+    { }
+    ~TestVersionControl();
+
+    void setManagedDirectories(const QHash<QString, QString> &dirs);
+    void setManagedFiles(const QSet<QString> &files);
+
+    int dirCount() const { return m_dirCount; }
+    int fileCount() const { return m_fileCount; }
+
+    // IVersionControl interface
+    QString displayName() const override { return m_displayName; }
+    Id id() const override { return m_id; }
+    bool managesDirectory(const QString &filename, QString *topLevel) const override;
+    bool managesFile(const QString &workingDirectory, const QString &fileName) const override;
+    bool isConfigured() const override { return true; }
+    bool supportsOperation(Operation) const override { return false; }
+    bool vcsOpen(const QString &) override { return false; }
+    bool vcsAdd(const QString &) override { return false; }
+    bool vcsDelete(const QString &) override { return false; }
+    bool vcsMove(const QString &, const QString &) override { return false; }
+    bool vcsCreateRepository(const QString &) override { return false; }
+    bool vcsAnnotate(const QString &, int) override { return false; }
+
+private:
+    Id m_id;
+    QString m_displayName;
+    QHash<QString, QString> m_managedDirs;
+    QSet<QString> m_managedFiles;
+    mutable int m_dirCount;
+    mutable int m_fileCount;
+};
+
+} // namespace Core
+#endif
+
 
 #endif // IVERSIONCONTROL_H

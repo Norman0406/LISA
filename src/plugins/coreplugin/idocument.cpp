@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing
 **
 ** This file is part of Qt Creator.
 **
@@ -9,20 +9,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company.  For licensing terms and
+** conditions see http://www.qt.io/terms-conditions.  For further information
+** use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file.  Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** In addition, as a special exception, The Qt Company gives you certain additional
+** rights.  These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ****************************************************************************/
@@ -31,8 +32,27 @@
 
 #include "infobar.h"
 
+#include <utils/fileutils.h>
+#include <utils/qtcassert.h>
+
 #include <QFile>
 #include <QFileInfo>
+
+/*!
+    \class Core::IDocument
+    \brief The IDocument class describes a document that can be saved and reloaded.
+
+    The most common use for implementing an IDocument subclass, is as a document for an IEditor
+    implementation. Multiple editors can work in the same document instance, so the IDocument
+    subclass should hold all data and functions that are independent from the specific
+    IEditor instance, for example the content, highlighting information, the name of the
+    corresponding file, and functions for saving and reloading the file.
+
+    Each IDocument subclass works only with the corresponding IEditor subclasses that it
+    was designed to work with.
+
+    \mainclass
+*/
 
 /*!
     \fn QString Core::IDocument::filePath() const
@@ -43,18 +63,58 @@
 
 namespace Core {
 
+namespace Internal {
+
+class IDocumentPrivate
+{
+public:
+    IDocumentPrivate() :
+        infoBar(0),
+        temporary(false),
+        hasWriteWarning(false),
+        restored(false)
+    {
+    }
+
+    ~IDocumentPrivate()
+    {
+        delete infoBar;
+    }
+
+    QString mimeType;
+    Utils::FileName filePath;
+    QString preferredDisplayName;
+    QString uniqueDisplayName;
+    QString autoSaveName;
+    InfoBar *infoBar;
+    Id id;
+    bool temporary;
+    bool hasWriteWarning;
+    bool restored;
+};
+
+} // namespace Internal
+
 IDocument::IDocument(QObject *parent) : QObject(parent),
-    m_temporary(false),
-    m_infoBar(0),
-    m_hasWriteWarning(false),
-    m_restored(false)
+    d(new Internal::IDocumentPrivate)
 {
 }
 
 IDocument::~IDocument()
 {
     removeAutoSaveFile();
-    delete m_infoBar;
+    delete d;
+}
+
+void IDocument::setId(Id id)
+{
+    d->id = id;
+}
+
+Id IDocument::id() const
+{
+    QTC_CHECK(d->id.isValid());
+    return d->id;
 }
 
 /*!
@@ -67,6 +127,11 @@ bool IDocument::setContents(const QByteArray &contents)
 {
     Q_UNUSED(contents)
     return false;
+}
+
+const Utils::FileName &IDocument::filePath() const
+{
+    return d->filePath;
 }
 
 IDocument::ReloadBehavior IDocument::reloadBehavior(ChangeTrigger state, ChangeType type) const
@@ -91,7 +156,7 @@ bool IDocument::isFileReadOnly() const
 {
     if (filePath().isEmpty())
         return false;
-    return !QFileInfo(filePath()).isWritable();
+    return !filePath().toFileInfo().isWritable();
 }
 
 /*!
@@ -101,7 +166,7 @@ bool IDocument::isFileReadOnly() const
 */
 bool IDocument::isTemporary() const
 {
-    return m_temporary;
+    return d->temporary;
 }
 
 /*!
@@ -110,14 +175,27 @@ bool IDocument::isTemporary() const
 */
 void IDocument::setTemporary(bool temporary)
 {
-    m_temporary = temporary;
+    d->temporary = temporary;
+}
+
+QString IDocument::mimeType() const
+{
+    return d->mimeType;
+}
+
+void IDocument::setMimeType(const QString &mimeType)
+{
+    if (d->mimeType != mimeType) {
+        d->mimeType = mimeType;
+        emit mimeTypeChanged();
+    }
 }
 
 bool IDocument::autoSave(QString *errorString, const QString &fileName)
 {
     if (!save(errorString, fileName, true))
         return false;
-    m_autoSaveName = fileName;
+    d->autoSaveName = fileName;
     return true;
 }
 
@@ -125,8 +203,8 @@ static const char kRestoredAutoSave[] = "RestoredAutoSave";
 
 void IDocument::setRestoredFrom(const QString &name)
 {
-    m_autoSaveName = name;
-    m_restored = true;
+    d->autoSaveName = name;
+    d->restored = true;
     InfoBarEntry info(Id(kRestoredAutoSave),
           tr("File was restored from auto-saved copy. "
              "Select Save to confirm or Revert to Saved to discard changes."));
@@ -135,21 +213,31 @@ void IDocument::setRestoredFrom(const QString &name)
 
 void IDocument::removeAutoSaveFile()
 {
-    if (!m_autoSaveName.isEmpty()) {
-        QFile::remove(m_autoSaveName);
-        m_autoSaveName.clear();
-        if (m_restored) {
-            m_restored = false;
+    if (!d->autoSaveName.isEmpty()) {
+        QFile::remove(d->autoSaveName);
+        d->autoSaveName.clear();
+        if (d->restored) {
+            d->restored = false;
             infoBar()->removeInfo(Id(kRestoredAutoSave));
         }
     }
 }
 
+bool IDocument::hasWriteWarning() const
+{
+    return d->hasWriteWarning;
+}
+
+void IDocument::setWriteWarning(bool has)
+{
+    d->hasWriteWarning = has;
+}
+
 InfoBar *IDocument::infoBar()
 {
-    if (!m_infoBar)
-        m_infoBar = new InfoBar;
-    return m_infoBar;
+    if (!d->infoBar)
+        d->infoBar = new InfoBar;
+    return d->infoBar;
 }
 
 /*!
@@ -158,26 +246,29 @@ InfoBar *IDocument::infoBar()
     signals. Can be reimplemented by subclasses to do more.
     \sa filePath()
 */
-void IDocument::setFilePath(const QString &filePath)
+void IDocument::setFilePath(const Utils::FileName &filePath)
 {
-    if (m_filePath == filePath)
+    if (d->filePath == filePath)
         return;
-    QString oldName = m_filePath;
-    m_filePath = filePath;
-    emit filePathChanged(oldName, m_filePath);
+    Utils::FileName oldName = d->filePath;
+    d->filePath = filePath;
+    emit filePathChanged(oldName, d->filePath);
     emit changed();
 }
 
 /*!
     Returns the string to display for this document, e.g. in the open document combo box
     and pane.
+    The returned string has the following priority:
+      * Unique display name set by the document model
+      * Preferred display name set by the owner
+      * Base name of the document's file name
+
     \sa setDisplayName()
 */
 QString IDocument::displayName() const
 {
-    if (!m_displayName.isEmpty())
-        return m_displayName;
-    return QFileInfo(m_filePath).fileName();
+    return d->uniqueDisplayName.isEmpty() ? plainDisplayName() : d->uniqueDisplayName;
 }
 
 /*!
@@ -187,12 +278,30 @@ QString IDocument::displayName() const
     \sa displayName()
     \sa filePath()
  */
-void IDocument::setDisplayName(const QString &name)
+void IDocument::setPreferredDisplayName(const QString &name)
 {
-    if (name == m_displayName)
+    if (name == d->preferredDisplayName)
         return;
-    m_displayName = name;
+    d->preferredDisplayName = name;
     emit changed();
+}
+
+/*!
+    \internal
+    Returns displayName without disambiguation.
+ */
+QString IDocument::plainDisplayName() const
+{
+    return d->preferredDisplayName.isEmpty() ? d->filePath.fileName() : d->preferredDisplayName;
+}
+
+/*!
+    \internal
+    Sets unique display name for the document. Used by the document model.
+ */
+void IDocument::setUniqueDisplayName(const QString &name)
+{
+    d->uniqueDisplayName = name;
 }
 
 } // namespace Core

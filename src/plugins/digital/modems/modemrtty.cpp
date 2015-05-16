@@ -64,7 +64,7 @@ ModemRTTY::~ModemRTTY()
 
 QString ModemRTTY::getTypeStatic()
 {
-    return QString::fromAscii("RTTY");
+    return QString::fromLatin1("RTTY");
 }
 
 QString ModemRTTY::getType() const
@@ -306,9 +306,9 @@ void ModemRTTY::iRxProcess(const QVector<double>& buffer)
     };
 }
 
-void ModemRTTY::iTxProcess(ModemTransmitter* transmitter)
+void ModemRTTY::send(char character, ModemTransmitter* transmitter)
 {
-    int c;
+    int c = character;
 
     if (m_preamble) {
         m_symShaperMark->reset();
@@ -422,6 +422,10 @@ void ModemRTTY::iTxProcess(ModemTransmitter* transmitter)
     //acc_symbols = 0;
     sendChar(c & 0x1F, transmitter);
     //xmt_samples = char_samples = acc_symbols;
+}
+
+void ModemRTTY::iTxProcess(ModemTransmitter* transmitter)
+{
 }
 
 void ModemRTTY::iShutdown()
