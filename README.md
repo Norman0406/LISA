@@ -1,5 +1,7 @@
 # Introduction
 
+[![Join the chat at https://gitter.im/Norman0406/LISA](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Norman0406/LISA?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 LISA is an acronym for "Lightweight Integrated System for Amateur Radio". It may also refer to the intelligent little girl from the Simpsons TV show - it's up to you. LISA provides a GUI framework for different modules related to amateur radio and linking them together in one integrated application environment.
 
 All of this is based on the Qt libraries which ensure that LISA can be run on Windows, OSX and Linux.
