@@ -25,7 +25,7 @@
 #ifndef AUDIODEVICEOUT_H
 #define AUDIODEVICEOUT_H
 
-#include "AudioDevice.h"
+#include "audiodevice.h"
 #include <QAudioOutput>
 #include <QThread>
 

@@ -74,7 +74,7 @@ class QsoEntry
     Q_PROPERTY(QString CallsignTo MEMBER m_callsign)
     Q_PROPERTY(QString Operator MEMBER m_operator)
     Q_PROPERTY(int Frequency MEMBER m_frequency)
-    Q_PROPERTY(Mode Mode MEMBER m_mode)
+    Q_PROPERTY(QsoEntry::Mode Mode MEMBER m_mode)
     Q_PROPERTY(int RstSent MEMBER m_rstSent)
     Q_PROPERTY(int RstRcvd MEMBER m_rstRcvd)
     Q_PROPERTY(QString Comment MEMBER m_comment)

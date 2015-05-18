@@ -45,6 +45,7 @@ public:
     void close();
 
     void updateOrInsert(const QsoEntry&);
+    QSqlDatabase getDatabase() const;
 
 private:
     void createTables();

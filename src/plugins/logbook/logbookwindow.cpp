@@ -27,6 +27,7 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include "database.h"
 
 using namespace Logbook::Internal;
 
@@ -48,13 +49,14 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setAlternatingRowColors(true);
 
     // create database
-    m_database = QSqlDatabase::addDatabase(QString::fromLatin1("QSQLITE"));
-    m_database.setHostName(QString::fromLatin1("localhost"));
-    m_database.setDatabaseName(QString::fromLatin1("logbook.sql"));
+//    m_database = QSqlDatabase::addDatabase(QString::fromLatin1("QSQLITE"));
+//    m_database.setHostName(QString::fromLatin1("localhost"));
+//    m_database.setDatabaseName(QString::fromLatin1("logbook.db"));
     m_database.open();
+    qDebug() << "DB open";
 
     // create model
-    m_model = new QSqlRelationalTableModel(this, m_database);
+    m_model = new QSqlRelationalTableModel(this, m_database.getDatabase());
     m_model->setTable(QString::fromLatin1("logbook"));
     m_model->select();
 

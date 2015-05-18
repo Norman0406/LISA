@@ -35,7 +35,7 @@ Database::Database(QObject* parent)
     m_database.setHostName(QString::fromLatin1("localhost"));
 
     // TODO: store in appdata
-    m_database.setDatabaseName(QString::fromLatin1("logbook.sql"));
+    m_database.setDatabaseName(QString::fromLatin1("logbook.db"));
 }
 
 bool Database::open()
@@ -44,21 +44,15 @@ bool Database::open()
     bool isOpen = m_database.open();
 
     if (isOpen) {
+
+        QSqlQuery q;
+        bool error = q.exec(QString::fromLatin1("SELECT * from logbook"));
+        if(!error)
+            qDebug() << q.lastError();
         // create necessary tables if they do not exist
-        createTables();
-
-        /*QSqlTableModel model(this, m_database);
-        model.setTable(QString::fromLatin1("logbook"));
-
-        int row = 0;
-        model.insertRows(row, 1);
-        model.setData(model.index(row, 0), 03544);
-        model.setData(model.index(row, 1), QString::fromLatin1("DM6LN"));
-        model.setData(model.index(row, 2), QString::fromLatin1("DM5RS"));
-        if (!model.submitAll()) {
-            QSqlError err = model.lastError();
-            qDebug() << err.text();
-        }*/
+        if (!m_database.tables().contains(QString::fromLatin1("logbook"))) {
+            createTables();
+        }
 
         QSqlTableModel model(this, m_database);
         model.setTable(QString::fromLatin1("logbook"));
@@ -93,8 +87,6 @@ void Database::createTables()
 {
     QSqlQuery query(m_database);
 
-    //QStringList tables = m_database.tables();
-
     // create table if it does not already exist
     if (!query.exec(QString::fromLatin1("CREATE TABLE IF NOT EXISTS logbook ("
                                               "ID INTEGER PRIMARY KEY,"
@@ -114,6 +106,11 @@ void Database::updateOrInsert(const QsoEntry& entry)
 
     // first, check if this entry already exists
 
+}
+
+QSqlDatabase Database::getDatabase() const
+{
+    return m_database;
 }
 
 void Database::close()
