@@ -25,8 +25,6 @@
 #include "database.h"
 #include <QDebug>
 #include "qsoentry.h"
-#include "frequencyband.h"
-#include "mode.h"
 
 using namespace Logbook::Internal;
 
