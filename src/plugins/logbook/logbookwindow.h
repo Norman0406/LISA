@@ -28,6 +28,7 @@
 #include <QWidget>
 #include <QTableWidget>
 #include "logbookproxymodel.h"
+#include "database.h"
 
 #include <QtSql>
 
@@ -46,7 +47,7 @@ public:
 private:
     QTableView* m_logbookView;
 
-    QSqlDatabase m_database;
+    Database m_database;
     QSqlRelationalTableModel* m_model;
     LogbookProxyModel* m_proxyModel;
 };

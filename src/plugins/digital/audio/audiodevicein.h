@@ -25,7 +25,7 @@
 #ifndef AUDIODEVICEIN_H
 #define AUDIODEVICEIN_H
 
-#include "AudioDevice.h"
+#include "audiodevice.h"
 #include <QAudioInput>
 
 namespace Digital {

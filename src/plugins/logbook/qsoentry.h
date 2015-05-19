@@ -37,8 +37,26 @@ class QsoEntry
 {
     Q_OBJECT
 
-    enum FrequencyBand
-    {
+    Q_ENUMS(Mode)
+    Q_ENUMS(FrequencyBand)
+
+    Q_PROPERTY(int ID MEMBER m_id)
+    Q_PROPERTY(QDateTime DateTime MEMBER m_time)
+    Q_PROPERTY(QString CallsignTo MEMBER m_callsign)
+    Q_PROPERTY(QString Operator MEMBER m_operator)
+    Q_PROPERTY(int Frequency MEMBER m_frequency)
+    Q_PROPERTY(FrequencyBand FrequencyBand MEMBER m_frequencyBand)
+    Q_PROPERTY(Mode Mode MEMBER m_mode)
+    Q_PROPERTY(int RstSent MEMBER m_rstSent)
+    Q_PROPERTY(int RstRcvd MEMBER m_rstRcvd)
+    Q_PROPERTY(QString Comment MEMBER m_comment)
+
+public:
+    QsoEntry(QObject *parent = 0);
+
+    QSqlRecord getRecord() const;
+
+    enum FrequencyBand{
         BAND_UNKNOWN,
         BAND_160M,
         BAND_80M,
@@ -69,20 +87,6 @@ class QsoEntry
         // UNDONE
     };
 
-    Q_PROPERTY(int ID MEMBER m_id)
-    Q_PROPERTY(QDateTime DateTime MEMBER m_time)
-    Q_PROPERTY(QString CallsignTo MEMBER m_callsign)
-    Q_PROPERTY(QString Operator MEMBER m_operator)
-    Q_PROPERTY(int Frequency MEMBER m_frequency)
-    Q_PROPERTY(Mode Mode MEMBER m_mode)
-    Q_PROPERTY(int RstSent MEMBER m_rstSent)
-    Q_PROPERTY(int RstRcvd MEMBER m_rstRcvd)
-    Q_PROPERTY(QString Comment MEMBER m_comment)
-
-public:
-    QsoEntry(QObject *parent = 0);
-
-    QSqlRecord getRecord() const;
 
     void setId(int id);
     void setTime(QDateTime time);
@@ -104,6 +108,7 @@ public:
     int getRstRcvd() const;
     const QString& getComment() const;
 
+
 private:
     bool inRange(const double& value, const double min, const double max) const;
 
@@ -112,6 +117,7 @@ private:
     QString     m_callsign;
     QString     m_operator;
     double      m_frequency; // MHz
+    FrequencyBand m_frequencyBand;
     Mode        m_mode;
     int         m_rstSent;
     int         m_rstRcvd;

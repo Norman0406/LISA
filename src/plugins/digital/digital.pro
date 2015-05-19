@@ -1,6 +1,6 @@
 include(../../lisaplugin.pri)
 
-QT += multimedia
+QT += multimedia core
 
 HEADERS += digitalplugin.h \
     audiomanager.h \
@@ -105,6 +105,6 @@ win32 {
 }
 
 unix {
-    LIBS += -L/opt/local/lib -lfftw3
-    INCLUDEPATH += /opt/local/include
+    LIBS += -L/usr/lib/x86_64-linux-gnu -lfftw3
+    INCLUDEPATH += /usr/include
 }
