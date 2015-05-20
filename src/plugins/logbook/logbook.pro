@@ -22,4 +22,5 @@ SOURCES += logbookplugin.cpp \
     qsoentry.cpp
 
 FORMS += \
-    generalsettings.ui
+    generalsettings.ui \
+    logbookformdialog.ui
