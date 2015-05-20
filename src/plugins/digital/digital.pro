@@ -1,6 +1,6 @@
 include(../../lisaplugin.pri)
 
-QT += multimedia core
+QT += multimedia
 
 HEADERS += digitalplugin.h \
     audiomanager.h \
