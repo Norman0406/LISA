@@ -10,7 +10,9 @@ HEADERS += logbookplugin.h \
     logbookmode.h \
     logbookproxymodel.h \
     logbooktoolbar.h \
-    qsoentry.h
+    qsoentry.h \
+    logbookform.h \
+    logbookformdialog.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -19,7 +21,9 @@ SOURCES += logbookplugin.cpp \
     logbookmode.cpp \
     logbookproxymodel.cpp \
     logbooktoolbar.cpp \
-    qsoentry.cpp
+    qsoentry.cpp \
+    logbookform.cpp \
+    logbookformdialog.cpp
 
 FORMS += \
     generalsettings.ui \

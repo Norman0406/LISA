@@ -31,15 +31,18 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookWindow;
+class LogbookForm;
 
 class LogbookMode
         : public Core::IMode
 {
 public:
     LogbookMode();
+    ~LogbookMode();
 
 private:
     LogbookWindow* m_window;
+    LogbookForm* m_logbookForm;
 };
 
 

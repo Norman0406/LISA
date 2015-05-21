@@ -473,12 +473,12 @@ void OutputPaneManager::showPage(int idx, int flags)
     QTC_ASSERT(idx >= 0, return);
     OutputPanePlaceHolder *ph = OutputPanePlaceHolder::getCurrent();
 
-    if (!ph && flags & IOutputPane::ModeSwitch) {
+    /*if (!ph && flags & IOutputPane::ModeSwitch) {
         // In this mode we don't have a placeholder
         // switch to the output mode and switch the page
         ModeManager::activateMode(Id(Constants::MODE_EDIT));
         ph = OutputPanePlaceHolder::getCurrent();
-    }
+    }*/
 
     bool onlyFlash = !ph
             || (m_panes.at(currentIndex())->hasFocus()

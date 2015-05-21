@@ -24,6 +24,11 @@
 
 #include "logbookmode.h"
 #include "logbookwindow.h"
+#include "logbookform.h"
+
+#include <extensionsystem/pluginmanager.h>
+#include <coreplugin/minisplitter.h>
+#include <coreplugin/outputpane.h>
 
 using namespace Logbook::Internal;
 
@@ -37,5 +42,23 @@ LogbookMode::LogbookMode()
     setId("Logbook.LogbookMode");
     setContextHelpId(QString());
 
-    setWidget(m_window);
+    Core::MiniSplitter* splitter = new Core::MiniSplitter;
+    splitter->setOrientation(Qt::Vertical);
+    splitter->insertWidget(0, m_window);
+
+    QWidget *outputPane = new Core::OutputPanePlaceHolder(this, splitter);
+    outputPane->setObjectName(QLatin1String("LogbookModeOutputPanePlaceHolder"));
+    splitter->insertWidget(1, outputPane);
+
+    setWidget(splitter);
+
+    m_logbookForm = new LogbookForm(0);
+    ExtensionSystem::PluginManager::addObject(m_logbookForm);
+}
+
+LogbookMode::~LogbookMode()
+{
+    delete m_window;
+    ExtensionSystem::PluginManager::removeObject(m_logbookForm);
+    delete m_logbookForm;
 }
