@@ -39,7 +39,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     layout->setMargin(0);
 
     // add the toolbar on the top
-    layout->addWidget(new LogbookToolBar(this));
+    layout->addWidget(new LogbookToolBar(this));    
 
     // create the table view
     m_logbookView = new QTableView(this);
@@ -75,4 +75,11 @@ LogbookWindow::~LogbookWindow()
 {
     m_model->submitAll();
     m_database.close();
+}
+
+void LogbookWindow::addQso() {
+//    int row = m_model->rowCount();
+//    QModelIndex index = m_model->index(row, callsign);
+//    m_model->beginInsertRows(index, row, row );
+
 }

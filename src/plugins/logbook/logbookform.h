@@ -7,13 +7,14 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookFormDialog;
+class LogbookWindow;
 
 class LogbookForm : public Core::IOutputPane
 {
     Q_OBJECT
 
 public:
-    LogbookForm(QWidget*);
+    LogbookForm(QWidget*, LogbookWindow* window);
     virtual ~LogbookForm();
 
     QWidget *outputWidget(QWidget *);

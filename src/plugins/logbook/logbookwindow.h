@@ -44,6 +44,9 @@ public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
 
+public slots:
+    void addQso();
+
 private:
     QTableView* m_logbookView;
 
