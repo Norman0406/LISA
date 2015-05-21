@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>261</width>
+     <height>276</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="labelDatetime">
+      <property name="text">
+       <string>Date:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="lineEditDatetime"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="labelCallsign">
+      <property name="text">
+       <string>Callsign:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="lineEditCallsign"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="labelName">
+      <property name="text">
+       <string>Name:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lineEditName"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="labelMode">
+      <property name="text">
+       <string>Mode:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="lineEditMode"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="labelFrequency">
+      <property name="text">
+       <string>Frequency:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="lineEditFrequency"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="labelBand">
+      <property name="text">
+       <string>Band:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="lineEditBand"/>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="labelRstSend">
+      <property name="text">
+       <string>RST send:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLineEdit" name="lineEditRstSend"/>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="labelRstRcvd">
+      <property name="text">
+       <string>RST rcvd:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="lineEditRstRcvd"/>
+    </item>
+    <item row="8" column="1">
+     <widget class="QPushButton" name="pushButtonSubmitLogbookForm">
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
