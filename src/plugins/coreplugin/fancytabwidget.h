@@ -39,7 +39,7 @@
 
 QT_BEGIN_NAMESPACE
 class QPainter;
-class QStackedLayout;
+class QStackedWidget;
 class QStatusBar;
 QT_END_NAMESPACE
 
@@ -178,7 +178,7 @@ private slots:
 private:
     FancyTabBar *m_tabBar;
     QWidget *m_cornerWidgetContainer;
-    QStackedLayout *m_modesStack;
+    QStackedWidget*m_modesStack;
     QWidget *m_selectionWidget;
     QStatusBar *m_statusBar;
 };

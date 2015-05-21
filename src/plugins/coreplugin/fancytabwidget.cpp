@@ -29,6 +29,8 @@
 ****************************************************************************/
 
 #include "fancytabwidget.h"
+#include "minisplitter.h"
+#include "outputpane.h"
 #include <utils/hostosinfo.h>
 #include <utils/stylehelper.h>
 #include <utils/styledbar.h>
@@ -42,7 +44,7 @@
 #include <QMouseEvent>
 #include <QStyleFactory>
 #include <QPainter>
-#include <QStackedLayout>
+#include <QStackedWidget>
 #include <QStatusBar>
 #include <QToolTip>
 
@@ -432,14 +434,22 @@ FancyTabWidget::FancyTabWidget(QWidget *parent)
 
     selectionLayout->addWidget(m_cornerWidgetContainer, 0);
 
-    m_modesStack = new QStackedLayout;
+    m_modesStack = new QStackedWidget;
     m_statusBar = new QStatusBar;
     m_statusBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+
+    Core::MiniSplitter *splitter = new Core::MiniSplitter;
+    splitter->setOrientation(Qt::Vertical);
+    splitter->insertWidget(0, m_modesStack);
+
+    QWidget *outputPane = new Core::OutputPanePlaceHolder(splitter);
+    outputPane->setObjectName(QLatin1String("MainOutputPanePlaceHolder"));
+    splitter->insertWidget(1, outputPane);
 
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->setMargin(0);
     vlayout->setSpacing(0);
-    vlayout->addLayout(m_modesStack);
+    vlayout->addWidget(splitter);
     vlayout->addWidget(m_statusBar);
 
     QHBoxLayout *mainLayout = new QHBoxLayout;

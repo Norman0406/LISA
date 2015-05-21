@@ -87,6 +87,7 @@ static OutputPaneManager *m_instance = 0;
 void OutputPaneManager::create()
 {
    m_instance = new OutputPaneManager;
+   OutputPanePlaceHolder::getCurrent()->create();
 }
 
 void OutputPaneManager::destroy()
