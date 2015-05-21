@@ -9,12 +9,15 @@ namespace Internal {
 namespace Ui {
     class LogbookFormDialog;
 }
+class LogbookWindow;
 
 class LogbookFormDialog
         : public QWidget
 {
 public:
-    LogbookFormDialog();
+    LogbookFormDialog(QWidget* parent, LogbookWindow* window);
+signals:
+    void QsoAdded();
 
 private:
     Ui::LogbookFormDialog* m_ui;

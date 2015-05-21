@@ -42,18 +42,11 @@ LogbookMode::LogbookMode()
     setId("Logbook.LogbookMode");
     setContextHelpId(QString());
 
-    Core::MiniSplitter* splitter = new Core::MiniSplitter;
-    splitter->setOrientation(Qt::Vertical);
-    splitter->insertWidget(0, m_window);
+    setWidget(m_window);
 
-    QWidget *outputPane = new Core::OutputPanePlaceHolder(this, splitter);
-    outputPane->setObjectName(QLatin1String("LogbookModeOutputPanePlaceHolder"));
-    splitter->insertWidget(1, outputPane);
-
-    setWidget(splitter);
-
-    m_logbookForm = new LogbookForm(0);
+    m_logbookForm = new LogbookForm(0, m_window);
     ExtensionSystem::PluginManager::addObject(m_logbookForm);
+
 }
 
 LogbookMode::~LogbookMode()
