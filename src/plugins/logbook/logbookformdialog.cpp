@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QIntValidator>
 #include <QTimer>
+#include <QKeyEvent>
 
 using namespace Logbook::Internal;
 
@@ -44,6 +45,7 @@ LogbookFormDialog::~LogbookFormDialog()
 
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
 {
+    m_data->insert(QString::fromLatin1("Datetime"), m_ui->dateTimeEdit->dateTime().toString());
     m_data->insert(QString::fromLatin1("Callsign"), m_ui->lineEditCallsign->text());
     m_data->insert(QString::fromLatin1("Name"), m_ui->lineEditName->text());
     m_data->insert(QString::fromLatin1("Mode"), m_ui->comboBoxMode->currentText());
@@ -60,25 +62,60 @@ void LogbookFormDialog::handleTimer()
     m_ui->dateTimeEdit->setTime(QDateTime::currentDateTime().time());
 }
 
+void LogbookFormDialog::stopTimer()
+{
+    m_qtimer->stop();
+}
+
+void LogbookFormDialog::startTimer()
+{
+    m_qtimer->start(1000);
+}
+
 void LogbookFormDialog::validateInput()
 {
+    //TODO: sanitation
     on_pushButtonSubmitLogbookForm_clicked();
+    m_qtimer->start(1000);
+}
+
+void LogbookFormDialog::clearForm()
+{
     QList<QLineEdit*> widgets = m_ui->layoutWidget->findChildren<QLineEdit*>();
     foreach (QLineEdit* edit, widgets) {
         if (edit) {
             edit->setText(QString::fromLatin1(""));
         }
     }
-    qDebug() << "Input validation happens here";
-
-    //TODO: Date time
-    //TODO: Logbook
-    //
+    emit startTimer();
+    m_ui->lineEditCallsign->setFocus();
 }
 
 void LogbookFormDialog::convertInputToUppercase()
 {
+    QLineEdit* sender = qobject_cast<QLineEdit*>(QObject::sender());
+    if(sender)
+    {
+        QString text = sender->text();
+        text = text.toUpper();
+        sender->setText(text);
+    }
+}
 
+bool LogbookFormDialog::eventFilter(QObject *target, QEvent *event)
+{
+    if (target == m_ui->lineEditCallsign || target == m_ui->lineEditFrequency
+            || target == m_ui->lineEditName || target == m_ui->lineEditRstRcvd
+            || target == m_ui->lineEditRstSend) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
+            if (keyEvent && keyEvent->key() == Qt::Key_Escape) {
+                clearForm();
+                return true;
+            }
+        }
+    }
+    return QWidget::eventFilter(target, event);
 }
 
 void LogbookFormDialog::loadDefaults()
@@ -118,4 +155,14 @@ void LogbookFormDialog::setupWidgets()
 
     m_ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
     m_ui->dateTimeEdit->setTimeSpec(Qt::UTC);
+
+    QList<QLineEdit*> widgets = m_ui->layoutWidget->findChildren<QLineEdit*>();
+    foreach (QLineEdit* edit, widgets) {
+        if (edit) {
+            connect(edit, &QLineEdit::textChanged, this, &LogbookFormDialog::stopTimer);
+            connect(edit, &QLineEdit::textChanged, this, &LogbookFormDialog::convertInputToUppercase);
+            edit->installEventFilter(this);
+        }
+    }
+
 }

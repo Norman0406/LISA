@@ -5,6 +5,7 @@
 
 class QValidator;
 class QTimer;
+class QKeyEvent;
 
 namespace Logbook {
 namespace Internal {
@@ -25,6 +26,7 @@ public:
 
 signals:
     void AddQso();
+    void startTimer();
 
 public slots:
     void GetQsoData();
@@ -33,6 +35,7 @@ public slots:
 private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
     void handleTimer();
+    void stopTimer();
 
 private:
     Ui::LogbookFormDialog* m_ui;
@@ -46,6 +49,8 @@ private:
     void loadDefaults();
     void convertInputToUppercase();
     void setupWidgets();
+    void clearForm();
+    bool eventFilter(QObject*, QEvent*);
 };
 
 }
