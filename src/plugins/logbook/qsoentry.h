@@ -104,6 +104,7 @@ public:
     const QString& getOperator() const;
     const double& getFrequency() const;
     FrequencyBand getBand() const;
+    static FrequencyBand getBandByString(QString band);
     int getRstSent() const;
     int getRstRcvd() const;
     const QString& getComment() const;

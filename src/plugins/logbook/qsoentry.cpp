@@ -215,6 +215,40 @@ QsoEntry::FrequencyBand QsoEntry::getBand() const
         return BAND_UNKNOWN;
 }
 
+QsoEntry::FrequencyBand QsoEntry::getBandByString(QString band)
+{
+    if(band == QString::fromLatin1("160M"))
+        return BAND_160M;
+    else if(band == QString::fromLatin1("80M"))
+        return BAND_80M;
+    else if(band ==  QString::fromLatin1("40M"))
+        return BAND_40M;
+    else if(band == QString::fromLatin1("30M"))
+        return BAND_30M;
+    else if(band == QString::fromLatin1("20M"))
+        return BAND_20M;
+    else if(band == QString::fromLatin1("17M"))
+        return BAND_17M;
+    else if(band == QString::fromLatin1("15M"))
+        return BAND_15M;
+    else if(band == QString::fromLatin1("12M"))
+        return BAND_12M;
+    else if(band == QString::fromLatin1("10M"))
+        return BAND_10M;
+    else if(band == QString::fromLatin1("6M"))
+        return BAND_6M;
+    else if(band == QString::fromLatin1("2M"))
+        return BAND_2M;
+    else if(band == QString::fromLatin1("70CM"))
+        return BAND_70CM;
+    else if(band == QString::fromLatin1("23CM"))
+        return BAND_23CM;
+    else if(band == QString::fromLatin1("13CM"))
+        return BAND_13CM;
+    else
+        return BAND_UNKNOWN;
+}
+
 int QsoEntry::getRstSent() const
 {
     return m_rstSent;

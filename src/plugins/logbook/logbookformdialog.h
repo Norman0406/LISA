@@ -36,6 +36,7 @@ private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
     void handleTimer();
     void stopTimer();
+    void updateFrequency();
 
 private:
     Ui::LogbookFormDialog* m_ui;

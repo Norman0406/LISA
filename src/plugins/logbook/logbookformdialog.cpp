@@ -75,7 +75,15 @@ void LogbookFormDialog::startTimer()
 void LogbookFormDialog::validateInput()
 {
     //TODO: sanitation
-    on_pushButtonSubmitLogbookForm_clicked();
+    if(m_ui->lineEditCallsign->text().isEmpty())
+    {
+        m_ui->lineEditCallsign->setFocus();
+        m_ui->lineEditCallsign->setStyleSheet(QString::fromLatin1("border: 1px solid red"));
+    }
+    else
+    {
+        on_pushButtonSubmitLogbookForm_clicked();
+    }
     m_qtimer->start(1000);
 }
 
@@ -100,6 +108,14 @@ void LogbookFormDialog::convertInputToUppercase()
         text = text.toUpper();
         sender->setText(text);
     }
+}
+
+void LogbookFormDialog::updateFrequency()
+{
+    QString band = m_ui->comboBoxBand->currentText();
+    m_qsoEntry->setFrequencyByBand(QsoEntry::getBandByString(band));
+
+    m_ui->lineEditFrequency->setText(QString::fromLatin1("%1").arg(m_qsoEntry->getFrequency()));
 }
 
 bool LogbookFormDialog::eventFilter(QObject *target, QEvent *event)
@@ -155,6 +171,12 @@ void LogbookFormDialog::setupWidgets()
 
     m_ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
     m_ui->dateTimeEdit->setTimeSpec(Qt::UTC);
+
+    m_ui->lineEditRstSend->setText(QString::fromLatin1("599"));
+    m_ui->lineEditRstRcvd->setText(QString::fromLatin1("599"));
+
+    updateFrequency();
+    connect(m_ui->comboBoxBand, &QComboBox::currentTextChanged, this, &LogbookFormDialog::updateFrequency);
 
     QList<QLineEdit*> widgets = m_ui->layoutWidget->findChildren<QLineEdit*>();
     foreach (QLineEdit* edit, widgets) {
