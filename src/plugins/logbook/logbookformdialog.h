@@ -24,6 +24,7 @@ signals:
 
 public slots:
     void GetQsoData();
+    void validateInput();
 
 private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
@@ -31,6 +32,8 @@ private slots:
 private:
     Ui::LogbookFormDialog* m_ui;
     LogbookWindow* m_window;
+
+    void convertInputToUppercase();
 };
 
 }

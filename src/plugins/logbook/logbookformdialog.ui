@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>261</width>
-     <height>276</height>
+     <height>293</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -109,7 +109,7 @@
        <bool>true</bool>
       </property>
       <property name="text">
-       <string>PushButton</string>
+       <string>Submit</string>
       </property>
      </widget>
     </item>

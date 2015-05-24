@@ -54,14 +54,6 @@ bool Database::open()
         QSqlTableModel model(this, m_database);
         model.setTable(QString::fromLatin1("logbook"));
         model.select();
-
-        for (int i = 0; i < model.rowCount(); i++) {
-            const QSqlRecord& record = model.record(i);
-
-            for (int j = 0; j < record.count(); j++) {
-                qDebug() << "Field " << j << ": " << record.field(j).value();
-            }
-        }
     }
 
     //QSqlQuery query(m_database);

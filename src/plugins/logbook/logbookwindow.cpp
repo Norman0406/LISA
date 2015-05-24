@@ -77,7 +77,15 @@ void LogbookWindow::addQso(QMap<QString, QString>* data) {
     int row = m_model->rowCount();
     m_model->insertRow(row);
     qDebug() << data->value(QString::fromLatin1("Callsign"));
+    m_model->setData(m_model->index(row,2), QString::fromLatin1("DO9PSE"));
     m_model->setData(m_model->index(row,3), data->value(QString::fromLatin1("Callsign")));
+    m_model->setData(m_model->index(row,4), data->value(QString::fromLatin1("Name")));
+    m_model->setData(m_model->index(row,5), data->value(QString::fromLatin1("Mode")));
+    m_model->setData(m_model->index(row,6), data->value(QString::fromLatin1("Frequency")));
+    m_model->setData(m_model->index(row,7), data->value(QString::fromLatin1("Band")));
+    m_model->setData(m_model->index(row,8), data->value(QString::fromLatin1("RSTSend")));
+    m_model->setData(m_model->index(row,9), data->value(QString::fromLatin1("RSTRcvd")));
+
     m_model->submit();
     m_model->select();
 }
