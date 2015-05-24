@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+class QValidator;
+
 namespace Logbook {
 namespace Internal {
 
@@ -10,6 +12,7 @@ namespace Ui {
     class LogbookFormDialog;
 }
 class LogbookWindow;
+class QsoEntry;
 
 class LogbookFormDialog
         : public QWidget
@@ -32,8 +35,14 @@ private slots:
 private:
     Ui::LogbookFormDialog* m_ui;
     LogbookWindow* m_window;
+    QValidator* m_rstValidator;
+    QsoEntry* m_qsoEntry;
+    QStringList m_bands;
+    QStringList m_modes;
 
+    void loadDefaults();
     void convertInputToUppercase();
+    void setupComboBox();
 };
 
 }

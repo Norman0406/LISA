@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>261</width>
-     <height>293</height>
+     <height>305</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -29,9 +29,6 @@
        <string>Date:</string>
       </property>
      </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEditDatetime"/>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="labelCallsign">
@@ -60,9 +57,6 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="lineEditMode"/>
-    </item>
     <item row="4" column="0">
      <widget class="QLabel" name="labelFrequency">
       <property name="text">
@@ -79,9 +73,6 @@
        <string>Band:</string>
       </property>
      </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QLineEdit" name="lineEditBand"/>
     </item>
     <item row="6" column="0">
      <widget class="QLabel" name="labelRstSend">
@@ -112,6 +103,15 @@
        <string>Submit</string>
       </property>
      </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QComboBox" name="comboBoxBand"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="comboBoxMode"/>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="spinBoxDate"/>
     </item>
    </layout>
   </widget>
