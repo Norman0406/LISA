@@ -14,10 +14,10 @@ class LogbookForm : public Core::IOutputPane
     Q_OBJECT
 
 public:
-    LogbookForm(QWidget*, LogbookWindow* window);
+    LogbookForm(QWidget* parent, LogbookWindow *window);
     virtual ~LogbookForm();
 
-    QWidget *outputWidget(QWidget *);
+    QWidget *outputWidget(QWidget* );
     QList<QWidget*> toolBarWidgets() const;
 
     QString displayName() const { return tr("Logbook Entry"); }

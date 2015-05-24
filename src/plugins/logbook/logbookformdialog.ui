@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>281</width>
-    <height>296</height>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -105,8 +105,11 @@
     </item>
     <item row="8" column="1">
      <widget class="QPushButton" name="pushButtonSubmitLogbookForm">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="text">
-       <string>PushButton</string>
+       <string>Submit</string>
       </property>
      </widget>
     </item>
@@ -115,4 +118,7 @@
  </widget>
  <resources/>
  <connections/>
+ <slots>
+  <slot>test()</slot>
+ </slots>
 </ui>

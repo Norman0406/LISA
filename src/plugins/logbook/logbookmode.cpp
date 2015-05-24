@@ -46,7 +46,6 @@ LogbookMode::LogbookMode()
 
     m_logbookForm = new LogbookForm(0, m_window);
     ExtensionSystem::PluginManager::addObject(m_logbookForm);
-
 }
 
 LogbookMode::~LogbookMode()

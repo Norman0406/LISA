@@ -31,6 +31,7 @@
 #include "database.h"
 
 #include <QtSql>
+#include <QDateTime>
 
 namespace Logbook {
 namespace Internal {
@@ -43,9 +44,7 @@ class LogbookWindow
 public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
-
-public slots:
-    void addQso();
+    void addQso(QMap<QString, QString>* data);
 
 private:
     QTableView* m_logbookView;

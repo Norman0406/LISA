@@ -47,11 +47,6 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     m_logbookView->setAlternatingRowColors(true);
-
-    // create database
-//    m_database = QSqlDatabase::addDatabase(QString::fromLatin1("QSQLITE"));
-//    m_database.setHostName(QString::fromLatin1("localhost"));
-//    m_database.setDatabaseName(QString::fromLatin1("logbook.db"));
     m_database.open();
     qDebug() << "DB open";
 
@@ -65,8 +60,8 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_proxyModel->setSourceModel(m_model);
 
     // set the view model
-    //m_logbookView->setModel(m_model);
-    m_logbookView->setModel(m_proxyModel);
+    m_logbookView->setModel(m_model);
+//    m_logbookView->setModel(m_proxyModel);
     m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
 }
@@ -77,9 +72,20 @@ LogbookWindow::~LogbookWindow()
     m_database.close();
 }
 
-void LogbookWindow::addQso() {
-//    int row = m_model->rowCount();
-//    QModelIndex index = m_model->index(row, callsign);
-//    m_model->beginInsertRows(index, row, row );
+void LogbookWindow::addQso(QMap<QString, QString>* data) {
+    qDebug() << QDateTime::currentDateTime().toString(Qt::ISODate);
+    int row = m_model->rowCount();
+    m_model->insertRow(row);
+    qDebug() << data->value(QString::fromLatin1("Callsign"));
+    m_model->setData(m_model->index(row,2), QString::fromLatin1("DO9PSE"));
+    m_model->setData(m_model->index(row,3), data->value(QString::fromLatin1("Callsign")));
+    m_model->setData(m_model->index(row,4), data->value(QString::fromLatin1("Name")));
+    m_model->setData(m_model->index(row,5), data->value(QString::fromLatin1("Mode")));
+    m_model->setData(m_model->index(row,6), data->value(QString::fromLatin1("Frequency")));
+    m_model->setData(m_model->index(row,7), data->value(QString::fromLatin1("Band")));
+    m_model->setData(m_model->index(row,8), data->value(QString::fromLatin1("RSTSend")));
+    m_model->setData(m_model->index(row,9), data->value(QString::fromLatin1("RSTRcvd")));
 
+    m_model->submit();
+    m_model->select();
 }
