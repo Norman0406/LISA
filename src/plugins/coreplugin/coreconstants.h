@@ -36,14 +36,6 @@
 namespace Core {
 namespace Constants {
 
-// Modes
-const char MODE_WELCOME[]          = "Welcome";
-const char MODE_EDIT[]             = "Edit";
-const char MODE_DESIGN[]           = "Design";
-const int  P_MODE_WELCOME          = 100;
-const int  P_MODE_EDIT             = 90;
-const int  P_MODE_DESIGN           = 89;
-
 // Menubar
 const char MENU_BAR[]              = "QtCreator.MenuBar";
 
@@ -61,10 +53,6 @@ const char M_HELP[]                = "QtCreator.Menu.Help";
 
 // Contexts
 const char C_GLOBAL[]              = "Global Context";
-const char C_WELCOME_MODE[]        = "Core.WelcomeMode";
-const char C_EDIT_MODE[]           = "Core.EditMode";
-const char C_DESIGN_MODE[]         = "Core.DesignMode";
-const char C_EDITORMANAGER[]       = "Core.EditorManager";
 const char C_NAVIGATION_PANE[]     = "Core.NavigationPane";
 const char C_PROBLEM_PANE[]        = "Core.ProblemPane";
 const char C_GENERAL_OUTPUT_PANE[] = "Core.GeneralOutputPane";
@@ -95,7 +83,6 @@ const char PRINT[]                 = "QtCreator.Print";
 const char EXIT[]                  = "QtCreator.Exit";
 
 const char OPTIONS[]               = "QtCreator.Options";
-const char TOGGLE_SIDEBAR[]        = "QtCreator.ToggleSidebar";
 const char TOGGLE_MODE_SELECTOR[]  = "QtCreator.ToggleModeSelector";
 const char TOGGLE_FULLSCREEN[]     = "QtCreator.ToggleFullScreen";
 const char THEMEOPTIONS[]          = "QtCreator.ThemeOptions";
@@ -126,7 +113,6 @@ const char GO_BACK[]               = "QtCreator.GoBack";
 const char GO_FORWARD[]            = "QtCreator.GoForward";
 const char ABOUT_QTCREATOR[]       = "QtCreator.AboutQtCreator";
 const char ABOUT_PLUGINS[]         = "QtCreator.AboutPlugins";
-const char S_RETURNTOEDITOR[]      = "QtCreator.ReturnToEditor";
 
 // Default groups
 const char G_DEFAULT_ONE[]         = "QtCreator.Group.Default.One";
@@ -221,13 +207,6 @@ const char ICON_QTLOGO_128[]         = ":/core/images/logo/128/QtProject-qtcreat
 const char ICON_WARNING[]            = ":/core/images/warning.png";
 const char ICON_ERROR[]              = ":/core/images/error.png";
 const char ICON_INFO[]               = ":/core/images/info.png";
-
-const char WIZARD_CATEGORY_QT[] = "R.Qt";
-const char WIZARD_TR_CATEGORY_QT[] = QT_TRANSLATE_NOOP("Core", "Qt");
-const char WIZARD_KIND_UNKNOWN[] = "unknown";
-const char WIZARD_KIND_PROJECT[] = "project";
-const char WIZARD_KIND_CLASS[] = "class";
-const char WIZARD_KIND_FILE[] = "file";
 
 const char SETTINGS_CATEGORY_CORE[] = "A.Core";
 const char SETTINGS_CATEGORY_CORE_ICON[] = ":/core/images/category_core.png";

@@ -33,7 +33,6 @@
 
 #include "icontext.h"
 #include "icore.h"
-#include "dialogs/newdialog.h"
 
 #include <utils/appmainwindow.h>
 #include <utils/fileutils.h>
@@ -50,30 +49,18 @@ QT_END_NAMESPACE
 namespace Core {
 
 class StatusBarWidget;
-class EditorManager;
-class DocumentManager;
-class HelpManager;
-class IDocument;
-class IWizardFactory;
-class JsExpander;
 class MessageManager;
 class ModeManager;
-class ProgressManager;
-class NavigationWidget;
-class RightPaneWidget;
 class SettingsDatabase;
 
 namespace Internal {
 
 class FancyTabWidget;
 class GeneralSettings;
-class ProgressManagerPrivate;
 class ShortcutSettings;
-class MimeTypeSettings;
 class StatusBarManager;
 class VersionDialog;
 class WindowSupport;
-class SystemEditor;
 
 class MainWindow : public Utils::AppMainWindow
 {
@@ -91,10 +78,6 @@ public:
     void addContextObject(IContext *context);
     void removeContextObject(IContext *context);
 
-    IDocument *openFiles(const QStringList &fileNames,
-                         ICore::OpenFilesFlags flags,
-                         const QString &workingDirectory = QString());
-
     inline SettingsDatabase *settingsDatabase() const { return m_settingsDatabase; }
     virtual QPrinter *printer() const;
     IContext * currentContextObject() const;
@@ -106,44 +89,20 @@ public:
 
     void setOverrideColor(const QColor &color);
 
-    bool isNewItemDialogRunning() const;
-
-signals:
-    void newItemDialogRunningChanged();
-
 public slots:
-    void newFile();
-    void openFileWith();
     void exit();
 
-    void showNewItemDialog(const QString &title,
-                           const QList<IWizardFactory *> &factories,
-                           const QString &defaultLocation = QString(),
-                           const QVariantMap &extraVariables = QVariantMap());
-
     bool showOptionsDialog(Id page = Id(), QWidget *parent = 0);
-
-    bool showWarningWithOptions(const QString &title, const QString &text,
-                                const QString &details = QString(),
-                                Id settingsId = Id(),
-                                QWidget *parent = 0);
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
 
 private slots:
-    void openFile();
-    void aboutToShowRecentFiles();
-    void setFocusToEditor();
-    void saveAll();
     void aboutQtCreator();
     void aboutPlugins();
     void updateFocusWidget(QWidget *old, QWidget *now);
-    void setSidebarVisible(bool visible);
     void destroyVersionDialog();
-    void openDroppedFiles(const QList<Utils::FileDropSupport::FileSpec> &files);
     void restoreWindowState();
-    void newItemDialogFinished();
 
 private:
     void updateContextObject(const QList<IContext *> &context);
@@ -160,19 +119,12 @@ private:
     SettingsDatabase *m_settingsDatabase;
     mutable QPrinter *m_printer;
     WindowSupport *m_windowSupport;
-    EditorManager *m_editorManager;
     MessageManager *m_messageManager;
-    ProgressManagerPrivate *m_progressManager;
-    JsExpander *m_jsExpander;
     StatusBarManager *m_statusBarManager;
     ModeManager *m_modeManager;
-    HelpManager *m_helpManager;
     FancyTabWidget *m_modeStack;
-    NavigationWidget *m_navigationWidget;
-    RightPaneWidget *m_rightPaneWidget;
     StatusBarWidget *m_outputView;
     VersionDialog *m_versionDialog;
-    QPointer<NewDialog> m_newDialog;
 
     QList<IContext *> m_activeContext;
 
@@ -180,22 +132,14 @@ private:
 
     GeneralSettings *m_generalSettings;
     ShortcutSettings *m_shortcutSettings;
-    MimeTypeSettings *m_mimeTypeSettings;
-    SystemEditor *m_systemEditor;
 
     // actions
     QAction *m_focusToEditor;
-    QAction *m_newAction;
-    QAction *m_openAction;
-    QAction *m_openWithAction;
-    QAction *m_saveAllAction;
     QAction *m_exitAction;
     QAction *m_optionsAction;
-    QAction *m_toggleSideBarAction;
     QAction *m_toggleModeSelectorAction;
     QAction *m_themeAction;
 
-    QToolButton *m_toggleSideBarButton;
     QColor m_overrideColor;
 };
 

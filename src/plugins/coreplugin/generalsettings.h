@@ -58,13 +58,8 @@ private slots:
     void resetInterfaceColor();
     void resetWarnings();
     void resetLanguage();
-    void showHelpForFileBrowser();
-    void resetFileBrowser();
-    void resetTerminal();
-    void updatePath();
 
 private:
-    void variableHelpDialogCreator(const QString &helpText);
     void fillLanguageBox() const;
     QString language() const;
     void setLanguage(const QString&);

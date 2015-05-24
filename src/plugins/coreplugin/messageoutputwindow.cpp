@@ -32,7 +32,6 @@
 #include "outputwindow.h"
 #include "icontext.h"
 #include "coreconstants.h"
-#include "find/basetextfind.h"
 
 #include <aggregation/aggregate.h>
 
@@ -53,7 +52,6 @@ MessageOutputWindow::MessageOutputWindow()
     m_widget->setPalette(p);
     Aggregation::Aggregate *agg = new Aggregation::Aggregate;
     agg->add(m_widget);
-    agg->add(new BaseTextFind(m_widget));
 }
 
 MessageOutputWindow::~MessageOutputWindow()

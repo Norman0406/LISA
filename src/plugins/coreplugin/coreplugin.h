@@ -57,28 +57,11 @@ public:
     void extensionsInitialized();
     bool delayedInitialize();
     ShutdownFlag aboutToShutdown();
-    QObject *remoteCommand(const QStringList & /* options */,
-                           const QString &workingDirectory,
-                           const QStringList &args);
-
-public slots:
-    void fileOpenRequest(const QString&);
-
-private slots:
-#if defined(WITH_TESTS)
-    void testVcsManager_data();
-    void testVcsManager();
-    // Locator:
-    void test_basefilefilter();
-    void test_basefilefilter_data();
-#endif
 
 private:
     void parseArguments(const QStringList & arguments);
 
     MainWindow *m_mainWindow;
-    FindPlugin *m_findPlugin;
-    Locator *m_locator;
 };
 
 } // namespace Internal

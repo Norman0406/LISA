@@ -31,7 +31,6 @@
 #include "outputpanemanager.h"
 #include "outputpane.h"
 #include "coreconstants.h"
-#include "findplaceholder.h"
 
 #include "icore.h"
 #include "ioutputpane.h"
@@ -40,8 +39,6 @@
 #include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/actionmanager/command.h>
-#include <coreplugin/editormanager/editormanager.h>
-#include <coreplugin/editormanager/ieditor.h>
 
 #include <extensionsystem/pluginmanager.h>
 
@@ -177,7 +174,6 @@ OutputPaneManager::OutputPaneManager(QWidget *parent) :
     toolLayout->addWidget(m_closeButton);
     mainlayout->addWidget(m_toolBar);
     mainlayout->addWidget(m_outputWidgetPane, 10);
-    mainlayout->addWidget(new FindToolBarPlaceHolder(this));
     setLayout(mainlayout);
 
     m_buttonsWidget = new QWidget;
@@ -414,12 +410,6 @@ void OutputPaneManager::slotHide()
         QTC_ASSERT(idx >= 0, return);
         m_buttons.at(idx)->setChecked(false);
         m_panes.value(idx)->visibilityChanged(false);
-        if (IEditor *editor = EditorManager::currentEditor()) {
-            QWidget *w = editor->widget()->focusWidget();
-            if (!w)
-                w = editor->widget();
-            w->setFocus();
-        }
     }
 }
 
