@@ -24,6 +24,7 @@
 
 #include "database.h"
 #include <QDebug>
+#include <QDateTime>
 #include "qsoentry.h"
 
 using namespace Logbook::Internal;
@@ -44,13 +45,9 @@ bool Database::open()
     bool isOpen = m_database.open();
 
     if (isOpen) {
-
-        QSqlQuery q;
-        bool error = q.exec(QString::fromLatin1("SELECT * from logbook"));
-        if(!error)
-            qDebug() << q.lastError();
         // create necessary tables if they do not exist
         if (!m_database.tables().contains(QString::fromLatin1("logbook"))) {
+            qDebug() << "Initialize database file for the first time";
             createTables();
         }
 
@@ -90,8 +87,17 @@ void Database::createTables()
     // create table if it does not already exist
     if (!query.exec(QString::fromLatin1("CREATE TABLE IF NOT EXISTS logbook ("
                                               "ID INTEGER PRIMARY KEY,"
+                                              "Time INTEGER,"
                                               "CallsignFrom VARCHAR(32),"
-                                              "CallsignTo VARCHAR(32)"
+                                              "CallsignTo VARCHAR(32),"
+                                              "Name VARCHAR(32),"
+                                              "Mode VARCHAR(32),"
+                                              "Frequency INTEGER,"
+                                              "Band INTEGER,"
+                                              "RstSend INTEGER,"
+                                              "RstRcvd INTEGER,"
+                                              "Country INTEGER,"
+                                              "Comment VARCHAR(50)"
                                               ")"))) {
         qWarning() << "Could not create table";
     }

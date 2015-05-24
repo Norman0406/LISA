@@ -9,15 +9,28 @@ namespace Internal {
 namespace Ui {
     class LogbookFormDialog;
 }
+class LogbookWindow;
 
 class LogbookFormDialog
         : public QWidget
 {
 public:
-    LogbookFormDialog();
+    LogbookFormDialog(QWidget* parent, LogbookWindow* window);
+    virtual ~LogbookFormDialog();
+    QMap<QString, QString>* m_data;
+
+signals:
+    void AddQso();
+
+public slots:
+    void GetQsoData();
+
+private slots:
+    void on_pushButtonSubmitLogbookForm_clicked();
 
 private:
     Ui::LogbookFormDialog* m_ui;
+    LogbookWindow* m_window;
 };
 
 }
