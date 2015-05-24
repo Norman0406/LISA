@@ -56,18 +56,11 @@ public:
 
     virtual int priorityInStatusBar() const = 0;
 
-    virtual void clearContents() = 0;
     virtual void visibilityChanged(bool visible) = 0;
 
     virtual void setFocus() = 0;
     virtual bool hasFocus() const = 0;
     virtual bool canFocus() const = 0;
-
-    virtual bool canNavigate() const = 0;
-    virtual bool canNext() const = 0;
-    virtual bool canPrevious() const = 0;
-    virtual void goToNext() = 0;
-    virtual void goToPrev() = 0;
 
     enum Flag { NoModeSwitch = 0, ModeSwitch = 1, WithFocus = 2, EnsureSizeHint = 4};
     Q_DECLARE_FLAGS(Flags, Flag)

@@ -25,11 +25,6 @@ QList<QWidget*> LogbookForm::toolBarWidgets() const
     return QList<QWidget*>();
 }
 
-void LogbookForm::clearContents()
-{
-
-}
-
 void LogbookForm::visibilityChanged(bool visible)
 {
 }
@@ -45,27 +40,4 @@ bool LogbookForm::hasFocus() const
 bool LogbookForm::canFocus() const
 {
     return false;
-}
-
-bool LogbookForm::canNavigate() const
-{
-    return false;
-}
-
-bool LogbookForm::canNext() const
-{
-    return false;
-}
-
-bool LogbookForm::canPrevious() const
-{
-    return false;
-}
-
-void LogbookForm::goToNext()
-{
-}
-
-void LogbookForm::goToPrev()
-{
 }

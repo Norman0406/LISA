@@ -74,11 +74,6 @@ void MessageOutputWindow::setFocus()
     m_widget->setFocus();
 }
 
-void MessageOutputWindow::clearContents()
-{
-    m_widget->clear();
-}
-
 QWidget *MessageOutputWindow::outputWidget(QWidget *parent)
 {
     m_widget->setParent(parent);
@@ -102,31 +97,6 @@ void MessageOutputWindow::append(const QString &text)
 int MessageOutputWindow::priorityInStatusBar() const
 {
     return -1;
-}
-
-bool MessageOutputWindow::canNext() const
-{
-    return false;
-}
-
-bool MessageOutputWindow::canPrevious() const
-{
-    return false;
-}
-
-void MessageOutputWindow::goToNext()
-{
-
-}
-
-void MessageOutputWindow::goToPrev()
-{
-
-}
-
-bool MessageOutputWindow::canNavigate() const
-{
-    return false;
 }
 
 } // namespace Internal

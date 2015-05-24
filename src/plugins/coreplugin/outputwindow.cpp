@@ -96,37 +96,6 @@ OutputWindow::OutputWindow(Context context, QWidget *parent)
     d->outputWindowContext->setContext(context);
     d->outputWindowContext->setWidget(this);
     ICore::addContextObject(d->outputWindowContext);
-
-    QAction *undoAction = new QAction(this);
-    QAction *redoAction = new QAction(this);
-    QAction *cutAction = new QAction(this);
-    QAction *copyAction = new QAction(this);
-    QAction *pasteAction = new QAction(this);
-    QAction *selectAllAction = new QAction(this);
-
-    ActionManager::registerAction(undoAction, Constants::UNDO, context);
-    ActionManager::registerAction(redoAction, Constants::REDO, context);
-    ActionManager::registerAction(cutAction, Constants::CUT, context);
-    ActionManager::registerAction(copyAction, Constants::COPY, context);
-    ActionManager::registerAction(pasteAction, Constants::PASTE, context);
-    ActionManager::registerAction(selectAllAction, Constants::SELECTALL, context);
-
-    connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
-    connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
-    connect(cutAction, SIGNAL(triggered()), this, SLOT(cut()));
-    connect(copyAction, SIGNAL(triggered()), this, SLOT(copy()));
-    connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
-    connect(selectAllAction, SIGNAL(triggered()), this, SLOT(selectAll()));
-
-    connect(this, SIGNAL(undoAvailable(bool)), undoAction, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(redoAvailable(bool)), redoAction, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(copyAvailable(bool)), cutAction, SLOT(setEnabled(bool)));  // OutputWindow never read-only
-    connect(this, SIGNAL(copyAvailable(bool)), copyAction, SLOT(setEnabled(bool)));
-
-    undoAction->setEnabled(false);
-    redoAction->setEnabled(false);
-    cutAction->setEnabled(false);
-    copyAction->setEnabled(false);
 }
 
 OutputWindow::~OutputWindow()

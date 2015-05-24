@@ -277,8 +277,6 @@ void MainWindow::registerDefaultContainers()
     if (!HostOsInfo::isMacHost()) // System menu bar on Mac
         setMenuBar(menubar->menuBar());
     menubar->appendGroup(Constants::G_FILE);
-    menubar->appendGroup(Constants::G_EDIT);
-    menubar->appendGroup(Constants::G_VIEW);
     menubar->appendGroup(Constants::G_TOOLS);
     menubar->appendGroup(Constants::G_WINDOW);
     menubar->appendGroup(Constants::G_HELP);
@@ -287,24 +285,7 @@ void MainWindow::registerDefaultContainers()
     ActionContainer *filemenu = ActionManager::createMenu(Constants::M_FILE);
     menubar->addMenu(filemenu, Constants::G_FILE);
     filemenu->menu()->setTitle(tr("&File"));
-    filemenu->appendGroup(Constants::G_FILE_NEW);
-    filemenu->appendGroup(Constants::G_FILE_OPEN);
-    filemenu->appendGroup(Constants::G_FILE_PROJECT);
-    filemenu->appendGroup(Constants::G_FILE_SAVE);
-    filemenu->appendGroup(Constants::G_FILE_CLOSE);
-    filemenu->appendGroup(Constants::G_FILE_PRINT);
     filemenu->appendGroup(Constants::G_FILE_OTHER);
-
-    // Edit Menu
-    ActionContainer *medit = ActionManager::createMenu(Constants::M_EDIT);
-    menubar->addMenu(medit, Constants::G_EDIT);
-    medit->menu()->setTitle(tr("&Edit"));
-    medit->appendGroup(Constants::G_EDIT_UNDOREDO);
-    medit->appendGroup(Constants::G_EDIT_COPYPASTE);
-    medit->appendGroup(Constants::G_EDIT_SELECTALL);
-    medit->appendGroup(Constants::G_EDIT_ADVANCED);
-    medit->appendGroup(Constants::G_EDIT_FIND);
-    medit->appendGroup(Constants::G_EDIT_OTHER);
 
     // Tools Menu
     ActionContainer *ac = ActionManager::createMenu(Constants::M_TOOLS);
@@ -327,29 +308,18 @@ void MainWindow::registerDefaultContainers()
     ac = ActionManager::createMenu(Constants::M_HELP);
     menubar->addMenu(ac, Constants::G_HELP);
     ac->menu()->setTitle(tr("&Help"));
-    ac->appendGroup(Constants::G_HELP_HELP);
-    ac->appendGroup(Constants::G_HELP_SUPPORT);
     ac->appendGroup(Constants::G_HELP_ABOUT);
 }
 
 void MainWindow::registerDefaultActions()
 {
     ActionContainer *mfile = ActionManager::actionContainer(Constants::M_FILE);
-    ActionContainer *medit = ActionManager::actionContainer(Constants::M_EDIT);
     ActionContainer *mtools = ActionManager::actionContainer(Constants::M_TOOLS);
     ActionContainer *mwindow = ActionManager::actionContainer(Constants::M_WINDOW);
     ActionContainer *mhelp = ActionManager::actionContainer(Constants::M_HELP);
 
     // File menu separators
-    mfile->addSeparator(Constants::G_FILE_SAVE);
-    mfile->addSeparator(Constants::G_FILE_PRINT);
-    mfile->addSeparator(Constants::G_FILE_CLOSE);
     mfile->addSeparator(Constants::G_FILE_OTHER);
-    // Edit menu separators
-    medit->addSeparator(Constants::G_EDIT_COPYPASTE);
-    medit->addSeparator(Constants::G_EDIT_SELECTALL);
-    medit->addSeparator(Constants::G_EDIT_FIND);
-    medit->addSeparator(Constants::G_EDIT_ADVANCED);
 
     // Exit Action
     QIcon icon = QIcon::fromTheme(QLatin1String("application-exit"));
@@ -359,66 +329,6 @@ void MainWindow::registerDefaultActions()
     cmd->setDefaultKeySequence(QKeySequence(tr("Ctrl+Q")));
     mfile->addAction(cmd, Constants::G_FILE_OTHER);
     connect(m_exitAction, SIGNAL(triggered()), this, SLOT(exit()));
-
-    // Undo Action
-    icon = QIcon::fromTheme(QLatin1String("edit-undo"), QIcon(QLatin1String(Constants::ICON_UNDO)));
-    QAction* tmpaction = new QAction(icon, tr("&Undo"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::UNDO);
-    cmd->setDefaultKeySequence(QKeySequence::Undo);
-    cmd->setAttribute(Command::CA_UpdateText);
-    cmd->setDescription(tr("Undo"));
-    medit->addAction(cmd, Constants::G_EDIT_UNDOREDO);
-    tmpaction->setEnabled(false);
-
-    // Redo Action
-    icon = QIcon::fromTheme(QLatin1String("edit-redo"), QIcon(QLatin1String(Constants::ICON_REDO)));
-    tmpaction = new QAction(icon, tr("&Redo"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::REDO);
-    cmd->setDefaultKeySequence(QKeySequence::Redo);
-    cmd->setAttribute(Command::CA_UpdateText);
-    cmd->setDescription(tr("Redo"));
-    medit->addAction(cmd, Constants::G_EDIT_UNDOREDO);
-    tmpaction->setEnabled(false);
-
-    // Cut Action
-    icon = QIcon::fromTheme(QLatin1String("edit-cut"), QIcon(QLatin1String(Constants::ICON_CUT)));
-    tmpaction = new QAction(icon, tr("Cu&t"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::CUT);
-    cmd->setDefaultKeySequence(QKeySequence::Cut);
-    medit->addAction(cmd, Constants::G_EDIT_COPYPASTE);
-    tmpaction->setEnabled(false);
-
-    // Copy Action
-    icon = QIcon::fromTheme(QLatin1String("edit-copy"), QIcon(QLatin1String(Constants::ICON_COPY)));
-    tmpaction = new QAction(icon, tr("&Copy"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::COPY);
-    cmd->setDefaultKeySequence(QKeySequence::Copy);
-    medit->addAction(cmd, Constants::G_EDIT_COPYPASTE);
-    tmpaction->setEnabled(false);
-
-    // Paste Action
-    icon = QIcon::fromTheme(QLatin1String("edit-paste"), QIcon(QLatin1String(Constants::ICON_PASTE)));
-    tmpaction = new QAction(icon, tr("&Paste"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::PASTE);
-    cmd->setDefaultKeySequence(QKeySequence::Paste);
-    medit->addAction(cmd, Constants::G_EDIT_COPYPASTE);
-    tmpaction->setEnabled(false);
-
-    // Select All
-    icon = QIcon::fromTheme(QLatin1String("edit-select-all"));
-    tmpaction = new QAction(icon, tr("Select &All"), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::SELECTALL);
-    cmd->setDefaultKeySequence(QKeySequence::SelectAll);
-    medit->addAction(cmd, Constants::G_EDIT_SELECTALL);
-    tmpaction->setEnabled(false);
-
-    // Goto Action
-    icon = QIcon::fromTheme(QLatin1String("go-jump"));
-    tmpaction = new QAction(icon, tr("&Go to Line..."), this);
-    cmd = ActionManager::registerAction(tmpaction, Constants::GOTO);
-    cmd->setDefaultKeySequence(QKeySequence(tr("Ctrl+L")));
-    medit->addAction(cmd, Constants::G_EDIT_OTHER);
-    tmpaction->setEnabled(false);
 
     // Options Action
     mtools->appendGroup(Constants::G_TOOLS_OPTIONS);
@@ -483,9 +393,10 @@ void MainWindow::registerDefaultActions()
     mviews->menu()->setTitle(tr("&Views"));
 
     // "Help" separators
-    mhelp->addSeparator(Constants::G_HELP_SUPPORT);
     if (!HostOsInfo::isMacHost())
         mhelp->addSeparator(Constants::G_HELP_ABOUT);
+
+    QAction* tmpaction;
 
     // About IDE Action
     icon = QIcon::fromTheme(QLatin1String("help-about"));
