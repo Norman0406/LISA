@@ -36,24 +36,12 @@
 namespace Core {
 namespace Constants {
 
-// Modes
-const char MODE_WELCOME[]          = "Welcome";
-const char MODE_EDIT[]             = "Edit";
-const char MODE_DESIGN[]           = "Design";
-const int  P_MODE_WELCOME          = 100;
-const int  P_MODE_EDIT             = 90;
-const int  P_MODE_DESIGN           = 89;
-
 // Menubar
 const char MENU_BAR[]              = "QtCreator.MenuBar";
 
 // Menus
 const char M_FILE[]                = "QtCreator.Menu.File";
-const char M_FILE_RECENTFILES[]    = "QtCreator.Menu.File.RecentFiles";
-const char M_EDIT[]                = "QtCreator.Menu.Edit";
-const char M_EDIT_ADVANCED[]       = "QtCreator.Menu.Edit.Advanced";
 const char M_TOOLS[]               = "QtCreator.Menu.Tools";
-const char M_TOOLS_EXTERNAL[]      = "QtCreator.Menu.Tools.External";
 const char M_WINDOW[]              = "QtCreator.Menu.Window";
 const char M_WINDOW_PANES[]        = "QtCreator.Menu.Window.Panes";
 const char M_WINDOW_VIEWS[]        = "QtCreator.Menu.Window.Views";
@@ -61,10 +49,6 @@ const char M_HELP[]                = "QtCreator.Menu.Help";
 
 // Contexts
 const char C_GLOBAL[]              = "Global Context";
-const char C_WELCOME_MODE[]        = "Core.WelcomeMode";
-const char C_EDIT_MODE[]           = "Core.EditMode";
-const char C_DESIGN_MODE[]         = "Core.DesignMode";
-const char C_EDITORMANAGER[]       = "Core.EditorManager";
 const char C_NAVIGATION_PANE[]     = "Core.NavigationPane";
 const char C_PROBLEM_PANE[]        = "Core.ProblemPane";
 const char C_GENERAL_OUTPUT_PANE[] = "Core.GeneralOutputPane";
@@ -75,33 +59,12 @@ const char K_DEFAULT_TEXT_EDITOR_ID[] = "Core.PlainTextEditor";
 const char K_DEFAULT_BINARY_EDITOR_ID[] = "Core.BinaryEditor";
 
 //actions
-const char UNDO[]                  = "QtCreator.Undo";
-const char REDO[]                  = "QtCreator.Redo";
-const char COPY[]                  = "QtCreator.Copy";
-const char PASTE[]                 = "QtCreator.Paste";
-const char CUT[]                   = "QtCreator.Cut";
-const char SELECTALL[]             = "QtCreator.SelectAll";
-
-const char GOTO[]                  = "QtCreator.Goto";
-
-const char NEW[]                   = "QtCreator.New";
-const char OPEN[]                  = "QtCreator.Open";
-const char OPEN_WITH[]             = "QtCreator.OpenWith";
-const char REVERTTOSAVED[]         = "QtCreator.RevertToSaved";
-const char SAVE[]                  = "QtCreator.Save";
-const char SAVEAS[]                = "QtCreator.SaveAs";
-const char SAVEALL[]               = "QtCreator.SaveAll";
-const char PRINT[]                 = "QtCreator.Print";
 const char EXIT[]                  = "QtCreator.Exit";
 
 const char OPTIONS[]               = "QtCreator.Options";
-const char TOGGLE_SIDEBAR[]        = "QtCreator.ToggleSidebar";
 const char TOGGLE_MODE_SELECTOR[]  = "QtCreator.ToggleModeSelector";
 const char TOGGLE_FULLSCREEN[]     = "QtCreator.ToggleFullScreen";
 const char THEMEOPTIONS[]          = "QtCreator.ThemeOptions";
-
-const char TR_SHOW_SIDEBAR[]       = QT_TRANSLATE_NOOP("Core", "Show Sidebar");
-const char TR_HIDE_SIDEBAR[]       = QT_TRANSLATE_NOOP("Core", "Hide Sidebar");
 
 const char MINIMIZE_WINDOW[]       = "QtCreator.MinimizeWindow";
 const char ZOOM_WINDOW[]           = "QtCreator.ZoomWindow";
@@ -126,7 +89,6 @@ const char GO_BACK[]               = "QtCreator.GoBack";
 const char GO_FORWARD[]            = "QtCreator.GoForward";
 const char ABOUT_QTCREATOR[]       = "QtCreator.AboutQtCreator";
 const char ABOUT_PLUGINS[]         = "QtCreator.AboutPlugins";
-const char S_RETURNTOEDITOR[]      = "QtCreator.ReturnToEditor";
 
 // Default groups
 const char G_DEFAULT_ONE[]         = "QtCreator.Group.Default.One";
@@ -135,37 +97,12 @@ const char G_DEFAULT_THREE[]       = "QtCreator.Group.Default.Three";
 
 // Main menu bar groups
 const char G_FILE[]                = "QtCreator.Group.File";
-const char G_EDIT[]                = "QtCreator.Group.Edit";
-const char G_VIEW[]                = "QtCreator.Group.View";
 const char G_TOOLS[]               = "QtCreator.Group.Tools";
 const char G_WINDOW[]              = "QtCreator.Group.Window";
 const char G_HELP[]                = "QtCreator.Group.Help";
 
 // File menu groups
-const char G_FILE_NEW[]            = "QtCreator.Group.File.New";
-const char G_FILE_OPEN[]           = "QtCreator.Group.File.Open";
-const char G_FILE_PROJECT[]        = "QtCreator.Group.File.Project";
-const char G_FILE_SAVE[]           = "QtCreator.Group.File.Save";
-const char G_FILE_CLOSE[]          = "QtCreator.Group.File.Close";
-const char G_FILE_PRINT[]          = "QtCreator.Group.File.Print";
 const char G_FILE_OTHER[]          = "QtCreator.Group.File.Other";
-
-// Edit menu groups
-const char G_EDIT_UNDOREDO[]       = "QtCreator.Group.Edit.UndoRedo";
-const char G_EDIT_COPYPASTE[]      = "QtCreator.Group.Edit.CopyPaste";
-const char G_EDIT_SELECTALL[]      = "QtCreator.Group.Edit.SelectAll";
-const char G_EDIT_ADVANCED[]       = "QtCreator.Group.Edit.Advanced";
-
-const char G_EDIT_FIND[]           = "QtCreator.Group.Edit.Find";
-const char G_EDIT_OTHER[]          = "QtCreator.Group.Edit.Other";
-
-// Advanced edit menu groups
-const char G_EDIT_FORMAT[]         = "QtCreator.Group.Edit.Format";
-const char G_EDIT_COLLAPSING[]     = "QtCreator.Group.Edit.Collapsing";
-const char G_EDIT_TEXT[]           = "QtCreator.Group.Edit.Text";
-const char G_EDIT_BLOCKS[]         = "QtCreator.Group.Edit.Blocks";
-const char G_EDIT_FONT[]           = "QtCreator.Group.Edit.Font";
-const char G_EDIT_EDITOR[]         = "QtCreator.Group.Edit.Editor";
 
 const char G_TOOLS_OPTIONS[]       = "QtCreator.Group.Tools.Options";
 
@@ -179,8 +116,6 @@ const char G_WINDOW_LIST[]         = "QtCreator.Group.Window.List";
 const char G_WINDOW_OTHER[]        = "QtCreator.Group.Window.Other";
 
 // Help groups (global)
-const char G_HELP_HELP[]           = "QtCreator.Group.Help.Help";
-const char G_HELP_SUPPORT[]        = "QtCreator.Group.Help.Supprt";
 const char G_HELP_ABOUT[]          = "QtCreator.Group.Help.About";
 
 const char ICON_MINUS[]              = ":/core/images/minus.png";
@@ -221,13 +156,6 @@ const char ICON_QTLOGO_128[]         = ":/core/images/logo/128/QtProject-qtcreat
 const char ICON_WARNING[]            = ":/core/images/warning.png";
 const char ICON_ERROR[]              = ":/core/images/error.png";
 const char ICON_INFO[]               = ":/core/images/info.png";
-
-const char WIZARD_CATEGORY_QT[] = "R.Qt";
-const char WIZARD_TR_CATEGORY_QT[] = QT_TRANSLATE_NOOP("Core", "Qt");
-const char WIZARD_KIND_UNKNOWN[] = "unknown";
-const char WIZARD_KIND_PROJECT[] = "project";
-const char WIZARD_KIND_CLASS[] = "class";
-const char WIZARD_KIND_FILE[] = "file";
 
 const char SETTINGS_CATEGORY_CORE[] = "A.Core";
 const char SETTINGS_CATEGORY_CORE_ICON[] = ":/core/images/category_core.png";

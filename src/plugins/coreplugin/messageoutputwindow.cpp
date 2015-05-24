@@ -32,7 +32,6 @@
 #include "outputwindow.h"
 #include "icontext.h"
 #include "coreconstants.h"
-#include "find/basetextfind.h"
 
 #include <aggregation/aggregate.h>
 
@@ -53,7 +52,6 @@ MessageOutputWindow::MessageOutputWindow()
     m_widget->setPalette(p);
     Aggregation::Aggregate *agg = new Aggregation::Aggregate;
     agg->add(m_widget);
-    agg->add(new BaseTextFind(m_widget));
 }
 
 MessageOutputWindow::~MessageOutputWindow()
@@ -74,11 +72,6 @@ bool MessageOutputWindow::canFocus() const
 void MessageOutputWindow::setFocus()
 {
     m_widget->setFocus();
-}
-
-void MessageOutputWindow::clearContents()
-{
-    m_widget->clear();
 }
 
 QWidget *MessageOutputWindow::outputWidget(QWidget *parent)
@@ -104,31 +97,6 @@ void MessageOutputWindow::append(const QString &text)
 int MessageOutputWindow::priorityInStatusBar() const
 {
     return -1;
-}
-
-bool MessageOutputWindow::canNext() const
-{
-    return false;
-}
-
-bool MessageOutputWindow::canPrevious() const
-{
-    return false;
-}
-
-void MessageOutputWindow::goToNext()
-{
-
-}
-
-void MessageOutputWindow::goToPrev()
-{
-
-}
-
-bool MessageOutputWindow::canNavigate() const
-{
-    return false;
 }
 
 } // namespace Internal

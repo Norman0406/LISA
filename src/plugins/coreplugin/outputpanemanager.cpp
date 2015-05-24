@@ -31,7 +31,6 @@
 #include "outputpanemanager.h"
 #include "outputpane.h"
 #include "coreconstants.h"
-#include "findplaceholder.h"
 
 #include "icore.h"
 #include "ioutputpane.h"
@@ -40,8 +39,6 @@
 #include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/actionmanager/command.h>
-#include <coreplugin/editormanager/editormanager.h>
-#include <coreplugin/editormanager/ieditor.h>
 
 #include <extensionsystem/pluginmanager.h>
 
@@ -87,6 +84,7 @@ static OutputPaneManager *m_instance = 0;
 void OutputPaneManager::create()
 {
    m_instance = new OutputPaneManager;
+   OutputPanePlaceHolder::getCurrent()->create();
 }
 
 void OutputPaneManager::destroy()
@@ -119,8 +117,6 @@ OutputPaneManager::OutputPaneManager(QWidget *parent) :
     m_closeButton(new QToolButton),
     m_minMaxAction(0),
     m_minMaxButton(new QToolButton),
-    m_nextAction(0),
-    m_prevAction(0),
     m_outputWidgetPane(new QStackedWidget),
     m_opToolBarWidgets(new QStackedWidget),
     m_minimizeIcon(QLatin1String(":/core/images/arrowdown.png")),
@@ -131,21 +127,6 @@ OutputPaneManager::OutputPaneManager(QWidget *parent) :
     setWindowTitle(tr("Output"));
 
     m_titleLabel->setContentsMargins(5, 0, 5, 0);
-
-    m_clearAction = new QAction(this);
-    m_clearAction->setIcon(QIcon(QLatin1String(Constants::ICON_CLEAN_PANE)));
-    m_clearAction->setText(tr("Clear"));
-    connect(m_clearAction, SIGNAL(triggered()), this, SLOT(clearPage()));
-
-    m_nextAction = new QAction(this);
-    m_nextAction->setIcon(QIcon(QLatin1String(Constants::ICON_NEXT)));
-    m_nextAction->setText(tr("Next Item"));
-    connect(m_nextAction, SIGNAL(triggered()), this, SLOT(slotNext()));
-
-    m_prevAction = new QAction(this);
-    m_prevAction->setIcon(QIcon(QLatin1String(Constants::ICON_PREV)));
-    m_prevAction->setText(tr("Previous Item"));
-    connect(m_prevAction, SIGNAL(triggered()), this, SLOT(slotPrev()));
 
     m_minMaxAction = new QAction(this);
     m_minMaxAction->setIcon(m_maximizeIcon);
@@ -165,18 +146,11 @@ OutputPaneManager::OutputPaneManager(QWidget *parent) :
     toolLayout->setSpacing(0);
     toolLayout->addWidget(m_titleLabel);
     toolLayout->addWidget(new StyledSeparator);
-    m_clearButton = new QToolButton;
-    toolLayout->addWidget(m_clearButton);
-    m_prevToolButton = new QToolButton;
-    toolLayout->addWidget(m_prevToolButton);
-    m_nextToolButton = new QToolButton;
-    toolLayout->addWidget(m_nextToolButton);
     toolLayout->addWidget(m_opToolBarWidgets);
     toolLayout->addWidget(m_minMaxButton);
     toolLayout->addWidget(m_closeButton);
     mainlayout->addWidget(m_toolBar);
     mainlayout->addWidget(m_outputWidgetPane, 10);
-    mainlayout->addWidget(new FindToolBarPlaceHolder(this));
     setLayout(mainlayout);
 
     m_buttonsWidget = new QWidget;
@@ -214,20 +188,6 @@ void OutputPaneManager::init()
 
     Command *cmd;
 
-    cmd = ActionManager::registerAction(m_clearAction, "Coreplugin.OutputPane.clear");
-    m_clearButton->setDefaultAction(cmd->action());
-    mpanes->addAction(cmd, "Coreplugin.OutputPane.ActionsGroup");
-
-    cmd = ActionManager::registerAction(m_prevAction, "Coreplugin.OutputPane.previtem");
-    cmd->setDefaultKeySequence(QKeySequence(tr("Shift+F6")));
-    m_prevToolButton->setDefaultAction(cmd->action());
-    mpanes->addAction(cmd, "Coreplugin.OutputPane.ActionsGroup");
-
-    cmd = ActionManager::registerAction(m_nextAction, "Coreplugin.OutputPane.nextitem");
-    m_nextToolButton->setDefaultAction(cmd->action());
-    cmd->setDefaultKeySequence(QKeySequence(tr("F6")));
-    mpanes->addAction(cmd, "Coreplugin.OutputPane.ActionsGroup");
-
     cmd = ActionManager::registerAction(m_minMaxAction, "Coreplugin.OutputPane.minmax");
     cmd->setDefaultKeySequence(QKeySequence(UseMacShortcuts ? tr("Ctrl+9") : tr("Alt+9")));
     cmd->setAttribute(Command::CA_UpdateText);
@@ -257,7 +217,6 @@ void OutputPaneManager::init()
         connect(outPane, SIGNAL(showPage(int)), this, SLOT(showPage(int)));
         connect(outPane, SIGNAL(hidePage()), this, SLOT(slotHide()));
         connect(outPane, SIGNAL(togglePage(int)), this, SLOT(togglePage(int)));
-        connect(outPane, SIGNAL(navigateStateUpdate()), this, SLOT(updateNavigateState()));
         connect(outPane, SIGNAL(flashButton()), this, SLOT(flashButton()));
         connect(outPane, SIGNAL(setBadgeNumber(int)), this, SLOT(setBadgeNumber(int)));
 
@@ -386,24 +345,6 @@ void OutputPaneManager::readSettings()
     m_outputPaneHeight = settings->value(QLatin1String("OutputPanePlaceHolder/Height"), 0).toInt();
 }
 
-void OutputPaneManager::slotNext()
-{
-    int idx = currentIndex();
-    ensurePageVisible(idx);
-    IOutputPane *out = m_panes.at(idx);
-    if (out->canNext())
-        out->goToNext();
-}
-
-void OutputPaneManager::slotPrev()
-{
-    int idx = currentIndex();
-    ensurePageVisible(idx);
-    IOutputPane *out = m_panes.at(idx);
-    if (out->canPrevious())
-        out->goToPrev();
-}
-
 void OutputPaneManager::slotHide()
 {
     OutputPanePlaceHolder *ph = OutputPanePlaceHolder::getCurrent();
@@ -413,12 +354,6 @@ void OutputPaneManager::slotHide()
         QTC_ASSERT(idx >= 0, return);
         m_buttons.at(idx)->setChecked(false);
         m_panes.value(idx)->visibilityChanged(false);
-        if (IEditor *editor = EditorManager::currentEditor()) {
-            QWidget *w = editor->widget()->focusWidget();
-            if (!w)
-                w = editor->widget();
-            w->setFocus();
-        }
     }
 }
 
@@ -433,16 +368,6 @@ void OutputPaneManager::ensurePageVisible(int idx)
     //if (current != idx)
     //    m_outputWidgetPane->setCurrentIndex(idx);
     setCurrentIndex(idx);
-}
-
-void OutputPaneManager::updateNavigateState()
-{
-    IOutputPane *pane = qobject_cast<IOutputPane*>(sender());
-    int idx = findIndexForPage(pane);
-    if (currentIndex() == idx) {
-        m_prevAction->setEnabled(pane->canNavigate() && pane->canPrevious());
-        m_nextAction->setEnabled(pane->canNavigate() && pane->canNext());
-    }
 }
 
 void OutputPaneManager::flashButton()
@@ -544,9 +469,6 @@ void OutputPaneManager::setCurrentIndex(int idx)
         IOutputPane *pane = m_panes.at(idx);
         pane->visibilityChanged(true);
 
-        bool canNavigate = pane->canNavigate();
-        m_prevAction->setEnabled(canNavigate && pane->canPrevious());
-        m_nextAction->setEnabled(canNavigate && pane->canNext());
         m_buttons.at(idx)->setChecked(OutputPanePlaceHolder::isCurrentVisible());
         m_titleLabel->setText(pane->displayName());
     }
@@ -597,13 +519,6 @@ void OutputPaneManager::saveSettings() const
     }
     settings->endArray();
     settings->setValue(QLatin1String("OutputPanePlaceHolder/Height"), m_outputPaneHeight);
-}
-
-void OutputPaneManager::clearPage()
-{
-    int idx = currentIndex();
-    if (idx >= 0)
-        m_panes.at(idx)->clearContents();
 }
 
 int OutputPaneManager::currentIndex() const

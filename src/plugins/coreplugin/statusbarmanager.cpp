@@ -60,33 +60,20 @@ StatusBarManager::StatusBarManager(MainWindow *mainWnd)
   : QObject(mainWnd),
     m_mainWnd(mainWnd)
 {
-    QStatusBar *bar = m_mainWnd->statusBar();
-    m_splitter = new NonResizingSplitter(bar);
-    bar->insertPermanentWidget(0, m_splitter, 10);
-    m_splitter->setChildrenCollapsible(false);
-    // first
-    QWidget *w = createWidget(m_splitter);
-    w->layout()->setContentsMargins(0, 0, 3, 0);
-    m_splitter->addWidget(w);
-    m_statusBarWidgets.append(w);
+    QStatusBar* bar = m_mainWnd->statusBar();
 
-    QWidget *w2 = createWidget(m_splitter);
-    w2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    m_splitter->addWidget(w2);
-    // second
-    w = createWidget(w2);
-    w2->layout()->addWidget(w);
-    m_statusBarWidgets.append(w);
-    // third
-    w = createWidget(w2);
-    w2->layout()->addWidget(w);
-    m_statusBarWidgets.append(w);
+    // this is the parent widget
+    QWidget* parentWidget = createWidget(bar);
+    bar->insertPermanentWidget(0, parentWidget, 10);
 
-    static_cast<QBoxLayout *>(w2->layout())->addStretch(1);
+    // this widget will contain all child widgets
+    m_statusBarWidgets = createWidget(parentWidget);
+    parentWidget->layout()->addWidget(m_statusBarWidgets);
 
-    QWidget *rightCornerWidget = createWidget(bar);
-    bar->insertPermanentWidget(1, rightCornerWidget);
-    m_statusBarWidgets.append(rightCornerWidget);
+    // this widget is only a spacer that fills up all available space
+    QWidget* spacerWidget = createWidget(parentWidget);
+    static_cast<QBoxLayout *>(spacerWidget->layout())->addStretch(1);
+    parentWidget->layout()->addWidget(spacerWidget);
 }
 
 StatusBarManager::~StatusBarManager()
@@ -110,7 +97,7 @@ void StatusBarManager::objectAdded(QObject *obj)
 
     QWidget *viewWidget = 0;
     viewWidget = view->widget();
-    m_statusBarWidgets.at(view->position())->layout()->addWidget(viewWidget);
+    m_statusBarWidgets->layout()->addWidget(viewWidget);
 
     m_mainWnd->addContextObject(view);
 }
@@ -125,10 +112,6 @@ void StatusBarManager::aboutToRemoveObject(QObject *obj)
 
 void StatusBarManager::saveSettings()
 {
-    QSettings *s = ICore::settings();
-    s->beginGroup(QLatin1String(kSettingsGroup));
-    s->setValue(QLatin1String(kLeftSplitWidthKey), m_splitter->sizes().at(0));
-    s->endGroup();
 }
 
 void StatusBarManager::extensionsInitalized()
@@ -137,30 +120,4 @@ void StatusBarManager::extensionsInitalized()
 
 void StatusBarManager::restoreSettings()
 {
-    QSettings *s = ICore::settings();
-    s->beginGroup(QLatin1String(kSettingsGroup));
-    int leftSplitWidth = s->value(QLatin1String(kLeftSplitWidthKey), -1).toInt();
-    s->endGroup();
-    if (leftSplitWidth < 0) {
-        // size first split after its sizeHint + a bit of buffer
-        leftSplitWidth = m_splitter->widget(0)->sizeHint().width();
-    }
-    int sum = 0;
-    foreach (int w, m_splitter->sizes())
-        sum += w;
-    m_splitter->setSizes(QList<int>() << leftSplitWidth << (sum - leftSplitWidth));
-}
-
-NonResizingSplitter::NonResizingSplitter(QWidget *parent)
-    : MiniSplitter(parent, Light)
-{
-}
-
-void NonResizingSplitter::resizeEvent(QResizeEvent *ev)
-{
-    // bypass QSplitter magic
-    int leftSplitWidth = qMin(sizes().at(0), ev->size().width());
-    int rightSplitWidth = qMax(0, ev->size().width() - leftSplitWidth);
-    setSizes(QList<int>() << leftSplitWidth << rightSplitWidth);
-    return QWidget::resizeEvent(ev);
 }

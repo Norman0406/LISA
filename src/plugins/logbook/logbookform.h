@@ -23,18 +23,11 @@ public:
     QString displayName() const { return tr("Logbook Entry"); }
     int priorityInStatusBar() const { return 1; }
 
-    void clearContents();
     void visibilityChanged(bool visible);
 
     void setFocus();
     bool hasFocus() const;
     bool canFocus() const;
-
-    bool canNavigate() const;
-    bool canNext() const;
-    bool canPrevious() const;
-    void goToNext();
-    void goToPrev();
 
 private:
     LogbookFormDialog* m_dialog;

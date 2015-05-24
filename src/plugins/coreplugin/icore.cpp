@@ -36,6 +36,8 @@
 
 #include <QSysInfo>
 #include <QApplication>
+#include <QFileDialog>
+#include <QMessageBox>
 
 /*!
     \namespace Core
@@ -284,7 +286,6 @@
 */
 
 #include "mainwindow.h"
-#include "documentmanager.h"
 
 #include <utils/hostosinfo.h>
 
@@ -307,11 +308,6 @@ ICore *ICore::instance()
     return m_instance;
 }
 
-bool ICore::isNewItemDialogRunning()
-{
-    return m_mainwindow->isNewItemDialogRunning();
-}
-
 ICore::ICore(MainWindow *mainwindow)
 {
     m_instance = this;
@@ -319,22 +315,12 @@ ICore::ICore(MainWindow *mainwindow)
     // Save settings once after all plugins are initialized:
     connect(PluginManager::instance(), SIGNAL(initializationDone()),
             this, SLOT(saveSettings()));
-    connect(m_mainwindow, SIGNAL(newItemDialogRunningChanged()),
-            this, SIGNAL(newItemDialogRunningChanged()));
 }
 
 ICore::~ICore()
 {
     m_instance = 0;
     m_mainwindow = 0;
-}
-
-void ICore::showNewItemDialog(const QString &title,
-                              const QList<IWizardFactory *> &factories,
-                              const QString &defaultLocation,
-                              const QVariantMap &extraVariables)
-{
-    m_mainwindow->showNewItemDialog(title, factories, defaultLocation, extraVariables);
 }
 
 bool ICore::showOptionsDialog(const Id page, QWidget *parent)
@@ -355,12 +341,6 @@ QString ICore::msgShowOptionsDialogToolTip()
     else
         return QCoreApplication::translate("Core", "Open Options dialog.",
                                            "msgShowOptionsDialogToolTip (non-mac version)");
-}
-
-bool ICore::showWarningWithOptions(const QString &title, const QString &text,
-                                   const QString &details, Id settingsId, QWidget *parent)
-{
-    return m_mainwindow->showWarningWithOptions(title, text, details, settingsId, parent);
 }
 
 QSettings *ICore::settings(QSettings::Scope scope)
@@ -519,16 +499,6 @@ void ICore::removeContextObject(IContext *context)
 void ICore::registerWindow(QWidget *window, const Context &context)
 {
     new WindowSupport(window, context); // deletes itself when widget is destroyed
-}
-
-void ICore::openFiles(const QStringList &arguments, ICore::OpenFilesFlags flags)
-{
-    m_mainwindow->openFiles(arguments, flags);
-}
-
-void ICore::emitNewItemsDialogRequested()
-{
-    emit m_instance->newItemsDialogRequested();
 }
 
 void ICore::saveSettings()

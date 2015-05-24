@@ -44,8 +44,7 @@ namespace Constants {
 #define LISA_VERSION_RELEASE $$replace(LISA_VERSION, "^\\d+\\.\\d+\\.(\\d+)(-.*)?$", \\1)
 
 const char * const LISA_VERSION_LONG      = LISA_VERSION_STR;
-const char * const LISA_AUTHORS           = \"Norman Link (DM6LN)\";
-//const char * const LISA_AUTHORS           = \"Norman Link (DM6LN)\ <br/> Max Mustermann (DB1MM)"; // add other authors here
+const char * const LISA_AUTHORS           = \"Norman Link (DM6LN)\nPatrik Schmidt (DO9PSE)\";
 const char * const LISA_FIRSTYEAR         = \"2013\";
 const char * const LISA_YEAR              = \"2015\";
 

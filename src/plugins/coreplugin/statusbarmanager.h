@@ -45,17 +45,6 @@ namespace Internal {
 
 class MainWindow;
 
-class NonResizingSplitter : public MiniSplitter
-{
-    Q_OBJECT
-
-public:
-    explicit NonResizingSplitter(QWidget *parent);
-
-protected:
-    void resizeEvent(QResizeEvent *ev);
-};
-
 class StatusBarManager : public QObject
 {
     Q_OBJECT
@@ -75,8 +64,7 @@ private slots:
 
 private:
     MainWindow *m_mainWnd;
-    QSplitter *m_splitter;
-    QList<QWidget *> m_statusBarWidgets;
+    QWidget* m_statusBarWidgets;
 };
 
 } // namespace Internal

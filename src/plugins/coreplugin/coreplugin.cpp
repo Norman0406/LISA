@@ -29,17 +29,11 @@
 ****************************************************************************/
 
 #include "coreplugin.h"
-#include "idocument.h"
-#include "helpmanager.h"
 #include "mainwindow.h"
 #include "modemanager.h"
 #include "infobar.h"
-#include "iwizardfactory.h"
 
 #include <coreplugin/actionmanager/actionmanager.h>
-#include <coreplugin/editormanager/editormanager.h>
-#include <coreplugin/find/findplugin.h>
-#include <coreplugin/locator/locator.h>
 #include <coreplugin/coreconstants.h>
 
 #include <extensionsystem/pluginerroroverview.h>
@@ -61,19 +55,12 @@ using namespace Utils;
 
 CorePlugin::CorePlugin()
   : m_mainWindow(0)
-  , m_findPlugin(0)
-  , m_locator(0)
 {
     qRegisterMetaType<Id>();
 }
 
 CorePlugin::~CorePlugin()
 {
-    IWizardFactory::destroyFeatureProvider();
-
-    delete m_findPlugin;
-    delete m_locator;
-
     delete m_mainWindow;
     setCreatorTheme(0);
 }
@@ -148,8 +135,6 @@ void CorePlugin::parseArguments(const QStringList &arguments)
     // because they need a valid theme set
     m_mainWindow = new MainWindow;
     ActionManager::setPresentationModeEnabled(presentationMode);
-    m_findPlugin = new FindPlugin;
-    m_locator = new Locator;
 
     if (overrideColor.isValid())
         m_mainWindow->setOverrideColor(overrideColor);
@@ -168,9 +153,6 @@ bool CorePlugin::initialize(const QStringList &arguments, QString *errorMessage)
 
     // Make sure we respect the process's umask when creating new files
     SaveFile::initializeUmask();
-
-    m_findPlugin->initialize(arguments, errorMessage);
-    m_locator->initialize(this, arguments, errorMessage);
 
     MacroExpander *expander = Utils::globalMacroExpander();
     expander->registerVariable("CurrentDate:ISO", tr("The current date (ISO)."),
@@ -195,8 +177,6 @@ bool CorePlugin::initialize(const QStringList &arguments, QString *errorMessage)
 
 void CorePlugin::extensionsInitialized()
 {
-    m_findPlugin->extensionsInitialized();
-    m_locator->extensionsInitialized();
     m_mainWindow->extensionsInitialized();
     if (ExtensionSystem::PluginManager::hasError()) {
         auto errorOverview = new ExtensionSystem::PluginErrorOverview(m_mainWindow);
@@ -208,30 +188,11 @@ void CorePlugin::extensionsInitialized()
 
 bool CorePlugin::delayedInitialize()
 {
-    HelpManager::setupHelpManager();
-    m_locator->delayedInitialize();
     return true;
-}
-
-QObject *CorePlugin::remoteCommand(const QStringList & /* options */,
-                                   const QString &workingDirectory,
-                                   const QStringList &args)
-{
-    IDocument *res = m_mainWindow->openFiles(
-                args, ICore::OpenFilesFlags(ICore::SwitchMode | ICore::CanContainLineAndColumnNumbers),
-                workingDirectory);
-    m_mainWindow->raiseWindow();
-    return res;
-}
-
-void CorePlugin::fileOpenRequest(const QString &f)
-{
-    remoteCommand(QStringList(), QString(), QStringList(f));
 }
 
 ExtensionSystem::IPlugin::ShutdownFlag CorePlugin::aboutToShutdown()
 {
-    m_findPlugin->aboutToShutdown();
     m_mainWindow->aboutToShutdown();
     return SynchronousShutdown;
 }

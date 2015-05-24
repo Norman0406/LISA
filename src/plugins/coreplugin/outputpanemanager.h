@@ -70,8 +70,6 @@ public:
 
 public slots:
     void slotHide();
-    void slotNext();
-    void slotPrev();
     void shortcutTriggered();
     void slotMinMax();
 
@@ -82,9 +80,7 @@ protected:
 private slots:
     void showPage(int flags);
     void togglePage(int flags);
-    void clearPage();
     void buttonTriggered();
-    void updateNavigateState();
     void popupMenu();
     void saveSettings() const;
     void flashButton();
@@ -111,17 +107,11 @@ private:
 
     QLabel *m_titleLabel;
     OutputPaneManageButton *m_manageButton;
-    QAction *m_clearAction;
-    QToolButton *m_clearButton;
     QToolButton *m_closeButton;
 
     QAction *m_minMaxAction;
     QToolButton *m_minMaxButton;
 
-    QAction *m_nextAction;
-    QAction *m_prevAction;
-    QToolButton *m_prevToolButton;
-    QToolButton *m_nextToolButton;
     QWidget *m_toolBar;
 
     QList<IOutputPane *> m_panes;

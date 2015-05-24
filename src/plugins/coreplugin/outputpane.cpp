@@ -39,23 +39,22 @@
 namespace Core {
 
 struct OutputPanePlaceHolderPrivate {
-    explicit OutputPanePlaceHolderPrivate(IMode *mode, QSplitter *parent);
+    explicit OutputPanePlaceHolderPrivate(QSplitter *parent);
 
-    IMode *m_mode;
     QSplitter *m_splitter;
     int m_lastNonMaxSize;
     static OutputPanePlaceHolder* m_current;
 };
 
-OutputPanePlaceHolderPrivate::OutputPanePlaceHolderPrivate(IMode *mode, QSplitter *parent) :
-    m_mode(mode), m_splitter(parent), m_lastNonMaxSize(0)
+OutputPanePlaceHolderPrivate::OutputPanePlaceHolderPrivate(QSplitter *parent) :
+    m_splitter(parent), m_lastNonMaxSize(0)
 {
 }
 
 OutputPanePlaceHolder *OutputPanePlaceHolderPrivate::m_current = 0;
 
-OutputPanePlaceHolder::OutputPanePlaceHolder(IMode *mode, QSplitter* parent)
-   : QWidget(parent), d(new OutputPanePlaceHolderPrivate(mode, parent))
+OutputPanePlaceHolder::OutputPanePlaceHolder(QSplitter* parent)
+   : QWidget(parent), d(new OutputPanePlaceHolderPrivate(parent))
 {
     setVisible(false);
     setLayout(new QVBoxLayout);
@@ -65,8 +64,7 @@ OutputPanePlaceHolder::OutputPanePlaceHolder(IMode *mode, QSplitter* parent)
     sp.setHorizontalStretch(0);
     setSizePolicy(sp);
     layout()->setMargin(0);
-    connect(ModeManager::instance(), &ModeManager::currentModeChanged,
-            this, &OutputPanePlaceHolder::currentModeChanged);
+    d->m_current = this;
 }
 
 OutputPanePlaceHolder::~OutputPanePlaceHolder()
@@ -80,22 +78,12 @@ OutputPanePlaceHolder::~OutputPanePlaceHolder()
     delete d;
 }
 
-void OutputPanePlaceHolder::currentModeChanged(IMode *mode)
+void OutputPanePlaceHolder::create()
 {
-    if (d->m_current == this) {
-        d->m_current = 0;
-        Internal::OutputPaneManager *om = Internal::OutputPaneManager::instance();
-        om->setParent(0);
-        om->hide();
-        om->updateStatusButtons(false);
-    }
-    if (d->m_mode == mode) {
-        d->m_current = this;
-        Internal::OutputPaneManager *om = Internal::OutputPaneManager::instance();
-        layout()->addWidget(om);
-        om->show();
-        om->updateStatusButtons(isVisible());
-    }
+    Internal::OutputPaneManager *om = Internal::OutputPaneManager::instance();
+    layout()->addWidget(om);
+    om->show();
+    om->updateStatusButtons(isVisible());
 }
 
 void OutputPanePlaceHolder::maximizeOrMinimize(bool maximize)

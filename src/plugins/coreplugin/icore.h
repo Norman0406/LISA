@@ -48,7 +48,6 @@ namespace Core {
 class IWizardFactory;
 class Context;
 class IContext;
-class ProgressManager;
 class SettingsDatabase;
 
 namespace Internal { class MainWindow; }
@@ -67,20 +66,9 @@ public:
     // it returns a ICore.
     static ICore *instance();
 
-    static bool isNewItemDialogRunning();
-    static void showNewItemDialog(const QString &title,
-                                  const QList<IWizardFactory *> &factories,
-                                  const QString &defaultLocation = QString(),
-                                  const QVariantMap &extraVariables = QVariantMap());
-
     static bool showOptionsDialog(Id page, QWidget *parent = 0);
     static QString msgShowOptionsDialog();
     static QString msgShowOptionsDialogToolTip();
-
-    static bool showWarningWithOptions(const QString &title, const QString &text,
-                                       const QString &details = QString(),
-                                       Id settingsId = Id(),
-                                       QWidget *parent = 0);
 
     static QSettings *settings(QSettings::Scope scope = QSettings::UserScope);
     static SettingsDatabase *settingsDatabase();
@@ -112,25 +100,12 @@ public:
     // manages the minimize, zoom and fullscreen actions for the window
     static void registerWindow(QWidget *window, const Context &context);
 
-    enum OpenFilesFlags {
-        None = 0,
-        SwitchMode = 1,
-        CanContainLineAndColumnNumbers = 2,
-         /// Stop loading once the first file fails to load
-        StopOnLoadFail = 4
-    };
-    static void openFiles(const QStringList &fileNames, OpenFilesFlags flags = None);
-
-    static void emitNewItemsDialogRequested();
-
 public slots:
     static void saveSettings();
 
 signals:
     void coreAboutToOpen();
     void coreOpened();
-    void newItemsDialogRequested();
-    void newItemDialogRunningChanged();
     void saveSettingsRequested();
     void optionsDialogRequested();
     void coreAboutToClose();

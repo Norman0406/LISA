@@ -30,7 +30,6 @@
 
 #include "shortcutsettings.h"
 #include <coreplugin/coreconstants.h>
-#include <coreplugin/documentmanager.h>
 #include <coreplugin/icore.h>
 #include <coreplugin/id.h>
 #include <coreplugin/actionmanager/actionmanager.h>
@@ -311,8 +310,7 @@ void ShortcutSettingsWidget::defaultAction()
 
 void ShortcutSettingsWidget::exportAction()
 {
-    QString fileName = DocumentManager::getSaveFileNameWithExtension(
-        tr("Export Keyboard Mapping Scheme"),
+    QString fileName = QFileDialog::getSaveFileName(ICore::dialogParent(), tr("Export Keyboard Mapping Scheme"),
         ICore::resourcePath() + QLatin1String("/schemes/"),
         tr("Keyboard Mapping Scheme (*.kms)"));
     if (!fileName.isEmpty()) {

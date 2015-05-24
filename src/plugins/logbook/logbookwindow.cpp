@@ -39,7 +39,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     layout->setMargin(0);
 
     // add the toolbar on the top
-    layout->addWidget(new LogbookToolBar(this));
+    layout->addWidget(new LogbookToolBar(this));    
 
     // create the table view
     m_logbookView = new QTableView(this);
