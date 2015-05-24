@@ -5,6 +5,7 @@
 
 #include <QMap>
 #include <QIntValidator>
+#include <QTimer>
 
 using namespace Logbook::Internal;
 
@@ -16,17 +17,19 @@ LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
     m_data = new QMap<QString, QString>;
     m_rstValidator = new QIntValidator(0, 599, this);
     m_qsoEntry = new QsoEntry();
-    setupComboBox();
+    m_qtimer = new QTimer(this);
+
+    setupWidgets();
     loadDefaults();
 
-
+    connect(m_qtimer, &QTimer::timeout, this, &LogbookFormDialog::handleTimer);
     connect(m_ui->pushButtonSubmitLogbookForm, &QPushButton::clicked, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditCallsign, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditFrequency, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditName, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditRstSend, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditRstRcvd, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
-
+    m_qtimer->start(1000);
 }
 
 LogbookFormDialog::~LogbookFormDialog()
@@ -36,6 +39,7 @@ LogbookFormDialog::~LogbookFormDialog()
     delete m_data;
     delete m_rstValidator;
     delete m_qsoEntry;
+    delete m_qtimer;
 }
 
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
@@ -49,6 +53,11 @@ void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
     m_data->insert(QString::fromLatin1("RSTRcvd"), m_ui->lineEditRstRcvd->text());
 
     m_window->addQso(m_data);
+}
+
+void LogbookFormDialog::handleTimer()
+{
+    m_ui->dateTimeEdit->setTime(QDateTime::currentDateTime().time());
 }
 
 void LogbookFormDialog::validateInput()
@@ -78,7 +87,7 @@ void LogbookFormDialog::loadDefaults()
     m_ui->lineEditRstRcvd->setValidator(m_rstValidator);
 }
 
-void LogbookFormDialog::setupComboBox()
+void LogbookFormDialog::setupWidgets()
 {
     m_modes.append(QString::fromLatin1("AM"));
     m_modes.append(QString::fromLatin1("FM"));
@@ -106,4 +115,7 @@ void LogbookFormDialog::setupComboBox()
     m_bands.append(QString::fromLatin1("13CM"));
 
     m_ui->comboBoxBand->addItems(m_bands);
+
+    m_ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
+    m_ui->dateTimeEdit->setTimeSpec(Qt::UTC);
 }

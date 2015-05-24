@@ -4,6 +4,7 @@
 #include <QWidget>
 
 class QValidator;
+class QTimer;
 
 namespace Logbook {
 namespace Internal {
@@ -31,6 +32,7 @@ public slots:
 
 private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
+    void handleTimer();
 
 private:
     Ui::LogbookFormDialog* m_ui;
@@ -39,10 +41,11 @@ private:
     QsoEntry* m_qsoEntry;
     QStringList m_bands;
     QStringList m_modes;
+    QTimer* m_qtimer;
 
     void loadDefaults();
     void convertInputToUppercase();
-    void setupComboBox();
+    void setupWidgets();
 };
 
 }
