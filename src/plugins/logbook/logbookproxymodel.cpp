@@ -43,14 +43,14 @@ LogbookProxyModel::LogbookProxyModel(QObject *parent)
     m_columns[10] = qMakePair(PC_COMMENT, tr("Comment"));
 
     // map between column names and actual database entries
-    m_columnDatabaseMap[PC_CALLSIGN] = QString::fromLatin1("CALLSIGN");
-    m_columnDatabaseMap[PC_NAME] = QString::fromLatin1("NAME");
-    m_columnDatabaseMap[PC_MODE] = QString::fromLatin1("MODE");
-    m_columnDatabaseMap[PC_FREQUENCY] = QString::fromLatin1("FREQ");
-    m_columnDatabaseMap[PC_RSTSENT] = QString::fromLatin1("RSTSENT");
-    m_columnDatabaseMap[PC_RSTRCVD] = QString::fromLatin1("RSTRCVD");
-    m_columnDatabaseMap[PC_COUNTRY] = QString::fromLatin1("COUNTRY");
-    m_columnDatabaseMap[PC_COMMENT] = QString::fromLatin1("COMMENT");
+    m_columnDatabaseMap[PC_CALLSIGN] = QLatin1String("CALLSIGN");
+    m_columnDatabaseMap[PC_NAME] = QLatin1String("NAME");
+    m_columnDatabaseMap[PC_MODE] = QLatin1String("MODE");
+    m_columnDatabaseMap[PC_FREQUENCY] = QLatin1String("FREQ");
+    m_columnDatabaseMap[PC_RSTSENT] = QLatin1String("RSTSENT");
+    m_columnDatabaseMap[PC_RSTRCVD] = QLatin1String("RSTRCVD");
+    m_columnDatabaseMap[PC_COUNTRY] = QLatin1String("COUNTRY");
+    m_columnDatabaseMap[PC_COMMENT] = QLatin1String("COMMENT");
 }
 
 LogbookProxyModel::~LogbookProxyModel()

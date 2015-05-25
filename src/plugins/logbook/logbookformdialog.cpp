@@ -48,15 +48,15 @@ LogbookFormDialog::~LogbookFormDialog()
 
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
 {
-    m_data->insert(QString::fromLatin1("CallsignFrom"), m_settings->value(QString::fromLatin1("logbook/callsign")).toString());
-    m_data->insert(QString::fromLatin1("Datetime"), m_ui->dateTimeEdit->dateTime().toString());
-    m_data->insert(QString::fromLatin1("Callsign"), m_ui->lineEditCallsign->text());
-    m_data->insert(QString::fromLatin1("Name"), m_ui->lineEditName->text());
-    m_data->insert(QString::fromLatin1("Mode"), m_ui->comboBoxMode->currentText());
-    m_data->insert(QString::fromLatin1("Frequency"), m_ui->lineEditFrequency->text());
-    m_data->insert(QString::fromLatin1("Band"), m_ui->comboBoxBand->currentText());
-    m_data->insert(QString::fromLatin1("RSTSend"), m_ui->lineEditRstSend->text());
-    m_data->insert(QString::fromLatin1("RSTRcvd"), m_ui->lineEditRstRcvd->text());
+    m_data->insert(QLatin1String("CallsignFrom"), m_settings->value(QLatin1String("logbook/callsign")).toString());
+    m_data->insert(QLatin1String("Datetime"), m_ui->dateTimeEdit->dateTime().toString());
+    m_data->insert(QLatin1String("Callsign"), m_ui->lineEditCallsign->text());
+    m_data->insert(QLatin1String("Name"), m_ui->lineEditName->text());
+    m_data->insert(QLatin1String("Mode"), m_ui->comboBoxMode->currentText());
+    m_data->insert(QLatin1String("Frequency"), m_ui->lineEditFrequency->text());
+    m_data->insert(QLatin1String("Band"), m_ui->comboBoxBand->currentText());
+    m_data->insert(QLatin1String("RSTSend"), m_ui->lineEditRstSend->text());
+    m_data->insert(QLatin1String("RSTRcvd"), m_ui->lineEditRstRcvd->text());
 
     m_window->addQso(m_data);
 }
@@ -87,7 +87,7 @@ void LogbookFormDialog::validateInput()
     if(m_ui->lineEditCallsign->text().isEmpty())
     {
         m_ui->lineEditCallsign->setFocus();
-        m_ui->lineEditCallsign->setStyleSheet(QString::fromLatin1("border: 1px solid red"));
+        m_ui->lineEditCallsign->setStyleSheet(QLatin1String("border: 1px solid red"));
     }
     else
     {
@@ -101,7 +101,7 @@ void LogbookFormDialog::clearForm()
     QList<QLineEdit*> widgets = m_ui->layoutWidget->findChildren<QLineEdit*>();
     foreach (QLineEdit* edit, widgets) {
         if (edit) {
-            edit->setText(QString::fromLatin1(""));
+            edit->setText(QLatin1String(""));
         }
     }
     //emit startTimer();
@@ -124,7 +124,7 @@ void LogbookFormDialog::updateFrequency()
     QString band = m_ui->comboBoxBand->currentText();
     m_qsoEntry->setFrequencyByBand(QsoEntry::getBandByString(band));
 
-    m_ui->lineEditFrequency->setText(QString::fromLatin1("%1").arg(m_qsoEntry->getFrequency()));
+    m_ui->lineEditFrequency->setText(QString(QLatin1String("%1")).arg(m_qsoEntry->getFrequency()));
 }
 
 bool LogbookFormDialog::eventFilter(QObject *target, QEvent *event)
@@ -151,38 +151,38 @@ void LogbookFormDialog::loadDefaults()
 
 void LogbookFormDialog::setupWidgets()
 {
-    m_modes.append(QString::fromLatin1("AM"));
-    m_modes.append(QString::fromLatin1("FM"));
-    m_modes.append(QString::fromLatin1("SSB"));
-    m_modes.append(QString::fromLatin1("USB"));
-    m_modes.append(QString::fromLatin1("LSB"));
-    m_modes.append(QString::fromLatin1("PSK"));
-    m_modes.append(QString::fromLatin1("RTTY"));
+    m_modes.append(QLatin1String("AM"));
+    m_modes.append(QLatin1String("FM"));
+    m_modes.append(QLatin1String("SSB"));
+    m_modes.append(QLatin1String("USB"));
+    m_modes.append(QLatin1String("LSB"));
+    m_modes.append(QLatin1String("PSK"));
+    m_modes.append(QLatin1String("RTTY"));
 
     m_ui->comboBoxMode->addItems(m_modes);
 
-    m_bands.append(QString::fromLatin1("160M"));
-    m_bands.append(QString::fromLatin1("80M"));
-    m_bands.append(QString::fromLatin1("40M"));
-    m_bands.append(QString::fromLatin1("30M"));
-    m_bands.append(QString::fromLatin1("20M"));
-    m_bands.append(QString::fromLatin1("17M"));
-    m_bands.append(QString::fromLatin1("15M"));
-    m_bands.append(QString::fromLatin1("12M"));
-    m_bands.append(QString::fromLatin1("10M"));
-    m_bands.append(QString::fromLatin1("6M"));
-    m_bands.append(QString::fromLatin1("2M"));
-    m_bands.append(QString::fromLatin1("70CM"));
-    m_bands.append(QString::fromLatin1("23CM"));
-    m_bands.append(QString::fromLatin1("13CM"));
+    m_bands.append(QLatin1String("160M"));
+    m_bands.append(QLatin1String("80M"));
+    m_bands.append(QLatin1String("40M"));
+    m_bands.append(QLatin1String("30M"));
+    m_bands.append(QLatin1String("20M"));
+    m_bands.append(QLatin1String("17M"));
+    m_bands.append(QLatin1String("15M"));
+    m_bands.append(QLatin1String("12M"));
+    m_bands.append(QLatin1String("10M"));
+    m_bands.append(QLatin1String("6M"));
+    m_bands.append(QLatin1String("2M"));
+    m_bands.append(QLatin1String("70CM"));
+    m_bands.append(QLatin1String("23CM"));
+    m_bands.append(QLatin1String("13CM"));
 
     m_ui->comboBoxBand->addItems(m_bands);
 
     m_ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
     m_ui->dateTimeEdit->setTimeSpec(Qt::UTC);
 
-    m_ui->lineEditRstSend->setText(QString::fromLatin1("599"));
-    m_ui->lineEditRstRcvd->setText(QString::fromLatin1("599"));
+    m_ui->lineEditRstSend->setText(QLatin1String("599"));
+    m_ui->lineEditRstRcvd->setText(QLatin1String("599"));
 
     updateFrequency();
     connect(m_ui->comboBoxBand, &QComboBox::currentTextChanged, this, &LogbookFormDialog::updateFrequency);

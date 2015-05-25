@@ -54,22 +54,22 @@ QWidget* GeneralSettings::widget()
         m_page = new Ui::GeneralSettings();
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
-        m_page->lineEditProfil->setText(m_settings->value(QString::fromLatin1("logbook/profil")).toString());
-        m_page->lineEditCallsign->setText(m_settings->value(QString::fromLatin1("logbook/callsign")).toString());
-        m_page->lineEditStreet->setText(m_settings->value(QString::fromLatin1("logbook/street")).toString());
-        m_page->lineEditZipCode->setText(m_settings->value(QString::fromLatin1("logbook/zipcode")).toString());
-        m_page->lineEditCity->setText(m_settings->value(QString::fromLatin1("logbook/city")).toString());
+        m_page->lineEditProfil->setText(m_settings->value(QLatin1String("logbook/profil")).toString());
+        m_page->lineEditCallsign->setText(m_settings->value(QLatin1String("logbook/callsign")).toString());
+        m_page->lineEditStreet->setText(m_settings->value(QLatin1String("logbook/street")).toString());
+        m_page->lineEditZipCode->setText(m_settings->value(QLatin1String("logbook/zipcode")).toString());
+        m_page->lineEditCity->setText(m_settings->value(QLatin1String("logbook/city")).toString());
     }
     return m_widget;
 }
 
 void GeneralSettings::apply()
 {
-    m_settings->setValue(QString::fromLatin1("logbook/profil"), m_page->lineEditProfil->text());
-    m_settings->setValue(QString::fromLatin1("logbook/callsign"), m_page->lineEditCallsign->text());
-    m_settings->setValue(QString::fromLatin1("logbook/street"), m_page->lineEditStreet->text());
-    m_settings->setValue(QString::fromLatin1("logbook/zipcode"), m_page->lineEditZipCode->text());
-    m_settings->setValue(QString::fromLatin1("logbook/city"), m_page->lineEditCity->text());
+    m_settings->setValue(QLatin1String("logbook/profil"), m_page->lineEditProfil->text());
+    m_settings->setValue(QLatin1String("logbook/callsign"), m_page->lineEditCallsign->text());
+    m_settings->setValue(QLatin1String("logbook/street"), m_page->lineEditStreet->text());
+    m_settings->setValue(QLatin1String("logbook/zipcode"), m_page->lineEditZipCode->text());
+    m_settings->setValue(QLatin1String("logbook/city"), m_page->lineEditCity->text());
 
 }
 

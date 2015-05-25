@@ -16,8 +16,6 @@ CallsignLookupManager::CallsignLookupManager(QObject* parent)
     }
 
     loadSettings();
-
-    // TODO: set additional information from settings
 }
 
 CallsignLookupManager::~CallsignLookupManager()
@@ -55,14 +53,14 @@ void CallsignLookupManager::loadSettings()
 {
     QSettings* settings = Core::ICore::settings();
 
-    settings->beginGroup(QString::fromLatin1("CallsignLookup"));
+    settings->beginGroup(QLatin1String("CallsignLookup"));
     foreach (CallsignLookup* service, m_lookupServices) {
         settings->beginGroup(CallsignData::getServiceString(service->getService()));
 
         if (service->getService() == CallsignData::CS_QRZCOM) {
             CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(service);
-            qrzLookup->setUsername(settings->value(QString::fromLatin1("Username")).toString());
-            qrzLookup->setPassword(settings->value(QString::fromLatin1("Password")).toString());
+            qrzLookup->setUsername(settings->value(QLatin1String("Username")).toString());
+            qrzLookup->setPassword(settings->value(QLatin1String("Password")).toString());
         }
 
         settings->endGroup();
@@ -74,14 +72,14 @@ void CallsignLookupManager::saveSettings()
 {
     QSettings* settings = Core::ICore::settings();
 
-    settings->beginGroup(QString::fromLatin1("CallsignLookup"));
+    settings->beginGroup(QLatin1String("CallsignLookup"));
     foreach (CallsignLookup* service, m_lookupServices) {
         settings->beginGroup(CallsignData::getServiceString(service->getService()));
 
         if (service->getService() == CallsignData::CS_QRZCOM) {
             CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(service);
-            settings->setValue(QString::fromLatin1("Username"), qrzLookup->getUsername());
-            settings->setValue(QString::fromLatin1("Password"), qrzLookup->getPassword());
+            settings->setValue(QLatin1String("Username"), qrzLookup->getUsername());
+            settings->setValue(QLatin1String("Password"), qrzLookup->getPassword());
         }
 
         settings->endGroup();
@@ -98,7 +96,7 @@ void CallsignLookupManager::lookup(QString callsign)
 
 void CallsignLookupManager::callsignRetrieved(CallsignData callsignData)
 {
-    // TODO: set the right entries on logbookForm
+    // TODO: set the right entries on m_logbookForm
 
     if (m_logbookForm) {
         switch (callsignData.getService()) {

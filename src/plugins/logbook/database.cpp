@@ -32,11 +32,11 @@ using namespace Logbook::Internal;
 Database::Database(QObject* parent)
    : QObject(parent)
 {
-    m_database = QSqlDatabase::addDatabase(QString::fromLatin1("QSQLITE"));
-    m_database.setHostName(QString::fromLatin1("localhost"));
+    m_database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"));
+    m_database.setHostName(QLatin1String("localhost"));
 
     // TODO: store in appdata
-    m_database.setDatabaseName(QString::fromLatin1("logbook.db"));
+    m_database.setDatabaseName(QLatin1String("logbook.db"));
 }
 
 bool Database::open()
@@ -46,13 +46,13 @@ bool Database::open()
 
     if (isOpen) {
         // create necessary tables if they do not exist
-        if (!m_database.tables().contains(QString::fromLatin1("logbook"))) {
+        if (!m_database.tables().contains(QLatin1String("logbook"))) {
             qDebug() << "Initialize database file for the first time";
             createTables();
         }
 
         QSqlTableModel model(this, m_database);
-        model.setTable(QString::fromLatin1("logbook"));
+        model.setTable(QLatin1String("logbook"));
         model.select();
     }
 
@@ -64,8 +64,8 @@ bool Database::open()
 
     QsoEntry newEntry(this);
     newEntry.setId(0);
-    newEntry.setCallsign(QString::fromLatin1("DM5RS"));
-    newEntry.setOperator(QString::fromLatin1("DM6LN"));
+    newEntry.setCallsign(QLatin1String("DM5RS"));
+    newEntry.setOperator(QLatin1String("DM6LN"));
 
     updateOrInsert(newEntry);
 
@@ -77,7 +77,7 @@ void Database::createTables()
     QSqlQuery query(m_database);
 
     // create table if it does not already exist
-    if (!query.exec(QString::fromLatin1("CREATE TABLE IF NOT EXISTS logbook ("
+    if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS logbook ("
                                               "ID INTEGER PRIMARY KEY,"
                                               "Time INTEGER,"
                                               "CallsignFrom VARCHAR(32),"
@@ -100,7 +100,7 @@ void Database::updateOrInsert(const QsoEntry& entry)
     const QSqlRecord& record = entry.getRecord();
 
     QSqlTableModel model(this, m_database);
-    model.setTable(QString::fromLatin1("logbook"));
+    model.setTable(QLatin1String("logbook"));
 
     // first, check if this entry already exists
 

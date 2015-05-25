@@ -16,8 +16,8 @@ using namespace Logbook::Internal;
 
 CallsignLookupQRZcom::CallsignLookupQRZcom(QObject* parent)
     : CallsignLookup(parent, CallsignData::CS_QRZCOM),
-      m_agent(QString::fromLatin1("LISA")),
-      m_version(QString::fromLatin1("1.33"))
+      m_agent(QLatin1String("LISA")),
+      m_version(QLatin1String("1.33"))
 {
     m_manager = new QNetworkAccessManager(this);
     connect(m_manager, &QNetworkAccessManager::finished, this, &CallsignLookupQRZcom::replyFinished);
@@ -66,29 +66,29 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
     }
     else {
         QDomElement xmlDocElem = xmlDoc.documentElement();
-        if (xmlDocElem.isNull() || xmlDocElem.nodeName() != QString::fromLatin1("QRZDatabase")) {
+        if (xmlDocElem.isNull() || xmlDocElem.nodeName() != QLatin1String("QRZDatabase")) {
             qWarning() << "QRZDatabase element not found";
         }
         else {
-            QDomElement sessionElem = xmlDocElem.firstChildElement(QString::fromLatin1("Session"));
+            QDomElement sessionElem = xmlDocElem.firstChildElement(QLatin1String("Session"));
 
             // the session element must be valid in each reply
             if (sessionElem.isNull()) {
                 qWarning() << "Session element not found";
             }
             else {
-                QDomElement error = sessionElem.firstChildElement(QString::fromLatin1("Error"));
+                QDomElement error = sessionElem.firstChildElement(QLatin1String("Error"));
                 if (!error.isNull()) {
                     QString errorString = error.text();
                     qDebug() << errorString;
                 }
                 else {
-                    QDomElement sessionKey = sessionElem.firstChildElement(QString::fromLatin1("Key"));
-                    QDomElement count = sessionElem.firstChildElement(QString::fromLatin1("Count"));
-                    QDomElement subExp = sessionElem.firstChildElement(QString::fromLatin1("SubExp"));
-                    QDomElement gmtime = sessionElem.firstChildElement(QString::fromLatin1("GMTime"));
-                    QDomElement message = sessionElem.firstChildElement(QString::fromLatin1("Message"));
-                    QDomElement remark = sessionElem.firstChildElement(QString::fromLatin1("Remark"));
+                    QDomElement sessionKey = sessionElem.firstChildElement(QLatin1String("Key"));
+                    QDomElement count = sessionElem.firstChildElement(QLatin1String("Count"));
+                    QDomElement subExp = sessionElem.firstChildElement(QLatin1String("SubExp"));
+                    QDomElement gmtime = sessionElem.firstChildElement(QLatin1String("GMTime"));
+                    QDomElement message = sessionElem.firstChildElement(QLatin1String("Message"));
+                    QDomElement remark = sessionElem.firstChildElement(QLatin1String("Remark"));
 
                     if (sessionKey.isNull())
                         qWarning() << "invalid session key";
@@ -101,7 +101,7 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                     }
                 }
 
-                QDomElement callsignElem = xmlDocElem.firstChildElement(QString::fromLatin1("Callsign"));
+                QDomElement callsignElem = xmlDocElem.firstChildElement(QLatin1String("Callsign"));
                 if (!callsignElem.isNull()) {
                     QMap<QString, QString> fields;
 
@@ -135,24 +135,24 @@ bool CallsignLookupQRZcom::isReady() const
 QUrl CallsignLookupQRZcom::getLoginUrl() const
 {
     // use https for login routine
-    return QUrl(QString::fromLatin1("https://xmldata.qrz.com/xml/%1/").arg(m_version));
+    return QUrl(QString(QLatin1String("https://xmldata.qrz.com/xml/%1/")).arg(m_version));
 }
 
 QUrl CallsignLookupQRZcom::getQueryUrl() const
 {
     // use standard http for callsign queries
-    return QUrl(QString::fromLatin1("http://xmldata.qrz.com/xml/%1/").arg(m_version));
+    return QUrl(QString(QLatin1String("http://xmldata.qrz.com/xml/%1/")).arg(m_version));
 }
 
 QNetworkReply* CallsignLookupQRZcom::refreshSessionKey()
 {
     QUrlQuery query;
-    query.addQueryItem(QString::fromLatin1("username"), m_username);
-    query.addQueryItem(QString::fromLatin1("password"), m_password);
-    query.addQueryItem(QString::fromLatin1("agent"), m_agent);
+    query.addQueryItem(QLatin1String("username"), m_username);
+    query.addQueryItem(QLatin1String("password"), m_password);
+    query.addQueryItem(QLatin1String("agent"), m_agent);
 
     QNetworkRequest request(getLoginUrl());
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QString::fromLatin1("application/x-www-form-urlencoded"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/x-www-form-urlencoded"));
 
     QByteArray params = query.toString(QUrl::FullyEncoded).toLatin1();
     return m_manager->post(request, params);
@@ -161,11 +161,11 @@ QNetworkReply* CallsignLookupQRZcom::refreshSessionKey()
 void CallsignLookupQRZcom::queryCallsign(QString callsign)
 {
     QUrlQuery query;
-    query.addQueryItem(QString::fromLatin1("s"), m_sessionKey);
-    query.addQueryItem(QString::fromLatin1("callsign"), callsign);
+    query.addQueryItem(QLatin1String("s"), m_sessionKey);
+    query.addQueryItem(QLatin1String("callsign"), callsign);
 
     QNetworkRequest request(getQueryUrl());
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QString::fromLatin1("application/x-www-form-urlencoded"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/x-www-form-urlencoded"));
 
     QByteArray params = query.toString(QUrl::FullyEncoded).toLatin1();
     m_manager->post(request, params);

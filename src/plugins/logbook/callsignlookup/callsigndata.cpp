@@ -27,8 +27,8 @@ QString CallsignData::getServiceString(CallsignService service)
 {
     switch (service) {
     case CS_QRZCOM:
-        return QString::fromLatin1("QRZ.com");
+        return QLatin1String("QRZ.com");
     }
 
-    return QString::fromLatin1("Undefined");
+    return QLatin1String("Undefined");
 }

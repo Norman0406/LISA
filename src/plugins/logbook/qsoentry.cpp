@@ -49,7 +49,7 @@ QSqlRecord QsoEntry::getRecord() const
 
         // create field
         QSqlField field;
-        field.setName(QString::fromLatin1(name));
+        field.setName(QLatin1String(name));
         field.setValue(property(name));
 
         // insert field into record
@@ -217,33 +217,33 @@ QsoEntry::FrequencyBand QsoEntry::getBand() const
 
 QsoEntry::FrequencyBand QsoEntry::getBandByString(QString band)
 {
-    if(band == QString::fromLatin1("160M"))
+    if(band == QLatin1String("160M"))
         return BAND_160M;
-    else if(band == QString::fromLatin1("80M"))
+    else if(band == QLatin1String("80M"))
         return BAND_80M;
-    else if(band ==  QString::fromLatin1("40M"))
+    else if(band ==  QLatin1String("40M"))
         return BAND_40M;
-    else if(band == QString::fromLatin1("30M"))
+    else if(band == QLatin1String("30M"))
         return BAND_30M;
-    else if(band == QString::fromLatin1("20M"))
+    else if(band == QLatin1String("20M"))
         return BAND_20M;
-    else if(band == QString::fromLatin1("17M"))
+    else if(band == QLatin1String("17M"))
         return BAND_17M;
-    else if(band == QString::fromLatin1("15M"))
+    else if(band == QLatin1String("15M"))
         return BAND_15M;
-    else if(band == QString::fromLatin1("12M"))
+    else if(band == QLatin1String("12M"))
         return BAND_12M;
-    else if(band == QString::fromLatin1("10M"))
+    else if(band == QLatin1String("10M"))
         return BAND_10M;
-    else if(band == QString::fromLatin1("6M"))
+    else if(band == QLatin1String("6M"))
         return BAND_6M;
-    else if(band == QString::fromLatin1("2M"))
+    else if(band == QLatin1String("2M"))
         return BAND_2M;
-    else if(band == QString::fromLatin1("70CM"))
+    else if(band == QLatin1String("70CM"))
         return BAND_70CM;
-    else if(band == QString::fromLatin1("23CM"))
+    else if(band == QLatin1String("23CM"))
         return BAND_23CM;
-    else if(band == QString::fromLatin1("13CM"))
+    else if(band == QLatin1String("13CM"))
         return BAND_13CM;
     else
         return BAND_UNKNOWN;

@@ -53,7 +53,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
 
     // create model
     m_model = new QSqlRelationalTableModel(this, m_database.getDatabase());
-    m_model->setTable(QString::fromLatin1("logbook"));
+    m_model->setTable(QLatin1String("logbook"));
     m_model->select();
 
     // create proxy model
@@ -76,16 +76,16 @@ void LogbookWindow::addQso(QMap<QString, QString>* data) {
     qDebug() << QDateTime::currentDateTime().toString(Qt::ISODate);
     int row = m_model->rowCount();
     m_model->insertRow(row);
-    qDebug() << data->value(QString::fromLatin1("Callsign"));
-    m_model->setData(m_model->index(row,1), data->value(QString::fromLatin1("Datetime")));
-    m_model->setData(m_model->index(row,2), data->value(QString::fromLatin1("CallsignFrom")));
-    m_model->setData(m_model->index(row,3), data->value(QString::fromLatin1("Callsign")));
-    m_model->setData(m_model->index(row,4), data->value(QString::fromLatin1("Name")));
-    m_model->setData(m_model->index(row,5), data->value(QString::fromLatin1("Mode")));
-    m_model->setData(m_model->index(row,6), data->value(QString::fromLatin1("Frequency")));
-    m_model->setData(m_model->index(row,7), data->value(QString::fromLatin1("Band")));
-    m_model->setData(m_model->index(row,8), data->value(QString::fromLatin1("RSTSend")));
-    m_model->setData(m_model->index(row,9), data->value(QString::fromLatin1("RSTRcvd")));
+    qDebug() << data->value(QLatin1String("Callsign"));
+    m_model->setData(m_model->index(row,1), data->value(QLatin1String("Datetime")));
+    m_model->setData(m_model->index(row,2), data->value(QLatin1String("CallsignFrom")));
+    m_model->setData(m_model->index(row,3), data->value(QLatin1String("Callsign")));
+    m_model->setData(m_model->index(row,4), data->value(QLatin1String("Name")));
+    m_model->setData(m_model->index(row,5), data->value(QLatin1String("Mode")));
+    m_model->setData(m_model->index(row,6), data->value(QLatin1String("Frequency")));
+    m_model->setData(m_model->index(row,7), data->value(QLatin1String("Band")));
+    m_model->setData(m_model->index(row,8), data->value(QLatin1String("RSTSend")));
+    m_model->setData(m_model->index(row,9), data->value(QLatin1String("RSTRcvd")));
 
     m_model->submit();
     m_model->select();
