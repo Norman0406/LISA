@@ -38,6 +38,8 @@ class ProfileData;
 class LogbookMode
         : public Core::IMode
 {
+    Q_OBJECT
+
 public:
     LogbookMode();
     ~LogbookMode();
@@ -45,9 +47,13 @@ public:
     LogbookForm* getLogbookForm() const;
     const QList<ProfileData>& getProfiles() const;
     void setProfiles(const QList<ProfileData>&);
+    const ProfileData* getProfile(QUuid) const;
 
     void loadSettings();
     void saveSettings();
+
+signals:
+    void profilesChanged(const QList<ProfileData>&);
 
 private:
     LogbookWindow* m_window;

@@ -9,8 +9,7 @@ using namespace Logbook::Internal;
 
 CallsignLookupManager::CallsignLookupManager(QObject* parent)
     : QObject(parent),
-      m_logbookForm(0),
-      m_lookupEnabled(true)
+      m_logbookForm(0)
 {
     m_lookupServices.push_back(new CallsignLookupQRZcom(this));
 
@@ -52,22 +51,11 @@ CallsignLookup* CallsignLookupManager::getService(CallsignData::CallsignService 
     return 0;
 }
 
-void CallsignLookupManager::setEnabled(bool enabled)
-{
-    m_lookupEnabled = enabled;
-}
-
-bool CallsignLookupManager::isEnabled() const
-{
-    return m_lookupEnabled;
-}
-
 void CallsignLookupManager::loadSettings()
 {
     Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
 
     settings->beginGroup(QLatin1String("CallsignLookup"));
-    m_lookupEnabled = settings->value(QLatin1String("Enabled")).toBool();
     foreach (CallsignLookup* service, m_lookupServices) {
         settings->beginGroup(CallsignData::getServiceString(service->getService()));
 
@@ -88,7 +76,6 @@ void CallsignLookupManager::saveSettings()
     Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
 
     settings->beginGroup(QLatin1String("CallsignLookup"));
-    settings->setValue(QLatin1String("Enabled"), m_lookupEnabled);
     foreach (CallsignLookup* service, m_lookupServices) {
         settings->beginGroup(CallsignData::getServiceString(service->getService()));
 
@@ -106,10 +93,8 @@ void CallsignLookupManager::saveSettings()
 
 void CallsignLookupManager::lookup(QString callsign)
 {
-    if (m_lookupEnabled) {
-        foreach (CallsignLookup* service, m_lookupServices) {
-            service->lookup(callsign);
-        }
+    foreach (CallsignLookup* service, m_lookupServices) {
+        service->lookup(callsign);
     }
 }
 

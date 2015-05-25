@@ -16,6 +16,7 @@ namespace Ui {
 }
 class LogbookWindow;
 class QsoEntry;
+class ProfileData;
 
 class LogbookFormDialog
         : public QWidget
@@ -28,6 +29,7 @@ public:
     QMap<QString, QString>* m_data;
 
     void setName(QString);
+    void setProfile(const ProfileData*);
 
 signals:
     void AddQso();
@@ -54,6 +56,7 @@ private:
     QStringList m_modes;
     QTimer* m_qtimer;
     QSettings* m_settings;
+    const ProfileData* m_profile;
 
     void loadDefaults();
     void convertInputToUppercase();

@@ -29,6 +29,7 @@
 #include <QTableWidget>
 #include "logbookproxymodel.h"
 #include "database.h"
+#include "profiledata.h"
 
 #include <QtSql>
 #include <QDateTime>

@@ -14,7 +14,7 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -103,17 +103,9 @@
      </widget>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QCheckBox" name="chkLookupEnabled">
-     <property name="text">
-      <string>Callsign Lookup Enabled</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>chkLookupEnabled</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>chkQRZEnabled</tabstop>
   <tabstop>edQRZUsername</tabstop>
@@ -150,22 +142,6 @@
     <hint type="destinationlabel">
      <x>148</x>
      <y>131</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chkLookupEnabled</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>tabWidget</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>101</x>
-     <y>10</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>33</x>
-     <y>45</y>
     </hint>
    </hints>
   </connection>

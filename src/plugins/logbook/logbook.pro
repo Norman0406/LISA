@@ -5,7 +5,7 @@ QT += sql network xml
 HEADERS += logbookplugin.h \
     logbookwindow.h \
     database.h \
-    generalsettings.h \
+    profilesettingspage.h \
     logbookconstants.h \
     logbookmode.h \
     logbookproxymodel.h \
@@ -23,7 +23,7 @@ HEADERS += logbookplugin.h \
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
     database.cpp \
-    generalsettings.cpp \
+    profilesettingspage.cpp \
     logbookmode.cpp \
     logbookproxymodel.cpp \
     logbooktoolbar.cpp \
@@ -38,6 +38,6 @@ SOURCES += logbookplugin.cpp \
     profiledata.cpp
 
 FORMS += \
-    generalsettings.ui \
+    profilesettingspage.ui \
     logbookformdialog.ui \
     callsignlookup/callsignlookupsettingspage.ui

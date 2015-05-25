@@ -22,8 +22,8 @@
  *
  **********************************************************************/
 
-#ifndef GENERALSETTINGS_H
-#define GENERALSETTINGS_H
+#ifndef PROFILESETTINGSPAGE_H
+#define PROFILESETTINGSPAGE_H
 
 #include <coreplugin/dialogs/ioptionspage.h>
 #include <QPointer>
@@ -37,16 +37,16 @@ namespace Internal {
 class LogbookMode;
 
 namespace Ui {
-    class GeneralSettings;
+    class ProfileSettingsPage;
 }
 
-class GeneralSettings
+class ProfileSettingsPage
         : public Core::IOptionsPage
 {
     Q_OBJECT
 
 public:
-    GeneralSettings(LogbookMode *logbookPlugin);
+    ProfileSettingsPage(LogbookMode *logbookPlugin);
 
     bool matches(const QString& searchKeyWord) const;
     QWidget* widget();
@@ -65,7 +65,7 @@ private:
     ProfileData* m_currentProfile;
     QList<ProfileData> m_profiles;
 
-    Ui::GeneralSettings* m_page;
+    Ui::ProfileSettingsPage* m_page;
     QPointer<QWidget> m_widget;
     QSettings* m_settings;
     LogbookMode* m_logbookMode;
@@ -74,4 +74,4 @@ private:
 } // namespace Internal
 } // namespace Logbook
 
-#endif // GENERALSETTINGS_H
+#endif // PROFILESETTINGSPAGE_H

@@ -26,9 +26,6 @@ public:
     const QList<CallsignLookup*> getServices() const;
     CallsignLookup* getService(CallsignData::CallsignService);
 
-    void setEnabled(bool);
-    bool isEnabled() const;
-
     void loadSettings();
     void saveSettings();
 
@@ -41,7 +38,6 @@ private slots:
 private:
     QList<CallsignLookup*> m_lookupServices;
     LogbookFormDialog* m_logbookForm;
-    bool m_lookupEnabled;
 };
 
 }

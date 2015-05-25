@@ -2,6 +2,7 @@
 #define PROFILEDATA_H
 
 #include <QString>
+#include <QUuid>
 
 namespace Logbook {
 namespace Internal {
@@ -9,11 +10,12 @@ namespace Internal {
 class ProfileData
 {
 public:
-    ProfileData(bool isRemovable, bool isRenamable, QString profileName);
+    ProfileData(bool isRemovable, QString profileName);
+    ProfileData(QUuid uuid, bool isRemovable, QString profileName);
     ProfileData(const ProfileData&);
 
+    QUuid getUuid() const;
     bool isRemovable() const;
-    bool isRenamable() const;
 
     QString getProfileName() const;
     QString getCallsign() const;
@@ -22,7 +24,7 @@ public:
     QString getZipCode() const;
     QString getCity() const;
 
-    bool setProfileName(QString);
+    void setProfileName(QString);
     void setCallsign(QString);
     void setName(QString);
     void setStreet(QString);
@@ -30,8 +32,8 @@ public:
     void setCity(QString);
 
 private:
+    QUuid m_uuid;
     bool m_isRemovable;
-    bool m_isRenamble;
     QString m_profileName;
     QString m_callsign;
     QString m_name;

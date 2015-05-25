@@ -29,17 +29,16 @@ QWidget* CallsignLookupSettingsPage::widget()
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
 
-        // the toggled signal is only changed when the state changes, so force a change here
-        m_page->chkLookupEnabled->setChecked(!m_manager->isEnabled());
-        m_page->chkLookupEnabled->setChecked(m_manager->isEnabled());
-
         // get services and read data
         const QList<CallsignLookup*> services = m_manager->getServices();
         foreach (CallsignLookup* service, services) {
             if (service->getService() == CallsignData::CS_QRZCOM) {
                 CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(service);
+
+                // the toggled signal is only changed when the state changes, so force a change here
                 m_page->chkQRZEnabled->setChecked(!qrzLookup->isEnabled());
                 m_page->chkQRZEnabled->setChecked(qrzLookup->isEnabled());
+
                 m_page->edQRZUsername->setText(qrzLookup->getUsername());
                 m_page->edQRZPassword->setText(qrzLookup->getPassword());
             }
@@ -51,7 +50,6 @@ QWidget* CallsignLookupSettingsPage::widget()
 
 void CallsignLookupSettingsPage::apply()
 {
-    m_manager->setEnabled(m_page->chkLookupEnabled->isChecked());
     CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(m_manager->getService(CallsignData::CS_QRZCOM));
     if (qrzLookup) {
         qrzLookup->setEnabled(m_page->chkQRZEnabled->isChecked());

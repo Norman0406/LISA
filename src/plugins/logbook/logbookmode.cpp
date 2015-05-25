@@ -50,7 +50,7 @@ LogbookMode::LogbookMode()
 
     setWidget(m_window);
 
-    m_logbookForm = new LogbookForm(0, m_window);
+    m_logbookForm = new LogbookForm(0, this, m_window);
     ExtensionSystem::PluginManager::addObject(m_logbookForm);
 
     loadSettings();
@@ -65,15 +65,15 @@ LogbookMode::~LogbookMode()
 
 void LogbookMode::loadSettings()
 {
-    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
+    QSettings* settings = Core::ICore::settings();
 
     settings->beginGroup(QLatin1String("Profiles"));
     int numProfiles = settings->value(QLatin1String("NumProfiles")).toInt();
     for (int i = 0; i < numProfiles; i++) {
         settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
 
-        ProfileData newProfile(settings->value(QLatin1String("IsRemovable")).toBool(),
-                               settings->value(QLatin1String("IsRenamable")).toBool(),
+        ProfileData newProfile(settings->value(QLatin1String("UUID")).toUuid(),
+                               settings->value(QLatin1String("IsRemovable")).toBool(),
                                settings->value(QLatin1String("ProfileName")).toString());
 
         newProfile.setCallsign(settings->value(QLatin1String("Callsign")).toString());
@@ -90,15 +90,17 @@ void LogbookMode::loadSettings()
 
     // create a default profile that can't be deleted and immediately save
     if (m_profiles.empty()) {
-        ProfileData defaultProfile(ProfileData(false, false, tr("Default")));
+        ProfileData defaultProfile(ProfileData(false, tr("Default")));
         m_profiles.push_back(defaultProfile);
         saveSettings();
     }
+
+    emit profilesChanged(m_profiles);
 }
 
 void LogbookMode::saveSettings()
 {
-    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
+    QSettings* settings = Core::ICore::settings();
 
     settings->beginGroup(QLatin1String("Profiles"));
     settings->setValue(QLatin1String("NumProfiles"), m_profiles.count());
@@ -106,8 +108,8 @@ void LogbookMode::saveSettings()
         settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
         const ProfileData& data = m_profiles[i];
 
+        settings->setValue(QLatin1String("UUID"), data.getUuid());
         settings->setValue(QLatin1String("IsRemovable"), data.isRemovable());
-        settings->setValue(QLatin1String("IsRenamable"), data.isRenamable());
         settings->setValue(QLatin1String("ProfileName"), data.getProfileName());
         settings->setValue(QLatin1String("Callsign"), data.getCallsign());
         settings->setValue(QLatin1String("Name"), data.getName());
@@ -133,4 +135,14 @@ const QList<ProfileData>& LogbookMode::getProfiles() const
 void LogbookMode::setProfiles(const QList<ProfileData>& profiles)
 {
     m_profiles = profiles;
+    emit profilesChanged(m_profiles);
+}
+
+const ProfileData* LogbookMode::getProfile(QUuid uuid) const
+{
+    foreach (const ProfileData& data, m_profiles) {
+        if (data.getUuid() == uuid)
+            return &data;
+    }
+    return 0;
 }

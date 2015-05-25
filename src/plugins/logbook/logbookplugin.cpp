@@ -31,7 +31,7 @@
 #include "logbookplugin.h"
 
 #include "logbookmode.h"
-#include "generalsettings.h"
+#include "profilesettingspage.h"
 #include "logbookform.h"
 #include "logbookformdialog.h"
 #include "callsignlookup/callsignlookupmanager.h"
@@ -98,7 +98,7 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
 
 void LogbookPlugin::extensionsInitialized()
 {
-    addAutoReleasedObject(new GeneralSettings(m_logbookMode));
+    addAutoReleasedObject(new ProfileSettingsPage(m_logbookMode));
     addAutoReleasedObject(new CallsignLookupSettingsPage(m_callsignLookupManager));
 }
 

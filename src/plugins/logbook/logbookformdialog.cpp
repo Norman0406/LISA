@@ -15,6 +15,7 @@
 using namespace Logbook::Internal;
 
 LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
+    : m_profile(0)
 {
     m_ui = new Ui::LogbookFormDialog();
     m_ui->setupUi(this);
@@ -37,6 +38,9 @@ LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
     connect(m_ui->lineEditRstSend, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditRstRcvd, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     m_qtimer->start(1000);
+
+    // disable widget initially (will be enabled when a valid profile has been set)
+    setEnabled(false);
 }
 
 LogbookFormDialog::~LogbookFormDialog()
@@ -52,10 +56,23 @@ void LogbookFormDialog::setName(QString name)
     m_ui->lineEditName->setText(name);
 }
 
+void LogbookFormDialog::setProfile(const ProfileData* profile)
+{
+    m_profile = profile;
+
+    // a valid profile should at least have a callsign entry
+    bool profileValid = profile && !profile->getCallsign().isEmpty();
+
+    if (!profileValid)
+        setEnabled(false);
+    else
+        setEnabled(true);
+}
+
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
 {
-    m_data->insert(QLatin1String("CallsignFrom"), m_settings->value(QLatin1String("logbook/callsign")).toString());
     m_data->insert(QLatin1String("Datetime"), m_ui->dateTimeEdit->dateTime().toString());
+    m_data->insert(QLatin1String("CallsignFrom"), m_profile->getCallsign());
     m_data->insert(QLatin1String("Callsign"), m_ui->lineEditCallsign->text());
     m_data->insert(QLatin1String("Name"), m_ui->lineEditName->text());
     m_data->insert(QLatin1String("Mode"), m_ui->comboBoxMode->currentText());
