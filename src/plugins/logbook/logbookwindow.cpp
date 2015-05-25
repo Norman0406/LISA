@@ -27,6 +27,7 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QItemSelection>
 #include "database.h"
 
 using namespace Logbook::Internal;
@@ -46,6 +47,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_logbookView->setColumnHidden(0, true);
+    connect(m_logbookView, &QTableView::clicked, this, &LogbookWindow::deleteSelection);
 
     m_logbookView->setAlternatingRowColors(true);
     m_database.open();
@@ -70,6 +72,26 @@ LogbookWindow::~LogbookWindow()
 {
     m_model->submitAll();
     m_database.close();
+}
+
+void LogbookWindow::deleteSelection()
+{
+    QItemSelection selection = m_logbookView->selectionModel()->selection();
+    QList<int> rows;
+    foreach( const QModelIndex & index, selection.indexes() ) {
+       rows.append( index.row() );
+    }
+    qSort( rows );
+
+    int prev = -1;
+    for( int i = rows.count() - 1; i >= 0; i -= 1 ) {
+       int current = rows[i];
+       if( current != prev ) {
+          m_model->removeRows( current, 1 );
+          prev = current;
+       }
+    }
+
 }
 
 void LogbookWindow::addQso(QMap<QString, QString>* data) {
