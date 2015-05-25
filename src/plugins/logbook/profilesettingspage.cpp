@@ -27,10 +27,7 @@
 #include "coreplugin/icore.h"
 #include "logbookmode.h"
 #include "ui_profilesettingspage.h"
-
-#include <QSettings>
-
-#include <QLabel>
+#include "profilenamevalidator.h"
 
 using namespace Logbook::Internal;
 
@@ -45,6 +42,12 @@ ProfileSettingsPage::ProfileSettingsPage(LogbookMode* logbookMode)
         Logbook::Constants::SETTINGS_TR_CATEGORY_LOGBOOK));
     setCategoryIcon(QLatin1String(Logbook::Constants::SETTINGS_CATEGORY_LOGBOOK_ICON));
     m_settings = Core::ICore::settings();
+    m_profileNameValidator = new ProfileNameValidator(this);
+}
+
+ProfileSettingsPage::~ProfileSettingsPage()
+{
+    delete m_profileNameValidator;
 }
 
 bool ProfileSettingsPage::matches(const QString& searchKeyWord) const
@@ -58,6 +61,8 @@ QWidget* ProfileSettingsPage::widget()
         m_page = new Ui::ProfileSettingsPage();
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
+
+        m_page->lineEditProfile->setValidator(m_profileNameValidator);
 
         const QList<ProfileData>& profiles = m_logbookMode->getProfiles();
         foreach (const ProfileData& data, profiles) {
@@ -100,6 +105,14 @@ void ProfileSettingsPage::selectedProfileChanged(int index)
     // set new profile data
     ProfileData& data = m_profiles[index];
     m_currentProfile = &data;
+
+    // create a string list that does not contain the current item
+    QStringList names;
+    foreach (const ProfileData& profile, m_profiles) {
+        if (profile.getUuid() != m_currentProfile->getUuid())
+            names << profile.getProfileName();
+    }
+    m_profileNameValidator->setNames(names);
 
     m_page->pushButtonRemove->setEnabled(data.isRemovable());
 

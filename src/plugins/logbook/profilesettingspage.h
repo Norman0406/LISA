@@ -35,6 +35,7 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookMode;
+class ProfileNameValidator;
 
 namespace Ui {
     class ProfileSettingsPage;
@@ -47,6 +48,7 @@ class ProfileSettingsPage
 
 public:
     ProfileSettingsPage(LogbookMode *logbookPlugin);
+    ~ProfileSettingsPage();
 
     bool matches(const QString& searchKeyWord) const;
     QWidget* widget();
@@ -69,6 +71,7 @@ private:
     QPointer<QWidget> m_widget;
     QSettings* m_settings;
     LogbookMode* m_logbookMode;
+    ProfileNameValidator* m_profileNameValidator;
 };
 
 } // namespace Internal

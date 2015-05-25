@@ -18,7 +18,8 @@ HEADERS += logbookplugin.h \
     callsignlookup/callsigndata.h \
     callsignlookup/callsignlookupmanager.h \
     callsignlookup/callsignlookupsettingspage.h \
-    profiledata.h
+    profiledata.h \
+    profilenamevalidator.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -35,7 +36,8 @@ SOURCES += logbookplugin.cpp \
     callsignlookup/callsigndata.cpp \
     callsignlookup/callsignlookupmanager.cpp \
     callsignlookup/callsignlookupsettingspage.cpp \
-    profiledata.cpp
+    profiledata.cpp \
+    profilenamevalidator.cpp
 
 FORMS += \
     profilesettingspage.ui \
