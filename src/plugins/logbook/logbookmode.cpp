@@ -26,9 +26,13 @@
 #include "logbookwindow.h"
 #include "logbookform.h"
 
+#include "callsignlookup/callsignlookupqrzcom.h"
+#include "callsignlookup/callsigndata.h"
+
 #include <extensionsystem/pluginmanager.h>
 #include <coreplugin/minisplitter.h>
 #include <coreplugin/outputpane.h>
+#include <QtConcurrent>
 
 using namespace Logbook::Internal;
 
@@ -53,4 +57,9 @@ LogbookMode::~LogbookMode()
     delete m_window;
     ExtensionSystem::PluginManager::removeObject(m_logbookForm);
     delete m_logbookForm;
+}
+
+LogbookForm* LogbookMode::getLogbookForm() const
+{
+    return m_logbookForm;
 }

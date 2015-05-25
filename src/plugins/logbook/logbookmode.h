@@ -32,6 +32,7 @@ namespace Internal {
 
 class LogbookWindow;
 class LogbookForm;
+class CallsignLookup;
 
 class LogbookMode
         : public Core::IMode
@@ -40,9 +41,12 @@ public:
     LogbookMode();
     ~LogbookMode();
 
+    LogbookForm* getLogbookForm() const;
+
 private:
     LogbookWindow* m_window;
     LogbookForm* m_logbookForm;
+    CallsignLookup* m_callsignLookup;
 };
 
 
