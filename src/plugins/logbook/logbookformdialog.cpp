@@ -1,12 +1,14 @@
 #include "logbookformdialog.h"
 #include "ui_logbookformdialog.h"
 #include "qsoentry.h"
+#include "coreplugin/icore.h"
 #include "logbookwindow.h"
 
 #include <QMap>
 #include <QIntValidator>
 #include <QTimer>
 #include <QKeyEvent>
+#include <QSettings>
 
 using namespace Logbook::Internal;
 
@@ -19,6 +21,7 @@ LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
     m_rstValidator = new QIntValidator(0, 599, this);
     m_qsoEntry = new QsoEntry();
     m_qtimer = new QTimer(this);
+    m_settings = Core::ICore::settings();
 
     setupWidgets();
     loadDefaults();
@@ -43,6 +46,7 @@ LogbookFormDialog::~LogbookFormDialog()
 
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
 {
+    m_data->insert(QString::fromLatin1("CallsignFrom"), m_settings->value(QString::fromLatin1("logbook/callsign")).toString());
     m_data->insert(QString::fromLatin1("Datetime"), m_ui->dateTimeEdit->dateTime().toString());
     m_data->insert(QString::fromLatin1("Callsign"), m_ui->lineEditCallsign->text());
     m_data->insert(QString::fromLatin1("Name"), m_ui->lineEditName->text());

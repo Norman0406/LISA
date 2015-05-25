@@ -28,8 +28,12 @@
 #include <coreplugin/dialogs/ioptionspage.h>
 #include <QPointer>
 
+class QSettings;
+
 namespace Logbook {
 namespace Internal {
+
+class LogbookPlugin;
 
 namespace Ui {
     class GeneralSettings;
@@ -41,7 +45,7 @@ class GeneralSettings
     Q_OBJECT
 
 public:
-    GeneralSettings();
+    GeneralSettings(LogbookPlugin *logbookPlugin);
 
     bool matches(const QString& searchKeyWord) const;
     QWidget* widget();
@@ -51,6 +55,8 @@ public:
 private:
     Ui::GeneralSettings* m_page;
     QPointer<QWidget> m_widget;
+    QSettings* m_settings;
+    const LogbookPlugin* m_logbookPlugin;
 };
 
 } // namespace Internal
