@@ -29,9 +29,11 @@ QWidget* CallsignLookupSettingsPage::widget()
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
 
-        // get services and read data
+        // the toggled signal is only changed when the state changes, so force a change here
         m_page->chkLookupEnabled->setChecked(!m_manager->isEnabled());
         m_page->chkLookupEnabled->setChecked(m_manager->isEnabled());
+
+        // get services and read data
         const QList<CallsignLookup*> services = m_manager->getServices();
         foreach (CallsignLookup* service, services) {
             if (service->getService() == CallsignData::CS_QRZCOM) {

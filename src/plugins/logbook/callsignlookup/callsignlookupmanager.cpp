@@ -2,6 +2,7 @@
 #include "callsignlookupqrzcom.h"
 
 #include <coreplugin/icore.h>
+#include <coreplugin/settingsdatabase.h>
 
 using namespace Logbook::Internal;
 
@@ -62,7 +63,7 @@ bool CallsignLookupManager::isEnabled() const
 
 void CallsignLookupManager::loadSettings()
 {
-    QSettings* settings = Core::ICore::settings();
+    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
 
     settings->beginGroup(QLatin1String("CallsignLookup"));
     m_lookupEnabled = settings->value(QLatin1String("Enabled")).toBool();
@@ -83,7 +84,7 @@ void CallsignLookupManager::loadSettings()
 
 void CallsignLookupManager::saveSettings()
 {
-    QSettings* settings = Core::ICore::settings();
+    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
 
     settings->beginGroup(QLatin1String("CallsignLookup"));
     settings->setValue(QLatin1String("Enabled"), m_lookupEnabled);
