@@ -28,12 +28,18 @@
       <property name="text">
        <string>Date:</string>
       </property>
+      <property name="buddy">
+       <cstring>dateTimeEdit</cstring>
+      </property>
      </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="labelCallsign">
       <property name="text">
        <string>Callsign:</string>
+      </property>
+      <property name="buddy">
+       <cstring>lineEditCallsign</cstring>
       </property>
      </widget>
     </item>
@@ -45,6 +51,9 @@
       <property name="text">
        <string>Name:</string>
       </property>
+      <property name="buddy">
+       <cstring>lineEditName</cstring>
+      </property>
      </widget>
     </item>
     <item row="2" column="1">
@@ -55,12 +64,18 @@
       <property name="text">
        <string>Mode:</string>
       </property>
+      <property name="buddy">
+       <cstring>comboBoxMode</cstring>
+      </property>
      </widget>
     </item>
     <item row="4" column="0">
      <widget class="QLabel" name="labelFrequency">
       <property name="text">
        <string>Frequency:</string>
+      </property>
+      <property name="buddy">
+       <cstring>lineEditFrequency</cstring>
       </property>
      </widget>
     </item>
@@ -72,12 +87,18 @@
       <property name="text">
        <string>Band:</string>
       </property>
+      <property name="buddy">
+       <cstring>comboBoxBand</cstring>
+      </property>
      </widget>
     </item>
     <item row="6" column="0">
      <widget class="QLabel" name="labelRstSend">
       <property name="text">
        <string>RST send:</string>
+      </property>
+      <property name="buddy">
+       <cstring>lineEditRstSend</cstring>
       </property>
      </widget>
     </item>
@@ -88,6 +109,9 @@
      <widget class="QLabel" name="labelRstRcvd">
       <property name="text">
        <string>RST rcvd:</string>
+      </property>
+      <property name="buddy">
+       <cstring>lineEditRstRcvd</cstring>
       </property>
      </widget>
     </item>
@@ -120,6 +144,17 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>dateTimeEdit</tabstop>
+  <tabstop>lineEditCallsign</tabstop>
+  <tabstop>lineEditName</tabstop>
+  <tabstop>comboBoxMode</tabstop>
+  <tabstop>lineEditFrequency</tabstop>
+  <tabstop>comboBoxBand</tabstop>
+  <tabstop>lineEditRstSend</tabstop>
+  <tabstop>lineEditRstRcvd</tabstop>
+  <tabstop>pushButtonSubmitLogbookForm</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <slots>

@@ -17,6 +17,8 @@ public:
     ~CallsignLookup();
 
     bool lookup(QString);
+    void setEnabled(bool);
+    bool isEnabled() const;
     CallsignData::CallsignService getService() const;
 
 signals:
@@ -29,6 +31,7 @@ protected:
 
 private:
     const CallsignData::CallsignService m_service;
+    bool m_enabled;
 };
 
 }

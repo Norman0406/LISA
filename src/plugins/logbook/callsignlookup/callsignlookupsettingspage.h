@@ -24,6 +24,9 @@ public:
     void apply();
     void finish();
 
+private slots:
+    void on_checkBox_clicked(bool checked);
+
 private:
     Ui::CallsignLookupSettingsPage* m_page;
     QPointer<QWidget> m_widget;
