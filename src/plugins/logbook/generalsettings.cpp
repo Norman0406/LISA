@@ -24,11 +24,15 @@
 
 #include "generalsettings.h"
 #include "logbookconstants.h"
+#include "coreplugin/icore.h"
+#include "logbookplugin.h"
 #include "ui_generalsettings.h"
+
+#include <QSettings>
 
 using namespace Logbook::Internal;
 
-GeneralSettings::GeneralSettings()
+GeneralSettings::GeneralSettings(LogbookPlugin* logbookPlugin) : m_logbookPlugin(logbookPlugin)
 {
     setId(Logbook::Constants::SETTINGS_ID_LOGBOOK);
     setDisplayName(tr("General"));
@@ -36,6 +40,7 @@ GeneralSettings::GeneralSettings()
     setDisplayCategory(QCoreApplication::translate("Logbook",
         Logbook::Constants::SETTINGS_TR_CATEGORY_LOGBOOK));
     setCategoryIcon(QLatin1String(Logbook::Constants::SETTINGS_CATEGORY_LOGBOOK_ICON));
+    m_settings = Core::ICore::settings();
 }
 
 bool GeneralSettings::matches(const QString& searchKeyWord) const
@@ -49,13 +54,23 @@ QWidget* GeneralSettings::widget()
         m_page = new Ui::GeneralSettings();
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
+        m_page->lineEditProfil->setText(m_settings->value(QString::fromLatin1("logbook/profil")).toString());
+        m_page->lineEditCallsign->setText(m_settings->value(QString::fromLatin1("logbook/callsign")).toString());
+        m_page->lineEditStreet->setText(m_settings->value(QString::fromLatin1("logbook/street")).toString());
+        m_page->lineEditZipCode->setText(m_settings->value(QString::fromLatin1("logbook/zipcode")).toString());
+        m_page->lineEditCity->setText(m_settings->value(QString::fromLatin1("logbook/city")).toString());
     }
-
     return m_widget;
 }
 
 void GeneralSettings::apply()
 {
+    m_settings->setValue(QString::fromLatin1("logbook/profil"), m_page->lineEditProfil->text());
+    m_settings->setValue(QString::fromLatin1("logbook/callsign"), m_page->lineEditCallsign->text());
+    m_settings->setValue(QString::fromLatin1("logbook/street"), m_page->lineEditStreet->text());
+    m_settings->setValue(QString::fromLatin1("logbook/zipcode"), m_page->lineEditZipCode->text());
+    m_settings->setValue(QString::fromLatin1("logbook/city"), m_page->lineEditCity->text());
+
 }
 
 void GeneralSettings::finish()
