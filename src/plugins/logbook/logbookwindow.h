@@ -33,6 +33,8 @@
 #include <QtSql>
 #include <QDateTime>
 
+class QMessageBox;
+
 namespace Logbook {
 namespace Internal {
 
@@ -52,6 +54,9 @@ private:
     Database m_database;
     QSqlRelationalTableModel* m_model;
     LogbookProxyModel* m_proxyModel;
+    QMessageBox* m_deleteMessageBox;
+
+    bool eventFilter(QObject *, QEvent *);
 
 private slots:
     void deleteSelection();

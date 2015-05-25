@@ -28,26 +28,35 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QItemSelection>
+#include <QMessageBox>
+#include <QKeyEvent>
 #include "database.h"
 
 using namespace Logbook::Internal;
 
 LogbookWindow::LogbookWindow(QWidget *parent)
-   : QWidget(parent)
+    : QWidget(parent)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(0);
     layout->setMargin(0);
 
+    m_deleteMessageBox = new QMessageBox();
+    m_deleteMessageBox->setText(tr("Confirm delete"));
+    m_deleteMessageBox->setStandardButtons(QMessageBox::Abort | QMessageBox::Ok);
+    m_deleteMessageBox->setIcon(QMessageBox::Warning);
+    m_deleteMessageBox->setButtonText(QMessageBox::Ok, tr("Delete items"));
+    m_deleteMessageBox->setDefaultButton(QMessageBox::Abort);
+
     // add the toolbar on the top
-    layout->addWidget(new LogbookToolBar(this));    
+    layout->addWidget(new LogbookToolBar(this));
 
     // create the table view
     m_logbookView = new QTableView(this);
     m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_logbookView->setColumnHidden(0, true);
-    connect(m_logbookView, &QTableView::clicked, this, &LogbookWindow::deleteSelection);
+    m_logbookView->installEventFilter(this);
 
     m_logbookView->setAlternatingRowColors(true);
     m_database.open();
@@ -77,21 +86,50 @@ LogbookWindow::~LogbookWindow()
 void LogbookWindow::deleteSelection()
 {
     QItemSelection selection = m_logbookView->selectionModel()->selection();
-    QList<int> rows;
-    foreach( const QModelIndex & index, selection.indexes() ) {
-       rows.append( index.row() );
-    }
-    qSort( rows );
 
-    int prev = -1;
-    for( int i = rows.count() - 1; i >= 0; i -= 1 ) {
-       int current = rows[i];
-       if( current != prev ) {
-          m_model->removeRows( current, 1 );
-          prev = current;
-       }
+    if(selection.size() < 2)
+    {
+        m_deleteMessageBox->setInformativeText(tr("Do you want to delete the selected item?"));
+    }
+    else
+    {
+        m_deleteMessageBox->setInformativeText(tr("Do you want to delete the selected items?"));
     }
 
+    int ret = m_deleteMessageBox->exec();
+
+    if(ret == QMessageBox::Ok)
+    {
+        QList<int> rows;
+        foreach( const QModelIndex & index, selection.indexes() ) {
+            rows.append( index.row() );
+        }
+        qSort( rows );
+
+        int prev = -1;
+        for( int i = rows.count() - 1; i >= 0; i -= 1 ) {
+            int current = rows[i];
+            if( current != prev ) {
+                m_model->removeRows( current, 1 );
+                prev = current;
+            }
+        }
+        m_model->submit();
+        m_model->select();
+    }
+}
+
+bool LogbookWindow::eventFilter(QObject *target, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
+        if (keyEvent && keyEvent->key() == Qt::Key_Delete) {
+            deleteSelection();
+            return true;
+        }
+    }
+
+    return QWidget::eventFilter(target, event);
 }
 
 void LogbookWindow::addQso(QMap<QString, QString>* data) {
