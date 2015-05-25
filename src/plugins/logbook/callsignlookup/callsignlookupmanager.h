@@ -23,6 +23,9 @@ public:
     void registerLogbookForm(LogbookFormDialog*);
     void unregisterLogbookForm();
 
+    const QList<CallsignLookup*> getServices() const;
+    CallsignLookup* getService(CallsignData::CallsignService);
+
     void loadSettings();
     void saveSettings();
 

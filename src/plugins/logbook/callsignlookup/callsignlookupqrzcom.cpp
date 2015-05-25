@@ -30,12 +30,18 @@ CallsignLookupQRZcom::~CallsignLookupQRZcom()
 
 bool CallsignLookupQRZcom::setUsername(QString username)
 {
+    if (username != m_username)
+        m_sessionKey.clear();
+
     m_username = username;
     return true;
 }
 
 bool CallsignLookupQRZcom::setPassword(QString password)
 {
+    if (password != m_password)
+        m_sessionKey.clear();
+
     m_password = password;
     return true;
 }
