@@ -2,6 +2,7 @@
 #include "ui_logbookformdialog.h"
 #include "qsoentry.h"
 #include "coreplugin/icore.h"
+#include "callsignlookup/callsignlookupmanager.h"
 #include "logbookwindow.h"
 
 #include <QMap>
@@ -29,6 +30,7 @@ LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
     connect(m_qtimer, &QTimer::timeout, this, &LogbookFormDialog::handleTimer);
     connect(m_ui->pushButtonSubmitLogbookForm, &QPushButton::clicked, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditCallsign, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
+    connect(m_ui->lineEditCallsign, &QLineEdit::returnPressed, this, &LogbookFormDialog::triggerLookup);
     connect(m_ui->lineEditFrequency, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditName, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
     connect(m_ui->lineEditRstSend, &QLineEdit::returnPressed, this, &LogbookFormDialog::validateInput);
@@ -72,6 +74,11 @@ void LogbookFormDialog::stopTimer()
 void LogbookFormDialog::startTimer()
 {
     m_qtimer->start(1000);
+}
+
+void LogbookFormDialog::triggerLookup()
+{
+    emit lookupCallsign(m_ui->lineEditCallsign->text());
 }
 
 void LogbookFormDialog::validateInput()

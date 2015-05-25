@@ -40,6 +40,7 @@ private slots:
     void startTimer();
     void stopTimer();
     void updateFrequency();
+    void triggerLookup();
 
 private:
     Ui::LogbookFormDialog* m_ui;
