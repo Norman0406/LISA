@@ -97,7 +97,7 @@ void LogbookFormDialog::clearForm()
             edit->setText(QString::fromLatin1(""));
         }
     }
-    emit startTimer();
+    //emit startTimer();
     m_ui->lineEditCallsign->setFocus();
 }
 

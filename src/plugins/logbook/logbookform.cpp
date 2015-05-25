@@ -15,9 +15,14 @@ LogbookForm::~LogbookForm()
     delete m_dialog;
 }
 
-QWidget* LogbookForm::outputWidget(QWidget* parent)
+LogbookFormDialog* LogbookForm::getDialog() const
 {
     return m_dialog;
+}
+
+QWidget* LogbookForm::outputWidget(QWidget* parent)
+{
+    return getDialog();
 }
 
 QList<QWidget*> LogbookForm::toolBarWidgets() const

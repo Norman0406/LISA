@@ -17,6 +17,8 @@ public:
     LogbookForm(QWidget* parent, LogbookWindow *window);
     virtual ~LogbookForm();
 
+    LogbookFormDialog* getDialog() const;
+
     QWidget *outputWidget(QWidget* );
     QList<QWidget*> toolBarWidgets() const;
 

@@ -20,6 +20,8 @@ class QsoEntry;
 class LogbookFormDialog
         : public QWidget
 {
+    Q_OBJECT
+
 public:
     LogbookFormDialog(QWidget* parent, LogbookWindow* window);
     virtual ~LogbookFormDialog();
@@ -27,15 +29,15 @@ public:
 
 signals:
     void AddQso();
-    void startTimer();
+    void lookupCallsign(QString);
 
 public slots:
-    void GetQsoData();
     void validateInput();
 
 private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
     void handleTimer();
+    void startTimer();
     void stopTimer();
     void updateFrequency();
 
