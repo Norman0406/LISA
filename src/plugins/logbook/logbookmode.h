@@ -33,6 +33,7 @@ namespace Internal {
 class LogbookWindow;
 class LogbookForm;
 class CallsignLookup;
+class ProfileData;
 
 class LogbookMode
         : public Core::IMode
@@ -42,11 +43,17 @@ public:
     ~LogbookMode();
 
     LogbookForm* getLogbookForm() const;
+    const QList<ProfileData>& getProfiles() const;
+    void setProfiles(const QList<ProfileData>&);
+
+    void loadSettings();
+    void saveSettings();
 
 private:
     LogbookWindow* m_window;
     LogbookForm* m_logbookForm;
     CallsignLookup* m_callsignLookup;
+    QList<ProfileData> m_profiles;
 };
 
 

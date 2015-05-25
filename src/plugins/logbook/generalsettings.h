@@ -27,13 +27,14 @@
 
 #include <coreplugin/dialogs/ioptionspage.h>
 #include <QPointer>
+#include "profiledata.h"
 
 class QSettings;
 
 namespace Logbook {
 namespace Internal {
 
-class LogbookPlugin;
+class LogbookMode;
 
 namespace Ui {
     class GeneralSettings;
@@ -45,18 +46,29 @@ class GeneralSettings
     Q_OBJECT
 
 public:
-    GeneralSettings(LogbookPlugin *logbookPlugin);
+    GeneralSettings(LogbookMode *logbookPlugin);
 
     bool matches(const QString& searchKeyWord) const;
     QWidget* widget();
     void apply();
     void finish();
 
+private slots:
+    void addProfile();
+    void removeProfile();
+    void selectedProfileChanged(int);
+    void profileRenamed(const QString&);
+
 private:
+    void setData();
+
+    ProfileData* m_currentProfile;
+    QList<ProfileData> m_profiles;
+
     Ui::GeneralSettings* m_page;
     QPointer<QWidget> m_widget;
     QSettings* m_settings;
-    const LogbookPlugin* m_logbookPlugin;
+    LogbookMode* m_logbookMode;
 };
 
 } // namespace Internal

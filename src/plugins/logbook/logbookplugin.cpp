@@ -98,7 +98,7 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
 
 void LogbookPlugin::extensionsInitialized()
 {
-    addAutoReleasedObject(new GeneralSettings(this));
+    addAutoReleasedObject(new GeneralSettings(m_logbookMode));
     addAutoReleasedObject(new CallsignLookupSettingsPage(m_callsignLookupManager));
 }
 

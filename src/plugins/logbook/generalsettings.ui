@@ -6,98 +6,130 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>687</width>
-    <height>350</height>
+    <width>904</width>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QWidget" name="formLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>361</width>
-     <height>281</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <item row="1" column="0">
-     <widget class="QLabel" name="labelCallsign">
-      <property name="text">
-       <string>Callsign:</string>
-      </property>
-      <property name="buddy">
-       <cstring>lineEditCallsign</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="lineEditCallsign"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="labelStreet">
-      <property name="text">
-       <string>Street:</string>
-      </property>
-      <property name="buddy">
-       <cstring>lineEditStreet</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="lineEditStreet"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="lineEditZipCode"/>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="labelProfileName">
-      <property name="text">
-       <string>Profile:</string>
-      </property>
-      <property name="buddy">
-       <cstring>lineEditProfil</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEditProfil"/>
-    </item>
-    <item row="4" column="1">
-     <widget class="QLineEdit" name="lineEditCity"/>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="labelZipCode">
-      <property name="text">
-       <string>Zip Code:</string>
-      </property>
-      <property name="buddy">
-       <cstring>lineEditZipCode</cstring>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="labelCity">
-      <property name="text">
-       <string>City:</string>
-      </property>
-      <property name="buddy">
-       <cstring>lineEditCity</cstring>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListWidget" name="listWidgetProfiles">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="pushButtonAdd">
+         <property name="text">
+          <string>Add</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonRemove">
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelProfileName">
+       <property name="text">
+        <string>Profile Name:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditProfile</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEditProfile"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="labelCallsign">
+       <property name="text">
+        <string>Callsign:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditCallsign</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEditCallsign"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditName</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineEditName"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="labelStreet">
+       <property name="text">
+        <string>Street:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditStreet</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineEditStreet"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="labelZipCode">
+       <property name="text">
+        <string>Zip Code:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditZipCode</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="lineEditZipCode"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="labelCity">
+       <property name="text">
+        <string>City:</string>
+       </property>
+       <property name="buddy">
+        <cstring>lineEditCity</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="lineEditCity"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
- <tabstops>
-  <tabstop>lineEditProfil</tabstop>
-  <tabstop>lineEditCallsign</tabstop>
-  <tabstop>lineEditStreet</tabstop>
-  <tabstop>lineEditZipCode</tabstop>
-  <tabstop>lineEditCity</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

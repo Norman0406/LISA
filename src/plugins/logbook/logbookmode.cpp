@@ -25,6 +25,7 @@
 #include "logbookmode.h"
 #include "logbookwindow.h"
 #include "logbookform.h"
+#include "profiledata.h"
 
 #include "callsignlookup/callsignlookupqrzcom.h"
 #include "callsignlookup/callsigndata.h"
@@ -32,7 +33,8 @@
 #include <extensionsystem/pluginmanager.h>
 #include <coreplugin/minisplitter.h>
 #include <coreplugin/outputpane.h>
-#include <QtConcurrent>
+#include <coreplugin/settingsdatabase.h>
+#include <coreplugin/icore.h>
 
 using namespace Logbook::Internal;
 
@@ -50,6 +52,8 @@ LogbookMode::LogbookMode()
 
     m_logbookForm = new LogbookForm(0, m_window);
     ExtensionSystem::PluginManager::addObject(m_logbookForm);
+
+    loadSettings();
 }
 
 LogbookMode::~LogbookMode()
@@ -59,7 +63,74 @@ LogbookMode::~LogbookMode()
     delete m_logbookForm;
 }
 
+void LogbookMode::loadSettings()
+{
+    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
+
+    settings->beginGroup(QLatin1String("Profiles"));
+    int numProfiles = settings->value(QLatin1String("NumProfiles")).toInt();
+    for (int i = 0; i < numProfiles; i++) {
+        settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
+
+        ProfileData newProfile(settings->value(QLatin1String("IsRemovable")).toBool(),
+                               settings->value(QLatin1String("IsRenamable")).toBool(),
+                               settings->value(QLatin1String("ProfileName")).toString());
+
+        newProfile.setCallsign(settings->value(QLatin1String("Callsign")).toString());
+        newProfile.setName(settings->value(QLatin1String("Name")).toString());
+        newProfile.setStreet(settings->value(QLatin1String("Street")).toString());
+        newProfile.setZipCode(settings->value(QLatin1String("ZipCode")).toString());
+        newProfile.setCity(settings->value(QLatin1String("City")).toString());
+
+        m_profiles.push_back(newProfile);
+
+        settings->endGroup();
+    }
+    settings->endGroup();
+
+    // create a default profile that can't be deleted and immediately save
+    if (m_profiles.empty()) {
+        ProfileData defaultProfile(ProfileData(false, false, tr("Default")));
+        m_profiles.push_back(defaultProfile);
+        saveSettings();
+    }
+}
+
+void LogbookMode::saveSettings()
+{
+    Core::SettingsDatabase* settings = Core::ICore::settingsDatabase();
+
+    settings->beginGroup(QLatin1String("Profiles"));
+    settings->setValue(QLatin1String("NumProfiles"), m_profiles.count());
+    for (int i = 0; i < m_profiles.count(); i++) {
+        settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
+        const ProfileData& data = m_profiles[i];
+
+        settings->setValue(QLatin1String("IsRemovable"), data.isRemovable());
+        settings->setValue(QLatin1String("IsRenamable"), data.isRenamable());
+        settings->setValue(QLatin1String("ProfileName"), data.getProfileName());
+        settings->setValue(QLatin1String("Callsign"), data.getCallsign());
+        settings->setValue(QLatin1String("Name"), data.getName());
+        settings->setValue(QLatin1String("Street"), data.getStreet());
+        settings->setValue(QLatin1String("ZipCode"), data.getZipCode());
+        settings->setValue(QLatin1String("City"), data.getCity());
+
+        settings->endGroup();
+    }
+    settings->endGroup();
+}
+
 LogbookForm* LogbookMode::getLogbookForm() const
 {
     return m_logbookForm;
+}
+
+const QList<ProfileData>& LogbookMode::getProfiles() const
+{
+    return m_profiles;
+}
+
+void LogbookMode::setProfiles(const QList<ProfileData>& profiles)
+{
+    m_profiles = profiles;
 }

@@ -25,14 +25,18 @@
 #include "generalsettings.h"
 #include "logbookconstants.h"
 #include "coreplugin/icore.h"
-#include "logbookplugin.h"
+#include "logbookmode.h"
 #include "ui_generalsettings.h"
 
 #include <QSettings>
 
+#include <QLabel>
+
 using namespace Logbook::Internal;
 
-GeneralSettings::GeneralSettings(LogbookPlugin* logbookPlugin) : m_logbookPlugin(logbookPlugin)
+GeneralSettings::GeneralSettings(LogbookMode* logbookMode)
+    : m_logbookMode(logbookMode),
+      m_currentProfile(0)
 {
     setId(Logbook::Constants::SETTINGS_ID_LOGBOOK);
     setDisplayName(tr("General"));
@@ -54,23 +58,29 @@ QWidget* GeneralSettings::widget()
         m_page = new Ui::GeneralSettings();
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
-        m_page->lineEditProfil->setText(m_settings->value(QLatin1String("logbook/profil")).toString());
-        m_page->lineEditCallsign->setText(m_settings->value(QLatin1String("logbook/callsign")).toString());
-        m_page->lineEditStreet->setText(m_settings->value(QLatin1String("logbook/street")).toString());
-        m_page->lineEditZipCode->setText(m_settings->value(QLatin1String("logbook/zipcode")).toString());
-        m_page->lineEditCity->setText(m_settings->value(QLatin1String("logbook/city")).toString());
+
+        const QList<ProfileData>& profiles = m_logbookMode->getProfiles();
+        foreach (const ProfileData& data, profiles) {
+            m_profiles.push_back(ProfileData(data));
+            m_page->listWidgetProfiles->addItem(data.getProfileName());
+        }
+
+        connect(m_page->listWidgetProfiles, &QListWidget::currentRowChanged, this, &GeneralSettings::selectedProfileChanged);
+        connect(m_page->lineEditProfile, &QLineEdit::textChanged, this, &GeneralSettings::profileRenamed);
+        connect(m_page->pushButtonAdd, &QPushButton::clicked, this, &GeneralSettings::addProfile);
+        connect(m_page->pushButtonRemove, &QPushButton::clicked, this, &GeneralSettings::removeProfile);
+
+        m_page->listWidgetProfiles->setCurrentRow(0);
     }
     return m_widget;
 }
 
 void GeneralSettings::apply()
 {
-    m_settings->setValue(QLatin1String("logbook/profil"), m_page->lineEditProfil->text());
-    m_settings->setValue(QLatin1String("logbook/callsign"), m_page->lineEditCallsign->text());
-    m_settings->setValue(QLatin1String("logbook/street"), m_page->lineEditStreet->text());
-    m_settings->setValue(QLatin1String("logbook/zipcode"), m_page->lineEditZipCode->text());
-    m_settings->setValue(QLatin1String("logbook/city"), m_page->lineEditCity->text());
-
+    // update profile data and save settings
+    setData();
+    m_logbookMode->setProfiles(m_profiles);
+    m_logbookMode->saveSettings();
 }
 
 void GeneralSettings::finish()
@@ -78,4 +88,73 @@ void GeneralSettings::finish()
     delete m_widget;
     delete m_page;
     m_page = 0;
+    m_profiles.clear();
+    m_currentProfile = 0;
+}
+
+void GeneralSettings::selectedProfileChanged(int index)
+{
+    // before changing, update the currently selected profile with data from the form
+    setData();
+
+    // set new profile data
+    ProfileData& data = m_profiles[index];
+    m_currentProfile = &data;
+
+    m_page->pushButtonRemove->setEnabled(data.isRemovable());
+    m_page->lineEditProfile->setEnabled(data.isRenamable());
+
+    m_page->lineEditProfile->setText(data.getProfileName());
+    m_page->lineEditCallsign->setText(data.getCallsign());
+    m_page->lineEditName->setText(data.getName());
+    m_page->lineEditStreet->setText(data.getStreet());
+    m_page->lineEditZipCode->setText(data.getZipCode());
+    m_page->lineEditCity->setText(data.getCity());
+}
+
+void GeneralSettings::setData()
+{
+    if (m_currentProfile) {
+        if (m_currentProfile->isRenamable())
+            m_currentProfile->setProfileName(m_page->lineEditProfile->text());
+
+        m_currentProfile->setName(m_page->lineEditName->text());
+        m_currentProfile->setCallsign(m_page->lineEditCallsign->text());
+        m_currentProfile->setStreet(m_page->lineEditStreet->text());
+        m_currentProfile->setZipCode(m_page->lineEditZipCode->text());
+        m_currentProfile->setCity(m_page->lineEditCity->text());
+    }
+}
+
+void GeneralSettings::profileRenamed(const QString& name)
+{
+    m_page->listWidgetProfiles->currentItem()->setText(name);
+}
+
+void GeneralSettings::addProfile()
+{
+    QString profileName = QString(QLatin1String("Profile %1")).arg(m_profiles.count() + 1);
+    m_profiles.push_back(ProfileData(true, true, profileName));
+    m_page->listWidgetProfiles->addItem(profileName);
+    m_page->listWidgetProfiles->setCurrentRow(m_page->listWidgetProfiles->count() - 1);
+}
+
+void GeneralSettings::removeProfile()
+{
+    int index = m_page->listWidgetProfiles->currentRow();
+    bool atEnd = index == m_page->listWidgetProfiles->count() - 1;
+
+    // remove item
+    m_page->listWidgetProfiles->takeItem(index);
+    m_profiles.removeAt(index);
+
+    // select next entry
+    if (atEnd) {
+        // if at end, select last entry
+        m_page->listWidgetProfiles->setCurrentRow(m_page->listWidgetProfiles->count() - 1);
+    }
+    else {
+        // else, select previous entry
+        m_page->listWidgetProfiles->setCurrentRow(index);
+    }
 }

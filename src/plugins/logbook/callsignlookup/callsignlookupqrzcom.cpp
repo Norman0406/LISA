@@ -60,6 +60,8 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
 {
     QString dataString = QString::fromUtf8(reply->readAll());
 
+    // TODO: check for error messages and remarks and throw signals
+
     QDomDocument xmlDoc;
     if (!xmlDoc.setContent(dataString)) {
         qWarning() << "could not parse xml reply";
@@ -96,7 +98,6 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                         QString sessionKeyString = sessionKey.text();
                         if (m_sessionKey != sessionKeyString) {
                             m_sessionKey = sessionKeyString;
-                            qDebug() << "sessionKey: " << sessionKeyString;
                         }
                     }
                 }
@@ -110,7 +111,6 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                         QDomNode child = children.at(i);
                         if (child.isElement()) {
                             QDomElement childElem = child.toElement();
-                            qDebug() << childElem.nodeName() << ", " << childElem.text();
                             fields[childElem.nodeName()] = childElem.text();
                         }
                     }
