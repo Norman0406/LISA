@@ -6,6 +6,7 @@
 class QValidator;
 class QTimer;
 class QKeyEvent;
+class QSettings;
 
 namespace Logbook {
 namespace Internal {
@@ -46,6 +47,7 @@ private:
     QStringList m_bands;
     QStringList m_modes;
     QTimer* m_qtimer;
+    QSettings* m_settings;
 
     void loadDefaults();
     void convertInputToUppercase();
