@@ -32,6 +32,8 @@
 
 #include "logbookmode.h"
 #include "generalsettings.h"
+#include "callsignlookup/callsignlookupmanager.h"
+#include "callsignlookup/callsignlookupsettingspage.h"
 
 #include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/actionmanager/actioncontainer.h>
@@ -80,6 +82,8 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
     m_logbookMode = new LogbookMode;
     addAutoReleasedObject(m_logbookMode);
 
+    m_callsignLookupManager = new CallsignLookupManager(this);
+
     // TODO: move to core plugin or use other ways to determine which mode should be selected when
     // first starting up.
     Core::ModeManager::activateMode(m_logbookMode->id());
@@ -90,6 +94,7 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
 void LogbookPlugin::extensionsInitialized()
 {
     addAutoReleasedObject(new GeneralSettings());
+    addAutoReleasedObject(new CallsignLookupSettingsPage(m_callsignLookupManager));
 }
 
 } // namespace Internal

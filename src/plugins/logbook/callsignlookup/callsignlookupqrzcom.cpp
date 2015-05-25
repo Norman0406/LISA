@@ -14,8 +14,8 @@
 
 using namespace Logbook::Internal;
 
-CallsignLookupQRZcom::CallsignLookupQRZcom()
-    : CallsignLookup(CallsignData::CS_QRZCOM),
+CallsignLookupQRZcom::CallsignLookupQRZcom(QObject* parent)
+    : CallsignLookup(parent, CallsignData::CS_QRZCOM),
       m_agent(QString::fromLatin1("LISA")),
       m_version(QString::fromLatin1("1.33"))
 {
@@ -38,6 +38,16 @@ bool CallsignLookupQRZcom::setPassword(QString password)
 {
     m_password = password;
     return true;
+}
+
+QString CallsignLookupQRZcom::getUsername() const
+{
+    return m_username;
+}
+
+QString CallsignLookupQRZcom::getPassword() const
+{
+    return m_password;
 }
 
 void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
@@ -80,8 +90,6 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                         QString sessionKeyString = sessionKey.text();
                         if (m_sessionKey != sessionKeyString) {
                             m_sessionKey = sessionKeyString;
-                            /*m_refreshRunning = false;
-                            emit sessionKeyChanged();*/
                             qDebug() << "sessionKey: " << sessionKeyString;
                         }
                     }

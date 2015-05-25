@@ -16,7 +16,8 @@ HEADERS += logbookplugin.h \
     callsignlookup/callsignlookup.h \
     callsignlookup/callsignlookupqrzcom.h \
     callsignlookup/callsigndata.h \
-    callsignlookup/callsignlookupmanager.h
+    callsignlookup/callsignlookupmanager.h \
+    callsignlookup/callsignlookupsettingspage.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -31,8 +32,10 @@ SOURCES += logbookplugin.cpp \
     callsignlookup/callsignlookup.cpp \
     callsignlookup/callsignlookupqrzcom.cpp \
     callsignlookup/callsigndata.cpp \
-    callsignlookup/callsignlookupmanager.cpp
+    callsignlookup/callsignlookupmanager.cpp \
+    callsignlookup/callsignlookupsettingspage.cpp
 
 FORMS += \
     generalsettings.ui \
-    logbookformdialog.ui
+    logbookformdialog.ui \
+    callsignlookup/callsignlookupsettingspage.ui

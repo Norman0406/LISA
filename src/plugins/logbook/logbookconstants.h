@@ -37,6 +37,7 @@ const char SETTINGS_CATEGORY_LOGBOOK[] = "A.Logbook";
 const char SETTINGS_CATEGORY_LOGBOOK_ICON[] = ":/core/images/category_core.png";
 const char SETTINGS_TR_CATEGORY_LOGBOOK[] = QT_TRANSLATE_NOOP("Logbook", "Logbook");
 const char SETTINGS_ID_LOGBOOK[] = "A.Logbook.General";
+const char SETTINGS_ID_LOGBOOK_CALLSIGN_LOOKUP[] = "A.Logbook.CallsignLookup";
 
 } // namespace Constants
 } // namespace Logbook

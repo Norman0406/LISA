@@ -23,3 +23,12 @@ CallsignData::CallsignService CallsignData::getService() const
     return m_service;
 }
 
+QString CallsignData::getServiceString(CallsignService service)
+{
+    switch (service) {
+    case CS_QRZCOM:
+        return QString::fromLatin1("QRZ.com");
+    }
+
+    return QString::fromLatin1("Undefined");
+}

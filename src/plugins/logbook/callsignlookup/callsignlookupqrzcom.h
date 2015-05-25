@@ -15,14 +15,16 @@ class CallsignLookupQRZcom
     Q_OBJECT
 
 public:
-    CallsignLookupQRZcom();
+    CallsignLookupQRZcom(QObject* parent = 0);
     ~CallsignLookupQRZcom();
 
     bool setUsername(QString);
     bool setPassword(QString);
 
+    QString getUsername() const;
+    QString getPassword() const;
+
 signals:
-    void callsignRetrieved(CallsignData);
     void replyProcessed(QNetworkReply*);
 
 protected:

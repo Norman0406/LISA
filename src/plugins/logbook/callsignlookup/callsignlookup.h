@@ -19,8 +19,11 @@ public:
     bool lookup(QString);
     CallsignData::CallsignService getService() const;
 
+signals:
+    void callsignRetrieved(CallsignData);
+
 protected:
-    CallsignLookup(CallsignData::CallsignService);
+    CallsignLookup(QObject* parent, CallsignData::CallsignService);
 
     virtual bool iLookup(QString) = 0;
 

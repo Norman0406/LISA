@@ -37,6 +37,7 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookMode;
+class CallsignLookupManager;
 
 class LogbookPlugin
   : public ExtensionSystem::IPlugin
@@ -53,6 +54,7 @@ public:
 
 private:
     LogbookMode* m_logbookMode;
+    CallsignLookupManager* m_callsignLookupManager;
 };
 
 } // namespace Internal

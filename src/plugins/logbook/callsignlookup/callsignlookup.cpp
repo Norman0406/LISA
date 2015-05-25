@@ -2,8 +2,9 @@
 
 using namespace Logbook::Internal;
 
-CallsignLookup::CallsignLookup(CallsignData::CallsignService service)
-    : m_service(service)
+CallsignLookup::CallsignLookup(QObject* parent, CallsignData::CallsignService service)
+    : QObject(parent),
+      m_service(service)
 {
 }
 
