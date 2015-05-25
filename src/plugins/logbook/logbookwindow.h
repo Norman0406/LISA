@@ -33,6 +33,8 @@
 #include <QtSql>
 #include <QDateTime>
 
+class QMessageBox;
+
 namespace Logbook {
 namespace Internal {
 
@@ -45,13 +47,19 @@ public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
     void addQso(QMap<QString, QString>* data);
+    QTableView* getLogbookView();
 
 private:
     QTableView* m_logbookView;
-
     Database m_database;
     QSqlRelationalTableModel* m_model;
     LogbookProxyModel* m_proxyModel;
+    QMessageBox* m_deleteMessageBox;
+
+    bool eventFilter(QObject *, QEvent *);
+
+private slots:
+    void deleteSelection();
 };
 
 } // namespace Internal

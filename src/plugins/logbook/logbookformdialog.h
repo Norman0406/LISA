@@ -43,6 +43,7 @@ private slots:
     void stopTimer();
     void updateFrequency();
     void triggerLookup();
+    void tableViewDoubleClicked();
 
 private:
     Ui::LogbookFormDialog* m_ui;
@@ -59,6 +60,7 @@ private:
     void setupWidgets();
     void clearForm();
     bool eventFilter(QObject*, QEvent*);
+    bool isFormEmpty();
 };
 
 }

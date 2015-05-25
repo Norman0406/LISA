@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QSqlRelationalTableModel>
 
 using namespace Logbook::Internal;
 
@@ -148,6 +149,36 @@ bool LogbookFormDialog::eventFilter(QObject *target, QEvent *event)
     return QWidget::eventFilter(target, event);
 }
 
+void LogbookFormDialog::tableViewDoubleClicked()
+{
+    QTableView* view  = m_window->getLogbookView();
+    QItemSelection selection = view->selectionModel()->selection();
+    QSqlRelationalTableModel* model = qobject_cast<QSqlRelationalTableModel*>(view->model());
+    if(model)
+    {
+        if(selection.size() < 2)
+        {
+            int rowIndex = view->selectionModel()->currentIndex().row();
+            qDebug() << isFormEmpty();
+            if(isFormEmpty())
+            {
+                m_ui->lineEditCallsign->setText(model->data(model->index(rowIndex, 3)).toString());
+                m_ui->lineEditName->setText(model->data(model->index(rowIndex, 4)).toString());
+                m_ui->lineEditFrequency->setText(model->data(model->index(rowIndex, 6)).toString());
+                m_ui->lineEditRstSend->setText(model->data(model->index(rowIndex, 8)).toString());
+                m_ui->lineEditRstRcvd->setText(model->data(model->index(rowIndex, 9)).toString());
+            }
+        }
+    }
+}
+
+bool LogbookFormDialog::isFormEmpty()
+{
+    if(m_ui->lineEditCallsign->text().isEmpty() && m_ui->lineEditName->text().isEmpty())
+        return true;
+    else false;
+}
+
 void LogbookFormDialog::loadDefaults()
 {
     m_ui->lineEditRstSend->setValidator(m_rstValidator);
@@ -191,6 +222,8 @@ void LogbookFormDialog::setupWidgets()
 
     updateFrequency();
     connect(m_ui->comboBoxBand, &QComboBox::currentTextChanged, this, &LogbookFormDialog::updateFrequency);
+    QTableView* logbook_view = m_window->getLogbookView();
+    connect(logbook_view, &QTableView::doubleClicked, this, &LogbookFormDialog::tableViewDoubleClicked);
 
     QList<QLineEdit*> widgets = m_ui->layoutWidget->findChildren<QLineEdit*>();
     foreach (QLineEdit* edit, widgets) {
