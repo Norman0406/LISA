@@ -143,7 +143,25 @@ void ProfileSettingsPage::profileRenamed(const QString& name)
 
 void ProfileSettingsPage::addProfile()
 {
-    QString profileName = QString(QLatin1String("Profile %1")).arg(m_profiles.count() + 1);
+    setData();
+
+    // find a profile name that is not yet contained in the list of profiles
+    QString profileName;
+    int profileNameIndex = 1;
+    bool found;
+    do {
+        found = false;
+        profileName = tr("Profile") + QString(QLatin1String(" %1")).arg(profileNameIndex);
+
+        foreach (const ProfileData& profile, m_profiles) {
+            if (profile.getProfileName() == profileName)
+                found = true;
+        }
+
+        if (found)
+            profileNameIndex++;
+    } while (found);
+
     m_profiles.push_back(ProfileData(true, profileName));
     m_page->listWidgetProfiles->addItem(profileName);
     m_page->listWidgetProfiles->setCurrentRow(m_page->listWidgetProfiles->count() - 1);
