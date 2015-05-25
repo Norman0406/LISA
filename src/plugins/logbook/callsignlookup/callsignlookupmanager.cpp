@@ -36,9 +36,38 @@ void CallsignLookupManager::unregisterLogbookForm()
     m_logbookForm = 0;
 }
 
+const QList<CallsignLookup*> CallsignLookupManager::getServices() const
+{
+    return m_lookupServices;
+}
+
+CallsignLookup* CallsignLookupManager::getService(CallsignData::CallsignService serviceId)
+{
+    foreach (CallsignLookup* service, m_lookupServices) {
+        if (service->getService() == serviceId)
+            return service;
+    }
+
+    return 0;
+}
+
 void CallsignLookupManager::loadSettings()
 {
     QSettings* settings = Core::ICore::settings();
+
+    settings->beginGroup(QString::fromLatin1("CallsignLookup"));
+    foreach (CallsignLookup* service, m_lookupServices) {
+        settings->beginGroup(CallsignData::getServiceString(service->getService()));
+
+        if (service->getService() == CallsignData::CS_QRZCOM) {
+            CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(service);
+            qrzLookup->setUsername(settings->value(QString::fromLatin1("Username")).toString());
+            qrzLookup->setPassword(settings->value(QString::fromLatin1("Password")).toString());
+        }
+
+        settings->endGroup();
+    };
+    settings->endGroup();
 }
 
 void CallsignLookupManager::saveSettings()

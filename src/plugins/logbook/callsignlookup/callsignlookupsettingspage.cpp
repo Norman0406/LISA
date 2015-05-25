@@ -2,6 +2,7 @@
 #include "../logbookconstants.h"
 #include "ui_callsignlookupsettingspage.h"
 #include "callsignlookupmanager.h"
+#include "callsignlookupqrzcom.h"
 
 using namespace Logbook::Internal;
 
@@ -28,7 +29,15 @@ QWidget* CallsignLookupSettingsPage::widget()
         m_widget = new QWidget;
         m_page->setupUi(m_widget);
 
-        // TODO: get information from m_manager
+        // get services and read data
+        const QList<CallsignLookup*> services = m_manager->getServices();
+        foreach (CallsignLookup* service, services) {
+            if (service->getService() == CallsignData::CS_QRZCOM) {
+                CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(service);
+                m_page->edUsername->setText(qrzLookup->getUsername());
+                m_page->edPassword->setText(qrzLookup->getPassword());
+            }
+        }
     }
 
     return m_widget;
@@ -36,7 +45,12 @@ QWidget* CallsignLookupSettingsPage::widget()
 
 void CallsignLookupSettingsPage::apply()
 {
-    // TODO: set information to m_manager
+    CallsignLookupQRZcom* qrzLookup = qobject_cast<CallsignLookupQRZcom*>(m_manager->getService(CallsignData::CS_QRZCOM));
+    if (qrzLookup) {
+        qrzLookup->setUsername(m_page->edUsername->text());
+        qrzLookup->setPassword(m_page->edPassword->text());
+    }
+
     m_manager->saveSettings();
 }
 

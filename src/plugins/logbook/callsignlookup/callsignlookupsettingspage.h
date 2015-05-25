@@ -2,6 +2,7 @@
 #define CALLSIGNLOOKUPSETTINGSPAGE_H
 
 #include <coreplugin/dialogs/ioptionspage.h>
+#include <QPointer>
 
 namespace Logbook {
 namespace Internal {
