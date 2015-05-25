@@ -35,8 +35,6 @@ LogbookFormDialog::LogbookFormDialog(QWidget* parent, LogbookWindow* window)
 
 LogbookFormDialog::~LogbookFormDialog()
 {
-    delete m_window;
-    delete m_data;
     delete m_data;
     delete m_rstValidator;
     delete m_qsoEntry;
