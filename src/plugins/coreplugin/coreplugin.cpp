@@ -48,6 +48,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QDir>
+#include <QApplication>
 
 using namespace Core;
 using namespace Core::Internal;

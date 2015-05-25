@@ -45,6 +45,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView = new QTableView(this);
     m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_logbookView->setColumnHidden(0, true);
 
     m_logbookView->setAlternatingRowColors(true);
     m_database.open();
@@ -61,7 +62,6 @@ LogbookWindow::LogbookWindow(QWidget *parent)
 
     // set the view model
     m_logbookView->setModel(m_model);
-//    m_logbookView->setModel(m_proxyModel);
     m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
 }
@@ -77,6 +77,7 @@ void LogbookWindow::addQso(QMap<QString, QString>* data) {
     int row = m_model->rowCount();
     m_model->insertRow(row);
     qDebug() << data->value(QString::fromLatin1("Callsign"));
+    m_model->setData(m_model->index(row,1), data->value(QString::fromLatin1("Datetime")));
     m_model->setData(m_model->index(row,2), QString::fromLatin1("DO9PSE"));
     m_model->setData(m_model->index(row,3), data->value(QString::fromLatin1("Callsign")));
     m_model->setData(m_model->index(row,4), data->value(QString::fromLatin1("Name")));

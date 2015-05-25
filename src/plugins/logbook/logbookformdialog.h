@@ -3,6 +3,10 @@
 
 #include <QWidget>
 
+class QValidator;
+class QTimer;
+class QKeyEvent;
+
 namespace Logbook {
 namespace Internal {
 
@@ -10,6 +14,7 @@ namespace Ui {
     class LogbookFormDialog;
 }
 class LogbookWindow;
+class QsoEntry;
 
 class LogbookFormDialog
         : public QWidget
@@ -21,6 +26,7 @@ public:
 
 signals:
     void AddQso();
+    void startTimer();
 
 public slots:
     void GetQsoData();
@@ -28,12 +34,24 @@ public slots:
 
 private slots:
     void on_pushButtonSubmitLogbookForm_clicked();
+    void handleTimer();
+    void stopTimer();
+    void updateFrequency();
 
 private:
     Ui::LogbookFormDialog* m_ui;
     LogbookWindow* m_window;
+    QValidator* m_rstValidator;
+    QsoEntry* m_qsoEntry;
+    QStringList m_bands;
+    QStringList m_modes;
+    QTimer* m_qtimer;
 
+    void loadDefaults();
     void convertInputToUppercase();
+    void setupWidgets();
+    void clearForm();
+    bool eventFilter(QObject*, QEvent*);
 };
 
 }
