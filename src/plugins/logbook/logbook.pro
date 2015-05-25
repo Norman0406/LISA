@@ -1,6 +1,6 @@
 include(../../lisaplugin.pri)
 
-QT += sql
+QT += sql network xml
 
 HEADERS += logbookplugin.h \
     logbookwindow.h \
@@ -12,7 +12,11 @@ HEADERS += logbookplugin.h \
     logbooktoolbar.h \
     qsoentry.h \
     logbookform.h \
-    logbookformdialog.h
+    logbookformdialog.h \
+    callsignlookup/callsignlookup.h \
+    callsignlookup/callsignlookupqrzcom.h \
+    callsignlookup/callsigndata.h \
+    callsignlookup/callsignlookupmanager.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -23,7 +27,11 @@ SOURCES += logbookplugin.cpp \
     logbooktoolbar.cpp \
     qsoentry.cpp \
     logbookform.cpp \
-    logbookformdialog.cpp
+    logbookformdialog.cpp \
+    callsignlookup/callsignlookup.cpp \
+    callsignlookup/callsignlookupqrzcom.cpp \
+    callsignlookup/callsigndata.cpp \
+    callsignlookup/callsignlookupmanager.cpp
 
 FORMS += \
     generalsettings.ui \

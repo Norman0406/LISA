@@ -89,6 +89,7 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
 
 void LogbookPlugin::extensionsInitialized()
 {
+    addAutoReleasedObject(new GeneralSettings());
 }
 
 } // namespace Internal
