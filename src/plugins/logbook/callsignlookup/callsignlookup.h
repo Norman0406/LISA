@@ -17,11 +17,15 @@ public:
     ~CallsignLookup();
 
     bool lookup(QString);
+    CallsignData::CallsignService getService() const;
 
 protected:
-    CallsignLookup();
+    CallsignLookup(CallsignData::CallsignService);
 
     virtual bool iLookup(QString) = 0;
+
+private:
+    const CallsignData::CallsignService m_service;
 };
 
 }

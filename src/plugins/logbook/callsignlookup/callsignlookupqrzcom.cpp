@@ -1,6 +1,7 @@
 #include "callsignlookupqrzcom.h"
 #include "coreplugin/coreconstants.h"
 
+#include <memory>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QHttpMultiPart>
@@ -14,7 +15,8 @@
 using namespace Logbook::Internal;
 
 CallsignLookupQRZcom::CallsignLookupQRZcom()
-    : m_agent(QString::fromLatin1("LISA")),
+    : CallsignLookup(CallsignData::CS_QRZCOM),
+      m_agent(QString::fromLatin1("LISA")),
       m_version(QString::fromLatin1("1.33"))
 {
     m_manager = new QNetworkAccessManager(this);
@@ -78,7 +80,8 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                         QString sessionKeyString = sessionKey.text();
                         if (m_sessionKey != sessionKeyString) {
                             m_sessionKey = sessionKeyString;
-                            emit sessionKeyChanged();
+                            /*m_refreshRunning = false;
+                            emit sessionKeyChanged();*/
                             qDebug() << "sessionKey: " << sessionKeyString;
                         }
                     }
@@ -99,13 +102,15 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                     }
 
                     if (fields.size() > 0) {
-                        CallsignData callsign(fields);
+                        CallsignData callsign(getService(), fields);
                         emit callsignRetrieved(callsign);
                     }
                 }
             }
         }
     }
+
+    emit replyProcessed(reply);
 }
 
 bool CallsignLookupQRZcom::isReady() const
@@ -125,7 +130,7 @@ QUrl CallsignLookupQRZcom::getQueryUrl() const
     return QUrl(QString::fromLatin1("http://xmldata.qrz.com/xml/%1/").arg(m_version));
 }
 
-void CallsignLookupQRZcom::refreshSessionKey()
+QNetworkReply* CallsignLookupQRZcom::refreshSessionKey()
 {
     QUrlQuery query;
     query.addQueryItem(QString::fromLatin1("username"), m_username);
@@ -136,7 +141,7 @@ void CallsignLookupQRZcom::refreshSessionKey()
     request.setHeader(QNetworkRequest::ContentTypeHeader, QString::fromLatin1("application/x-www-form-urlencoded"));
 
     QByteArray params = query.toString(QUrl::FullyEncoded).toLatin1();
-    m_manager->post(request, params);
+    return m_manager->post(request, params);
 }
 
 void CallsignLookupQRZcom::queryCallsign(QString callsign)
@@ -152,20 +157,43 @@ void CallsignLookupQRZcom::queryCallsign(QString callsign)
     m_manager->post(request, params);
 }
 
+void CallsignLookupQRZcom::processLookup()
+{
+    if (m_sessionKey.isEmpty() && !m_refreshRunning) {
+        m_refreshRunning = true;
+
+        QNetworkReply* refreshReply = refreshSessionKey();
+
+        auto connection = std::make_shared<QMetaObject::Connection>();
+        *connection = connect(this, &CallsignLookupQRZcom::replyProcessed, [=](QNetworkReply* reply) {
+            if (reply == refreshReply) {
+                m_refreshRunning = false;
+
+                if (!m_sessionKey.isEmpty())
+                    processLookup();
+                else
+                    qWarning() << "could not retrieve a valid session key";
+
+                disconnect(*connection);
+            }
+        });
+    }
+    else if (!m_refreshRunning) {
+        while (!m_queue.empty()) {
+            QString callsign = m_queue.front();
+            m_queue.pop_front();
+            queryCallsign(callsign);
+        }
+    }
+}
+
 bool CallsignLookupQRZcom::iLookup(QString callsign)
 {
     if (!isReady())
         return false;
 
-    if (m_sessionKey.isEmpty()) {
-        connect(this, &CallsignLookupQRZcom::sessionKeyChanged, [=]() {
-            queryCallsign(callsign);
-        });
-
-        refreshSessionKey();
-    }
-    else
-        queryCallsign(callsign);
+    m_queue.push_back(callsign);
+    processLookup();
 
     return true;
 }

@@ -4,6 +4,7 @@
 #include "callsignlookup.h"
 #include <QString>
 #include <QtNetwork/QNetworkAccessManager>
+#include <QQueue>
 
 namespace Logbook {
 namespace Internal {
@@ -22,19 +23,20 @@ public:
 
 signals:
     void callsignRetrieved(CallsignData);
-    void sessionKeyChanged();
+    void replyProcessed(QNetworkReply*);
 
 protected:
     bool iLookup(QString);
 
 private slots:
     void replyFinished(QNetworkReply*);
+    void processLookup();
 
 private:
     bool isReady() const;
     QUrl getLoginUrl() const;
     QUrl getQueryUrl() const;
-    void refreshSessionKey();
+    QNetworkReply* refreshSessionKey();
     void queryCallsign(QString);
 
     QNetworkAccessManager* m_manager;
@@ -43,6 +45,8 @@ private:
     QString m_sessionKey;
     const QString m_agent;
     const QString m_version;
+    bool m_refreshRunning;
+    QQueue<QString> m_queue;
 };
 
 }

@@ -2,7 +2,8 @@
 
 using namespace Logbook::Internal;
 
-CallsignData::CallsignData(const QMap<QString, QString>& fields)
+CallsignData::CallsignData(CallsignService service, const QMap<QString, QString>& fields)
+    : m_service(service)
 {
     m_fields = fields;
 }
@@ -17,4 +18,8 @@ bool CallsignData::getField(const QString& fieldName, QString& result) const
     return false;
 }
 
+CallsignData::CallsignService CallsignData::getService() const
+{
+    return m_service;
+}
 

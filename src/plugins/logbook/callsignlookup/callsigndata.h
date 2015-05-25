@@ -10,12 +10,18 @@ namespace Internal {
 class CallsignData
 {
 public:
-    CallsignData(const QMap<QString, QString>& fields);
+    enum CallsignService {
+        CS_QRZCOM,
+    };
+
+    CallsignData(CallsignService, const QMap<QString, QString>& fields);
 
     bool getField(const QString& fieldName, QString& result) const;
+    CallsignService getService() const;
 
 private:
     QMap<QString, QString> m_fields;
+    const CallsignService m_service;
 };
 
 }

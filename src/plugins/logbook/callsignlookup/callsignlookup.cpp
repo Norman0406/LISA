@@ -2,7 +2,8 @@
 
 using namespace Logbook::Internal;
 
-CallsignLookup::CallsignLookup()
+CallsignLookup::CallsignLookup(CallsignData::CallsignService service)
+    : m_service(service)
 {
 }
 
@@ -15,3 +16,7 @@ bool CallsignLookup::lookup(QString callsign)
     return iLookup(callsign);
 }
 
+CallsignData::CallsignService CallsignLookup::getService() const
+{
+    return m_service;
+}
