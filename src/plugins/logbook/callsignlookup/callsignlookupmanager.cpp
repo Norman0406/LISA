@@ -1,5 +1,6 @@
 #include "callsignlookupmanager.h"
 #include "callsignlookupqrzcom.h"
+#include "../logbookformdialog.h"
 
 #include <coreplugin/icore.h>
 #include <coreplugin/settingsdatabase.h>
@@ -113,12 +114,11 @@ void CallsignLookupManager::lookup(QString callsign)
 }
 
 void CallsignLookupManager::callsignRetrieved(CallsignData callsignData)
-{
-    // TODO: set the right entries on m_logbookForm
-
-    if (m_logbookForm) {
+{    if (m_logbookForm) {
         switch (callsignData.getService()) {
         case CallsignData::CS_QRZCOM:
+            QString name = QString(QLatin1String("%1 %2")).arg(callsignData.getField(QLatin1String("fname"))).arg(callsignData.getField(QLatin1String("name")));
+            m_logbookForm->setName(name);
             break;
         }
     }

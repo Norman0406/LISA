@@ -46,6 +46,11 @@ LogbookFormDialog::~LogbookFormDialog()
     delete m_qtimer;
 }
 
+void LogbookFormDialog::setName(QString name)
+{
+    m_ui->lineEditName->setText(name);
+}
+
 void LogbookFormDialog::on_pushButtonSubmitLogbookForm_clicked()
 {
     m_data->insert(QLatin1String("CallsignFrom"), m_settings->value(QLatin1String("logbook/callsign")).toString());

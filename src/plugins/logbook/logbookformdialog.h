@@ -27,6 +27,8 @@ public:
     virtual ~LogbookFormDialog();
     QMap<QString, QString>* m_data;
 
+    void setName(QString);
+
 signals:
     void AddQso();
     void lookupCallsign(QString);

@@ -17,6 +17,7 @@ public:
     CallsignData(CallsignService, const QMap<QString, QString>& fields);
 
     bool getField(const QString& fieldName, QString& result) const;
+    QString getField(const QString& fieldName) const;
     CallsignService getService() const;
     static QString getServiceString(CallsignService);
 

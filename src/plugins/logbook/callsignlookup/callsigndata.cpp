@@ -18,6 +18,13 @@ bool CallsignData::getField(const QString& fieldName, QString& result) const
     return false;
 }
 
+QString CallsignData::getField(const QString& fieldName) const
+{
+    if (m_fields.contains(fieldName))
+        return m_fields[fieldName];
+    return QLatin1String("");
+}
+
 CallsignData::CallsignService CallsignData::getService() const
 {
     return m_service;
