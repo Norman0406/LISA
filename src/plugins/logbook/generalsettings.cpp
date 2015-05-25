@@ -38,11 +38,18 @@ GeneralSettings::GeneralSettings()
     setCategoryIcon(QLatin1String(Logbook::Constants::SETTINGS_CATEGORY_LOGBOOK_ICON));
 }
 
-QWidget* GeneralSettings::createPage(QWidget *parent)
+bool GeneralSettings::matches(const QString& searchKeyWord) const
 {
-    m_page = new Ui::GeneralSettings();
-    m_widget = new QWidget(parent);
-    m_page->setupUi(m_widget);
+    return false;
+}
+
+QWidget* GeneralSettings::widget()
+{
+    if (!m_widget) {
+        m_page = new Ui::GeneralSettings();
+        m_widget = new QWidget;
+        m_page->setupUi(m_widget);
+    }
 
     return m_widget;
 }
@@ -53,9 +60,7 @@ void GeneralSettings::apply()
 
 void GeneralSettings::finish()
 {
-}
-
-bool GeneralSettings::matches(const QString&) const
-{
-    return false;
+    delete m_widget;
+    delete m_page;
+    m_page = 0;
 }
