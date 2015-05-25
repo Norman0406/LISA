@@ -47,10 +47,10 @@ public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
     void addQso(QMap<QString, QString>* data);
+    QTableView* getLogbookView();
 
 private:
     QTableView* m_logbookView;
-
     Database m_database;
     QSqlRelationalTableModel* m_model;
     LogbookProxyModel* m_proxyModel;

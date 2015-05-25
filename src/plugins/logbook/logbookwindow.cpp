@@ -43,10 +43,9 @@ LogbookWindow::LogbookWindow(QWidget *parent)
 
     m_deleteMessageBox = new QMessageBox();
     m_deleteMessageBox->setText(tr("Confirm delete"));
-    m_deleteMessageBox->setStandardButtons(QMessageBox::Abort | QMessageBox::Ok);
+    m_deleteMessageBox->setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
     m_deleteMessageBox->setIcon(QMessageBox::Warning);
     m_deleteMessageBox->setButtonText(QMessageBox::Ok, tr("Delete items"));
-    m_deleteMessageBox->setDefaultButton(QMessageBox::Abort);
 
     // add the toolbar on the top
     layout->addWidget(new LogbookToolBar(this));
@@ -54,13 +53,13 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     // create the table view
     m_logbookView = new QTableView(this);
     m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_logbookView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_logbookView->setColumnHidden(0, true);
     m_logbookView->installEventFilter(this);
 
     m_logbookView->setAlternatingRowColors(true);
     m_database.open();
-    qDebug() << "DB open";
 
     // create model
     m_model = new QSqlRelationalTableModel(this, m_database.getDatabase());
@@ -96,6 +95,7 @@ void LogbookWindow::deleteSelection()
         m_deleteMessageBox->setInformativeText(tr("Do you want to delete the selected items?"));
     }
 
+    m_deleteMessageBox->setDefaultButton(QMessageBox::Cancel);
     int ret = m_deleteMessageBox->exec();
 
     if(ret == QMessageBox::Ok)
@@ -130,6 +130,11 @@ bool LogbookWindow::eventFilter(QObject *target, QEvent *event)
     }
 
     return QWidget::eventFilter(target, event);
+}
+
+QTableView* LogbookWindow::getLogbookView()
+{
+    return m_logbookView;
 }
 
 void LogbookWindow::addQso(QMap<QString, QString>* data) {
