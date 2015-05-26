@@ -55,7 +55,6 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_logbookView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    m_logbookView->setColumnHidden(0, true);
     m_logbookView->installEventFilter(this);
 
     m_logbookView->setAlternatingRowColors(true);
@@ -74,6 +73,11 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setModel(m_model);
     m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
+
+    // hide the id column and set the row size to minimum
+    m_logbookView->verticalHeader()->setVisible(false);
+    m_logbookView->verticalHeader()->setDefaultSectionSize(m_logbookView->verticalHeader()->minimumSectionSize());
+    m_logbookView->setColumnHidden(0, true);
 }
 
 LogbookWindow::~LogbookWindow()
