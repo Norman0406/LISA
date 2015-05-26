@@ -9,13 +9,6 @@ ProfileData::ProfileData(bool isRemovable, QString profileName)
     m_uuid = QUuid::createUuid();
 }
 
-ProfileData::ProfileData(QUuid uuid, bool isRemovable, QString profileName)
-    : m_uuid(uuid),
-      m_isRemovable(isRemovable),
-      m_profileName(profileName)
-{
-}
-
 ProfileData::ProfileData(const ProfileData& other)
     : m_uuid(other.m_uuid),
       m_isRemovable(other.m_isRemovable),

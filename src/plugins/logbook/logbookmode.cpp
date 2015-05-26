@@ -72,8 +72,7 @@ void LogbookMode::loadSettings()
     for (int i = 0; i < numProfiles; i++) {
         settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
 
-        ProfileData newProfile(settings->value(QLatin1String("UUID")).toUuid(),
-                               settings->value(QLatin1String("IsRemovable")).toBool(),
+        ProfileData newProfile(settings->value(QLatin1String("IsRemovable")).toBool(),
                                settings->value(QLatin1String("ProfileName")).toString());
 
         newProfile.setCallsign(settings->value(QLatin1String("Callsign")).toString());
@@ -108,7 +107,6 @@ void LogbookMode::saveSettings()
         settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
         const ProfileData& data = m_profiles[i];
 
-        settings->setValue(QLatin1String("UUID"), data.getUuid());
         settings->setValue(QLatin1String("IsRemovable"), data.isRemovable());
         settings->setValue(QLatin1String("ProfileName"), data.getProfileName());
         settings->setValue(QLatin1String("Callsign"), data.getCallsign());

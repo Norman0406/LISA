@@ -11,7 +11,6 @@ class ProfileData
 {
 public:
     ProfileData(bool isRemovable, QString profileName);
-    ProfileData(QUuid uuid, bool isRemovable, QString profileName);
     ProfileData(const ProfileData&);
 
     QUuid getUuid() const;
