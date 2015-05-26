@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>974</width>
-    <height>378</height>
+    <height>324</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="labelDatetime">
         <property name="text">
-         <string>Time:</string>
+         <string>Date:</string>
         </property>
         <property name="buddy">
          <cstring>dateTimeEdit_QSO_UTC</cstring>
@@ -33,9 +33,50 @@
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QDateTimeEdit" name="dateTimeEdit_QSO_UTC">
+         <widget class="QDateTimeEdit" name="dateTimeEdit_QSO_UTC_2">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
           <property name="displayFormat">
-           <string>dd.MM.yy HH:mm:ss</string>
+           <string>dd.MM.yyyy</string>
+          </property>
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="timeSpec">
+           <enum>Qt::LocalTime</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelDatetime_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Time:</string>
+          </property>
+          <property name="buddy">
+           <cstring>dateTimeEdit_QSO_UTC</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDateTimeEdit" name="dateTimeEdit_QSO_UTC">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="displayFormat">
+           <string>HH:mm:ss</string>
+          </property>
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="timeSpec">
+           <enum>Qt::LocalTime</enum>
           </property>
          </widget>
         </item>
@@ -187,11 +228,17 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhMultiLine</set>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QAbstractScrollArea::AdjustToContents</enum>
+         <enum>QAbstractScrollArea::AdjustIgnored</enum>
         </property>
        </widget>
       </item>
@@ -330,61 +377,6 @@
         </layout>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="labelName_10">
-         <property name="text">
-          <string>CQ-Zone:</string>
-         </property>
-         <property name="buddy">
-          <cstring>lineEdit_Personal_Name</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QLineEdit" name="lineEdit_Personal_CQZone"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelName_11">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>ITU-Zone:</string>
-           </property>
-           <property name="buddy">
-            <cstring>lineEdit_Personal_Name</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEdit_Personal_ITUZone"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelName_12">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>DXCC:</string>
-           </property>
-           <property name="buddy">
-            <cstring>lineEdit_Personal_Name</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEdit_Personal_DXCC"/>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="0">
         <widget class="QLabel" name="labelName_3">
          <property name="text">
           <string>Locator:</string>
@@ -394,7 +386,7 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="4" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <widget class="QLineEdit" name="lineEdit_Personal_Locator"/>
@@ -439,7 +431,7 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="labelName_6">
          <property name="text">
           <string>E-Mail:</string>
@@ -449,10 +441,10 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="5" column="1">
         <widget class="QLineEdit" name="lineEdit_Personal_EMail"/>
        </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="labelName_7">
          <property name="text">
           <string>Birthday:</string>
@@ -462,12 +454,15 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QDateTimeEdit" name="dateTimeEdit_Personal_Birthday">
            <property name="displayFormat">
-            <string>dd.MM.yy</string>
+            <string>dd.MM.yyyy</string>
+           </property>
+           <property name="calendarPopup">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -492,20 +487,7 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="labelName_15">
-         <property name="text">
-          <string>QSL via:</string>
-         </property>
-         <property name="buddy">
-          <cstring>lineEdit_Personal_Name</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLineEdit" name="lineEdit_Personal_QslVia"/>
-       </item>
-       <item row="9" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="labelName_16">
          <property name="text">
           <string>Timezone:</string>
@@ -515,7 +497,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="7" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
           <widget class="QLabel" name="label_2">
@@ -577,11 +559,171 @@
       <attribute name="title">
        <string>Contest</string>
       </attribute>
+      <layout class="QFormLayout" name="formLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelName_10">
+         <property name="text">
+          <string>CQ-Zone:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Contest_CQZone"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_11">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>ITU-Zone:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Contest_ITUZone"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_12">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>DXCC:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Contest_DXCC"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
        <string>QSL</string>
       </attribute>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelName_15">
+         <property name="text">
+          <string>QSL via:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_QSL_QslVia"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>QSL sent:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <widget class="QCheckBox" name="checkBox_QSL_sent">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="dateEdit_QSL_sent">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>QSL rcvd:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_QSL_rcvd">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="dateEdit_QSL_rcvd">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_QSL_Method">
+           <item>
+            <property name="text">
+             <string>Direct</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Bureau</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>via QSL Manager</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>eQSL</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">

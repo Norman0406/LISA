@@ -73,10 +73,9 @@ void LogbookMode::loadSettings()
 {
     QSettings* settings = Core::ICore::settings();
 
-    settings->beginGroup(QLatin1String("Profiles"));
-    int numProfiles = settings->value(QLatin1String("NumProfiles")).toInt();
+    int numProfiles = settings->beginReadArray(QLatin1String("Profiles"));
     for (int i = 0; i < numProfiles; i++) {
-        settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
+        settings->setArrayIndex(i);
 
         ProfileData newProfile(settings->value(QLatin1String("IsRemovable")).toBool(),
                                settings->value(QLatin1String("ProfileName")).toString());
@@ -88,10 +87,8 @@ void LogbookMode::loadSettings()
         newProfile.setCity(settings->value(QLatin1String("City")).toString());
 
         m_profiles.push_back(newProfile);
-
-        settings->endGroup();
     }
-    settings->endGroup();
+    settings->endArray();
 
     // create a default profile that can't be deleted and immediately save
     if (m_profiles.empty()) {
@@ -107,12 +104,10 @@ void LogbookMode::saveSettings()
 {
     QSettings* settings = Core::ICore::settings();
 
-    settings->beginGroup(QLatin1String("Profiles"));
-    settings->setValue(QLatin1String("NumProfiles"), m_profiles.count());
+    settings->beginWriteArray(QLatin1String("Profiles"), m_profiles.count());
     for (int i = 0; i < m_profiles.count(); i++) {
-        settings->beginGroup(QString(QLatin1String("Profile_%1")).arg(i));
         const ProfileData& data = m_profiles[i];
-
+        settings->setArrayIndex(i);
         settings->setValue(QLatin1String("IsRemovable"), data.isRemovable());
         settings->setValue(QLatin1String("ProfileName"), data.getProfileName());
         settings->setValue(QLatin1String("Callsign"), data.getCallsign());
@@ -120,10 +115,8 @@ void LogbookMode::saveSettings()
         settings->setValue(QLatin1String("Street"), data.getStreet());
         settings->setValue(QLatin1String("ZipCode"), data.getZipCode());
         settings->setValue(QLatin1String("City"), data.getCity());
-
-        settings->endGroup();
     }
-    settings->endGroup();
+    settings->endArray();
 }
 
 LogbookForm* LogbookMode::getLogbookForm() const
