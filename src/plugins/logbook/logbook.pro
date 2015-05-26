@@ -20,7 +20,13 @@ HEADERS += logbookplugin.h \
     callsignlookup/callsignlookupsettingspage.h \
     profiledata.h \
     profilenamevalidator.h \
-    logbookentrypane.h
+    logbookentrypane.h \
+    importexport/exporter.h \
+    importexport/importer.h \
+    importexport/importeradif.h \
+    importexport/exporteradif.h \
+    importexport/exporterfactory.h \
+    importexport/importerfactory.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -39,7 +45,13 @@ SOURCES += logbookplugin.cpp \
     callsignlookup/callsignlookupsettingspage.cpp \
     profiledata.cpp \
     profilenamevalidator.cpp \
-    logbookentrypane.cpp
+    logbookentrypane.cpp \
+    importexport/exporter.cpp \
+    importexport/importer.cpp \
+    importexport/exporteradif.cpp \
+    importexport/importeradif.cpp \
+    importexport/exporterfactory.cpp \
+    importexport/importerfactory.cpp
 
 FORMS += \
     profilesettingspage.ui \
