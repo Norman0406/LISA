@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Logbook::Internal::LogbookEntryWidget</class>
+ <widget class="QWidget" name="Logbook::Internal::LogbookEntryWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>974</width>
+    <height>378</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,3,1">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>QSO Data</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelDatetime">
+        <property name="text">
+         <string>Time:</string>
+        </property>
+        <property name="buddy">
+         <cstring>dateTimeEdit_QSO_UTC</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QDateTimeEdit" name="dateTimeEdit_QSO_UTC">
+          <property name="displayFormat">
+           <string>dd.MM.yy HH:mm:ss</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>UTC</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelCallsign">
+        <property name="text">
+         <string>Callsign:</string>
+        </property>
+        <property name="buddy">
+         <cstring>lineEdit_QSO_CallsignTo</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEdit_QSO_CallsignTo"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelMode">
+        <property name="text">
+         <string>Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>comboBox_QSO_Mode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="comboBox_QSO_Mode"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelFrequency">
+        <property name="text">
+         <string>Frequency:</string>
+        </property>
+        <property name="buddy">
+         <cstring>lineEdit_QSO_Frequency</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_QSO_Frequency"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelBand">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Band:</string>
+          </property>
+          <property name="buddy">
+           <cstring>comboBox_QSO_Band</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox_QSO_Band"/>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="labelRstSend">
+        <property name="text">
+         <string>RST sent:</string>
+        </property>
+        <property name="buddy">
+         <cstring>lineEdit_QSO_RstSent</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_QSO_RstSent"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBox_QSO_SentNumber"/>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="labelRstRcvd">
+        <property name="text">
+         <string>RST rcvd:</string>
+        </property>
+        <property name="buddy">
+         <cstring>lineEdit_QSO_RstRcvd</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_QSO_RstRcvd"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBox_QSO_RcvdNumber">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="labelRstRcvd_2">
+        <property name="text">
+         <string>Comment:</string>
+        </property>
+        <property name="buddy">
+         <cstring>lineEdit_QSO_RstRcvd</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPlainTextEdit" name="plainTextEdit_QSO_Comment">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhMultiLine</set>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QPushButton" name="pushButtonSubmitLogbookForm">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Submit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Personal</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelName_18">
+         <property name="text">
+          <string>Callsign:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_Personal_Callsign">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelName">
+         <property name="text">
+          <string>Name:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_Personal_Name"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelName_2">
+         <property name="text">
+          <string>Address:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QPlainTextEdit" name="plainTextEdit_Personal_Address">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelName_9">
+         <property name="text">
+          <string>Country:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QComboBox" name="comboBox_Personal_Country"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_8">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>State:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_State"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_13">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Continent:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_Personal_Continent"/>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="labelName_10">
+         <property name="text">
+          <string>CQ-Zone:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_CQZone"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_11">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>ITU-Zone:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_ITUZone"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_12">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>DXCC:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_DXCC"/>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="labelName_3">
+         <property name="text">
+          <string>Locator:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_Locator"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_14">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Lat:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_Lat"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_5">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Lon:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_Lon"/>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="labelName_6">
+         <property name="text">
+          <string>E-Mail:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="lineEdit_Personal_EMail"/>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="labelName_7">
+         <property name="text">
+          <string>Birthday:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QDateTimeEdit" name="dateTimeEdit_Personal_Birthday">
+           <property name="displayFormat">
+            <string>dd.MM.yy</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_4">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Aliases:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Personal_Aliases"/>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="labelName_15">
+         <property name="text">
+          <string>QSL via:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLineEdit" name="lineEdit_Personal_QslVia"/>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="labelName_16">
+         <property name="text">
+          <string>Timezone:</string>
+         </property>
+         <property name="buddy">
+          <cstring>lineEdit_Personal_Name</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>UTC ±</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinBox_Personal_TimeZone">
+           <property name="minimum">
+            <number>-12</number>
+           </property>
+           <property name="maximum">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelName_17">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Local Time:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_Personal_Name</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateTimeEdit" name="dateTimeEdit_Personal_LocalTime">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="displayFormat">
+            <string>dd.MM.yy HH:mm:ss</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Contest</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>QSL</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Custom</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Previous QSOs:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableView" name="tableView_PreviousQSOs"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

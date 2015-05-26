@@ -34,6 +34,7 @@ class LogbookWindow;
 class LogbookForm;
 class CallsignLookup;
 class ProfileData;
+class LogbookEntryPane;
 
 class LogbookMode
         : public Core::IMode
@@ -58,6 +59,7 @@ signals:
 private:
     LogbookWindow* m_window;
     LogbookForm* m_logbookForm;
+    LogbookEntryPane* m_logbookEntryPane;
     CallsignLookup* m_callsignLookup;
     QList<ProfileData> m_profiles;
 };

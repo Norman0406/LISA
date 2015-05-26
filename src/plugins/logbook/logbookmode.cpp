@@ -25,6 +25,7 @@
 #include "logbookmode.h"
 #include "logbookwindow.h"
 #include "logbookform.h"
+#include "logbookentrypane.h"
 #include "profiledata.h"
 
 #include "callsignlookup/callsignlookupqrzcom.h"
@@ -53,6 +54,9 @@ LogbookMode::LogbookMode()
     m_logbookForm = new LogbookForm(0, this, m_window);
     ExtensionSystem::PluginManager::addObject(m_logbookForm);
 
+    //m_logbookEntryPane = new LogbookEntryPane(0);
+    //ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
+
     loadSettings();
 }
 
@@ -61,6 +65,8 @@ LogbookMode::~LogbookMode()
     delete m_window;
     ExtensionSystem::PluginManager::removeObject(m_logbookForm);
     delete m_logbookForm;
+    //ExtensionSystem::PluginManager::removeObject(m_logbookEntryPane);
+    //delete m_logbookEntryPane;
 }
 
 void LogbookMode::loadSettings()
