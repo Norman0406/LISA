@@ -122,7 +122,8 @@ OutputPaneManager::OutputPaneManager(QWidget *parent) :
     m_minimizeIcon(QLatin1String(":/core/images/arrowdown.png")),
     m_maximizeIcon(QLatin1String(":/core/images/arrowup.png")),
     m_maximised(false),
-    m_outputPaneHeight(0)
+    m_outputPaneHeight(0),
+    m_visiblePane(0)
 {
     setWindowTitle(tr("Output"));
 
@@ -343,6 +344,16 @@ void OutputPaneManager::readSettings()
     }
 
     m_outputPaneHeight = settings->value(QLatin1String("OutputPanePlaceHolder/Height"), 0).toInt();
+
+    m_visiblePane = Id::fromSetting(settings->value(QLatin1String("VisiblePane")));
+    if (m_visiblePane.isValid()) {
+        for (int i = 0; i < m_ids.size(); i++) {
+            if (m_ids[i] == m_visiblePane) {
+                showPage(i, IOutputPane::WithFocus);
+                break;
+            }
+        }
+    }
 }
 
 void OutputPaneManager::slotHide()
@@ -354,6 +365,7 @@ void OutputPaneManager::slotHide()
         QTC_ASSERT(idx >= 0, return);
         m_buttons.at(idx)->setChecked(false);
         m_panes.value(idx)->visibilityChanged(false);
+        m_visiblePane = Id();
     }
 }
 
@@ -428,6 +440,9 @@ void OutputPaneManager::showPage(int idx, int flags)
         ph->setDefaultHeight(m_outputPaneHeight);
         if (flags & IOutputPane::EnsureSizeHint)
             ph->ensureSizeHintAsMinimum();
+
+        // set the visible pane id
+        m_visiblePane = m_ids[idx];
     }
 }
 
@@ -518,6 +533,7 @@ void OutputPaneManager::saveSettings() const
                            m_buttonVisibility.value(m_ids.at(i)));
     }
     settings->endArray();
+    settings->setValue(QLatin1String("VisiblePane"), m_visiblePane.toSetting());
     settings->setValue(QLatin1String("OutputPanePlaceHolder/Height"), m_outputPaneHeight);
 }
 

@@ -119,6 +119,7 @@ private:
     QVector<QAction *> m_actions;
     QVector<Id> m_ids;
     QMap<Id, bool> m_buttonVisibility;
+    Id m_visiblePane;
 
     QStackedWidget *m_outputWidgetPane;
     QStackedWidget *m_opToolBarWidgets;
