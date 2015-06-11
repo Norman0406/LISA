@@ -56,8 +56,9 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_logbookView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_logbookView->installEventFilter(this);
-
+    m_logbookView->setSortingEnabled(true);
     m_logbookView->setAlternatingRowColors(true);
+
     m_database.open();
 
     // create model
@@ -66,8 +67,10 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_model->select();
 
     // create proxy model
-    m_proxyModel = new LogbookProxyModel;
-    m_proxyModel->setSourceModel(m_model);
+    //m_proxyModel = new LogbookProxyModel;
+    //m_proxyModel->setSourceModel(m_model);
+
+    // TODO: add proxy model to filter the database by different views
 
     // set the view model
     m_logbookView->setModel(m_model);
