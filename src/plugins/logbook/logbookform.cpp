@@ -63,10 +63,14 @@ bool LogbookForm::canFocus() const
 }
 
 void LogbookForm::updateProfiles(const QList<ProfileData>& profiles)
-{
+{    
     int selectedIndex = 0;
 
+    if (m_selectedProfile.isNull())
+        m_selectedProfile = profiles[selectedIndex].getUuid();
+
     QUuid selectedProfile = m_selectedProfile;
+
     m_profileUuids.clear();
     m_profileList->clear();
     foreach (const ProfileData& profile, profiles) {

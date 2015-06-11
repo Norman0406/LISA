@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::CallsignLookupSettingsPage* m_page;
-    QPointer<QWidget> m_widget;
+    QWidget* m_widget;
     CallsignLookupManager* m_manager;
 };
 

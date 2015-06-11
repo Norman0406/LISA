@@ -25,6 +25,7 @@
 #include "database.h"
 #include <QDebug>
 #include <QDateTime>
+#include "logbookplugin.h"
 #include "qsoentry.h"
 
 using namespace Logbook::Internal;
@@ -35,8 +36,7 @@ Database::Database(QObject* parent)
     m_database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"));
     m_database.setHostName(QLatin1String("localhost"));
 
-    // TODO: store in appdata
-    m_database.setDatabaseName(QLatin1String("logbook.db"));
+    m_database.setDatabaseName(LogbookPlugin::resourcePath() + QLatin1String("logbook.db"));
 }
 
 bool Database::open()
@@ -62,12 +62,12 @@ bool Database::open()
     //newEntry.setProperty("CallsignFrom", "DM6LN");
     //newEntry.CallsigTo = "DM5RS";
 
-    QsoEntry newEntry(this);
+    /*QsoEntry newEntry(this);
     newEntry.setId(0);
     newEntry.setCallsign(QLatin1String("DM5RS"));
     newEntry.setOperator(QLatin1String("DM6LN"));
 
-    updateOrInsert(newEntry);
+    updateOrInsert(newEntry);*/
 
     return isOpen;
 }

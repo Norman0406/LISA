@@ -49,6 +49,8 @@ public:
     LogbookPlugin();
     ~LogbookPlugin();
 
+    static QString resourcePath();
+
     bool initialize(const QStringList &arguments, QString *errorMessage);
     void extensionsInitialized();
 

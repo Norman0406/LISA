@@ -7,7 +7,9 @@
 using namespace Logbook::Internal;
 
 CallsignLookupSettingsPage::CallsignLookupSettingsPage(CallsignLookupManager* manager)
-    : m_manager(manager)
+    : m_manager(manager),
+      m_page(0),
+      m_widget(0)
 {
     setId(Logbook::Constants::SETTINGS_ID_LOGBOOK);
     setDisplayName(tr("Callsign Lookup"));
@@ -63,6 +65,7 @@ void CallsignLookupSettingsPage::apply()
 void CallsignLookupSettingsPage::finish()
 {
     delete m_widget;
+    m_widget = 0;
     delete m_page;
     m_page = 0;
 }

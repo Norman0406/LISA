@@ -5,7 +5,7 @@ TEMPLATE  = subdirs
 SUBDIRS   = \
     coreplugin \
     logbook \
-    #digital
+    digital
 
 isEmpty(LISA_PACKAGE_MODE) {
     SUBDIRS += \

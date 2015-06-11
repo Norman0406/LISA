@@ -64,11 +64,11 @@ DigitalWindow::DigitalWindow(QWidget *parent)
 
     layout->addWidget(splitter);
 
-    m_audioManager = new AudioManager(this);
+    /*m_audioManager = new AudioManager(this);
     connect(m_audioManager, &AudioManager::inDeviceReady, m_spectrum, &SpectrumWindow::start);
     connect(m_audioManager, &AudioManager::inDeviceReady, m_messenger, &MessengerWindow::inDeviceReady);
     connect(m_audioManager, &AudioManager::outDeviceReady, m_messenger, &MessengerWindow::outDeviceReady);
 
     m_audioManager->selectInputDevice();
-    m_audioManager->selectOutputDevice();
+    m_audioManager->selectOutputDevice();*/
 }

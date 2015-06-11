@@ -68,7 +68,7 @@ private:
     QList<ProfileData> m_profiles;
 
     Ui::ProfileSettingsPage* m_page;
-    QPointer<QWidget> m_widget;
+    QWidget* m_widget;
     QSettings* m_settings;
     LogbookMode* m_logbookMode;
     ProfileNameValidator* m_profileNameValidator;

@@ -46,6 +46,7 @@
 #include <coreplugin/id.h>
 
 #include <QMenu>
+#include <QDir>
 
 namespace Logbook {
 namespace Internal {
@@ -58,10 +59,21 @@ LogbookPlugin::~LogbookPlugin()
 {
 }
 
+QString LogbookPlugin::resourcePath()
+{
+    return Core::ICore::userResourcePath() + QLatin1String("/logbook/");
+}
+
 bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessage)
 {
     Q_UNUSED(arguments)
     Q_UNUSED(errorMessage)
+
+    QString a = resourcePath();
+
+    // create resourcePath
+    if (!QDir(resourcePath()).exists())
+        QDir().mkdir(resourcePath());
 
     // Create our own menu to place in the Tools menu
     Core::ActionContainer *logbookMenu =

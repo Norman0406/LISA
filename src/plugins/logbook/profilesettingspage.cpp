@@ -33,7 +33,9 @@ using namespace Logbook::Internal;
 
 ProfileSettingsPage::ProfileSettingsPage(LogbookMode* logbookMode)
     : m_logbookMode(logbookMode),
-      m_currentProfile(0)
+      m_currentProfile(0),
+      m_page(0),
+      m_widget(0)
 {
     setId(Logbook::Constants::SETTINGS_ID_LOGBOOK);
     setDisplayName(tr("Profiles"));
@@ -77,6 +79,7 @@ QWidget* ProfileSettingsPage::widget()
 
         m_page->listWidgetProfiles->setCurrentRow(0);
     }
+
     return m_widget;
 }
 
@@ -91,6 +94,7 @@ void ProfileSettingsPage::apply()
 void ProfileSettingsPage::finish()
 {
     delete m_widget;
+    m_widget = 0;
     delete m_page;
     m_page = 0;
     m_profiles.clear();
