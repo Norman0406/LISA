@@ -75,8 +75,9 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     layout->addWidget(m_logbookView);
 
     // hide the id column and set the row size to minimum
-    m_logbookView->verticalHeader()->setVisible(false);
     m_logbookView->verticalHeader()->setDefaultSectionSize(m_logbookView->verticalHeader()->minimumSectionSize());
+    m_logbookView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_logbookView->horizontalHeader()->setHighlightSections(false);
     m_logbookView->setColumnHidden(0, true);
 }
 
