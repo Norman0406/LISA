@@ -59,12 +59,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setSortingEnabled(true);
     m_logbookView->setAlternatingRowColors(true);
 
-    m_database.open();
-
-    // create model
-    m_model = new QSqlRelationalTableModel(this, m_database.getDatabase());
-    m_model->setTable(QLatin1String("logbook"));
-    m_model->select();
+    m_database.open(QLatin1String("logbook"));
 
     // create proxy model
     //m_proxyModel = new LogbookProxyModel;
@@ -73,7 +68,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     // TODO: add proxy model to filter the database by different views
 
     // set the view model
-    m_logbookView->setModel(m_model);
+    m_logbookView->setModel(m_database.getModel());
     m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
 
@@ -82,17 +77,27 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     m_logbookView->horizontalHeader()->setHighlightSections(false);
     m_logbookView->setColumnHidden(0, true);
+
+    connect(m_logbookView, &QTableView::doubleClicked, this, &LogbookWindow::qsoSelected);
 }
 
 LogbookWindow::~LogbookWindow()
 {
-    m_model->submitAll();
+    //m_model->submitAll();
     m_database.close();
+}
+
+void LogbookWindow::qsoSelected(const QModelIndex& index)
+{
+    QsoEntry* entry = m_database.getEntry(index.row());
+    if (entry) {
+        QsoEntry& bla = *entry;
+    }
 }
 
 void LogbookWindow::deleteSelection()
 {
-    QItemSelection selection = m_logbookView->selectionModel()->selection();
+    /*QItemSelection selection = m_logbookView->selectionModel()->selection();
 
     if(selection.size() < 2)
     {
@@ -124,7 +129,7 @@ void LogbookWindow::deleteSelection()
         }
         m_model->submit();
         m_model->select();
-    }
+    }*/
 }
 
 bool LogbookWindow::eventFilter(QObject *target, QEvent *event)
@@ -146,7 +151,7 @@ QTableView* LogbookWindow::getLogbookView()
 }
 
 void LogbookWindow::addQso(QMap<QString, QString>* data) {
-    qDebug() << QDateTime::currentDateTime().toString(Qt::ISODate);
+    /*qDebug() << QDateTime::currentDateTime().toString(Qt::ISODate);
     int row = m_model->rowCount();
     m_model->insertRow(row);
     qDebug() << data->value(QLatin1String("Callsign"));
@@ -161,5 +166,5 @@ void LogbookWindow::addQso(QMap<QString, QString>* data) {
     m_model->setData(m_model->index(row,9), data->value(QLatin1String("RSTRcvd")));
 
     m_model->submit();
-    m_model->select();
+    m_model->select();*/
 }

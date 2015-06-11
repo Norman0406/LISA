@@ -50,17 +50,17 @@ public:
     void addQso(QMap<QString, QString>* data);
     QTableView* getLogbookView();
 
+private slots:
+    void qsoSelected(const QModelIndex&);
+    void deleteSelection();
+
 private:
     QTableView* m_logbookView;
     Database m_database;
-    QSqlRelationalTableModel* m_model;
     LogbookProxyModel* m_proxyModel;
     QMessageBox* m_deleteMessageBox;
 
     bool eventFilter(QObject *, QEvent *);
-
-private slots:
-    void deleteSelection();
 };
 
 } // namespace Internal

@@ -31,29 +31,38 @@
 using namespace Logbook::Internal;
 
 Database::Database(QObject* parent)
-   : QObject(parent)
+   : QObject(parent),
+     m_isOpen(false),
+     m_model(0)
 {
     m_database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"));
     m_database.setHostName(QLatin1String("localhost"));
-
-    m_database.setDatabaseName(LogbookPlugin::resourcePath() + QLatin1String("logbook.db"));
 }
 
-bool Database::open()
+Database::~Database()
 {
-    // open database
-    bool isOpen = m_database.open();
+    close();
+}
 
-    if (isOpen) {
+bool Database::open(QString name)
+{
+    m_database.setDatabaseName(LogbookPlugin::resourcePath() + name + QLatin1String(".db"));
+
+    // open database
+    m_isOpen = m_database.open();
+
+    if (m_isOpen) {
         // create necessary tables if they do not exist
         if (!m_database.tables().contains(QLatin1String("logbook"))) {
             qDebug() << "Initialize database file for the first time";
             createTables();
         }
 
-        QSqlTableModel model(this, m_database);
-        model.setTable(QLatin1String("logbook"));
-        model.select();
+        m_model = new QSqlRelationalTableModel(this, m_database);
+        m_model->setTable(QLatin1String("logbook"));
+        m_model->select();
+
+        // TODO: create a list of qsoentries for each row in the model
     }
 
     //QSqlQuery query(m_database);
@@ -69,49 +78,78 @@ bool Database::open()
 
     updateOrInsert(newEntry);*/
 
-    return isOpen;
+    return m_isOpen;
 }
 
 void Database::createTables()
 {
-    QSqlQuery query(m_database);
+    if (m_isOpen) {
+        QSqlQuery query(m_database);
 
-    // create table if it does not already exist
-    if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS logbook ("
-                                              "ID INTEGER PRIMARY KEY,"
-                                              "Time INTEGER,"
-                                              "CallsignFrom VARCHAR(32),"
-                                              "CallsignTo VARCHAR(32),"
-                                              "Name VARCHAR(32),"
-                                              "Mode VARCHAR(32),"
-                                              "Frequency INTEGER,"
-                                              "Band INTEGER,"
-                                              "RstSend INTEGER,"
-                                              "RstRcvd INTEGER,"
-                                              "Country INTEGER,"
-                                              "Comment VARCHAR(50)"
-                                              ")"))) {
-        qWarning() << "Could not create table";
+        // create table if it does not already exist
+        if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS logbook ("
+                                                  "ID INTEGER PRIMARY KEY,"
+                                                  "Time INTEGER,"
+                                                  "CallsignFrom VARCHAR(32),"
+                                                  "CallsignTo VARCHAR(32),"
+                                                  "Name VARCHAR(32),"
+                                                  "Mode VARCHAR(32),"
+                                                  "Frequency INTEGER,"
+                                                  "Band INTEGER,"
+                                                  "RstSend INTEGER,"
+                                                  "RstRcvd INTEGER,"
+                                                  "Country INTEGER,"
+                                                  "Comment VARCHAR(50)"
+                                                  ")"))) {
+            qWarning() << "Could not create table";
+        }
     }
+}
+
+QsoEntry* Database::getEntry(int index)
+{
+    // UNDONE
+    if (m_isOpen) {
+    }
+
+    return 0;
 }
 
 void Database::updateOrInsert(const QsoEntry& entry)
 {
-    const QSqlRecord& record = entry.getRecord();
+    if (m_isOpen) {
+        const QSqlRecord& record = entry.getRecord();
 
-    QSqlTableModel model(this, m_database);
-    model.setTable(QLatin1String("logbook"));
+        QSqlTableModel model(this, m_database);
+        model.setTable(QLatin1String("logbook"));
 
-    // first, check if this entry already exists
-
+        // first, check if this entry already exists
+    }
 }
 
-QSqlDatabase Database::getDatabase() const
+void Database::remove(const QsoEntry& entry)
 {
-    return m_database;
+    if (m_isOpen) {
+    }
+}
+
+QAbstractTableModel* Database::getModel() const
+{
+    if (m_isOpen) {
+        return m_model;
+    }
+
+    return 0;
 }
 
 void Database::close()
 {
+    m_model->submitAll();   // necessary?
     m_database.close();
+    delete m_model;
+    m_model = 0;
+    foreach (QsoEntry* entry, m_entries)
+        delete entry;
+    m_entries.clear();
+    m_isOpen = false;
 }

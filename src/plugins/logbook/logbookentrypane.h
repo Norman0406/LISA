@@ -2,6 +2,7 @@
 #define LOGBOOKENTRYPANE_H
 
 #include <coreplugin/ioutputpane.h>
+#include "qsoentry.h"
 
 namespace Logbook {
 namespace Internal {
@@ -30,6 +31,12 @@ public:
     void setFocus();
     bool hasFocus() const;
     bool canFocus() const;
+
+public slots:
+    void qsoSelected(const QsoEntry&);
+
+signals:
+    void qsoModified(const QsoEntry&);
 
 private:
     Ui::LogbookEntryWidget* m_ui;

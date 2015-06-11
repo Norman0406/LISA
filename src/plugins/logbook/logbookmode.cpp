@@ -52,10 +52,10 @@ LogbookMode::LogbookMode()
     setWidget(m_window);
 
     m_logbookForm = new LogbookForm(0, this, m_window);
-    ExtensionSystem::PluginManager::addObject(m_logbookForm);
+    //ExtensionSystem::PluginManager::addObject(m_logbookForm);
 
-    //m_logbookEntryPane = new LogbookEntryPane(0);
-    //ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
+    m_logbookEntryPane = new LogbookEntryPane(0);
+    ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
 
     loadSettings();
 }
@@ -65,8 +65,8 @@ LogbookMode::~LogbookMode()
     delete m_window;
     ExtensionSystem::PluginManager::removeObject(m_logbookForm);
     delete m_logbookForm;
-    //ExtensionSystem::PluginManager::removeObject(m_logbookEntryPane);
-    //delete m_logbookEntryPane;
+    ExtensionSystem::PluginManager::removeObject(m_logbookEntryPane);
+    delete m_logbookEntryPane;
 }
 
 void LogbookMode::loadSettings()

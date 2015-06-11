@@ -42,3 +42,8 @@ bool LogbookEntryPane::canFocus() const
 {
     return false;
 }
+
+void LogbookEntryPane::qsoSelected(const QsoEntry& entry)
+{
+
+}

@@ -40,17 +40,23 @@ class Database
 
 public:
     Database(QObject *parent = 0);
+    ~Database();
 
-    bool open();
+    bool open(QString);
     void close();
 
+    QsoEntry* getEntry(int);
     void updateOrInsert(const QsoEntry&);
-    QSqlDatabase getDatabase() const;
+    void remove(const QsoEntry&);
+    QAbstractTableModel* getModel() const;
 
 private:
     void createTables();
 
     QSqlDatabase m_database;
+    QSqlRelationalTableModel* m_model;
+    QList<QsoEntry*> m_entries;
+    bool m_isOpen;
 };
 
 } // namespace Internal
