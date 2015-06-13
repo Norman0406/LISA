@@ -41,20 +41,26 @@ class QsoEntry
     Q_ENUMS(FrequencyBand)
 
     Q_PROPERTY(int ID MEMBER m_id)
-    Q_PROPERTY(QDateTime DateTime MEMBER m_time)
-    Q_PROPERTY(QString CallsignTo MEMBER m_callsign)
+    Q_PROPERTY(QDateTime DateTime MEMBER m_dateTime)
     Q_PROPERTY(QString Operator MEMBER m_operator)
+    Q_PROPERTY(QString Callsign MEMBER m_callsign)
+    Q_PROPERTY(QString Name MEMBER m_name)
     Q_PROPERTY(int Frequency MEMBER m_frequency)
-    Q_PROPERTY(FrequencyBand FrequencyBand MEMBER m_frequencyBand)
+    Q_PROPERTY(FrequencyBand FrequencyBand READ getBand WRITE setFrequencyByBand STORED false)
     Q_PROPERTY(Mode Mode MEMBER m_mode)
     Q_PROPERTY(int RstSent MEMBER m_rstSent)
+    Q_PROPERTY(int RstSentNr MEMBER m_rstSentNr)
     Q_PROPERTY(int RstRcvd MEMBER m_rstRcvd)
+    Q_PROPERTY(int RstRcvdNr MEMBER m_rstRcvdNr)
     Q_PROPERTY(QString Comment MEMBER m_comment)
 
 public:
     QsoEntry(QObject *parent = 0);
+    QsoEntry(const QSqlRecord&, QObject *parent = 0);
+    QsoEntry(const QsoEntry&);
 
     QSqlRecord getRecord() const;
+    void fromRecord(const QSqlRecord&);
 
     enum FrequencyBand{
         BAND_UNKNOWN,
@@ -87,41 +93,48 @@ public:
         // UNDONE
     };
 
-
     void setId(int id);
-    void setTime(QDateTime time);
-    void setCallsign(QString callsign);
-    void setOperator(QString op);
-    void setFrequency(double frequency);
-    void setFrequencyByBand(FrequencyBand band);
-    void setRstSend(int rstSent);
-    void setRstRcvd(int rstRcvd);
-    void setComment(QString comment);
+    void setDateTime(QDateTime);
+    void setOperator(QString);
+    void setCallsign(QString);
+    void setName(QString);
+    void setFrequency(double);
+    void setFrequencyByBand(FrequencyBand);
+    void setRstSent(int);
+    void setRstSentNr(int);
+    void setRstRcvd(int);
+    void setRstRcvdNr(int);
+    void setComment(QString);
 
     int getId() const;
-    const QDateTime& getTime() const;
+    const QDateTime& getDateTime() const;
     const QString& getCallsign() const;
     const QString& getOperator() const;
+    const QString& getName() const;
     const double& getFrequency() const;
     FrequencyBand getBand() const;
     static FrequencyBand getBandByString(QString band);
     int getRstSent() const;
+    int getRstSentNr() const;
     int getRstRcvd() const;
+    int getRstRcvdNr() const;
     const QString& getComment() const;
 
-
 private:
+    void clear();
     bool inRange(const double& value, const double min, const double max) const;
 
     int         m_id;
-    QDateTime   m_time;
-    QString     m_callsign;
+    QDateTime   m_dateTime;
     QString     m_operator;
+    QString     m_callsign;
+    QString     m_name;
     double      m_frequency; // MHz
-    FrequencyBand m_frequencyBand;
     Mode        m_mode;
     int         m_rstSent;
+    int         m_rstSentNr;
     int         m_rstRcvd;
+    int         m_rstRcvdNr;
     QString     m_comment;
 };
 

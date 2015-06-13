@@ -25,6 +25,7 @@
 #include "database.h"
 #include <QDebug>
 #include <QDateTime>
+#include <app/app_version.h>
 #include "logbookplugin.h"
 #include "qsoentry.h"
 
@@ -33,7 +34,8 @@ using namespace Logbook::Internal;
 Database::Database(QObject* parent)
    : QObject(parent),
      m_isOpen(false),
-     m_model(0)
+     m_model(0),
+     m_dbVersion(QLatin1String("1.0.0"))
 {
     m_database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"));
     m_database.setHostName(QLatin1String("localhost"));
@@ -44,9 +46,13 @@ Database::~Database()
     close();
 }
 
-bool Database::open(QString name)
+bool Database::open(QString fileName)
 {
-    m_database.setDatabaseName(LogbookPlugin::resourcePath() + name + QLatin1String(".db"));
+    if (m_isOpen)
+        return true;
+
+    fileName = fileName;
+    m_database.setDatabaseName(LogbookPlugin::resourcePath() + fileName + QLatin1String(".db"));
 
     // open database
     m_isOpen = m_database.open();
@@ -58,25 +64,35 @@ bool Database::open(QString name)
             createTables();
         }
 
-        m_model = new QSqlRelationalTableModel(this, m_database);
-        m_model->setTable(QLatin1String("logbook"));
-        m_model->select();
+        QSqlQuery query(m_database);
+        if (!query.exec(QLatin1String("SELECT * from info"))) {
+            qWarning() << "could not get database info";
+            close();
+        }
+        else {
+            // get database information
+            query.next();
+            QSqlRecord infoRec = query.record();
+            m_name = infoRec.value(QLatin1String("Name")).toString();
+            QString lisaVersion = infoRec.value(QLatin1String("LISAVersion")).toString();
+            qDebug() << "database was created with LISA version " << lisaVersion;
 
-        // TODO: create a list of qsoentries for each row in the model
+            QString dbVersion = infoRec.value(QLatin1String("DBVersion")).toString();
+            if (dbVersion != m_dbVersion)
+                qWarning() << "incompatible database versions";
+
+            m_model = new QSqlRelationalTableModel(this, m_database);
+            m_model->setTable(QLatin1String("logbook"));
+            m_model->select();
+
+            // create new qso entries for each database record
+            for (int i = 0; i < m_model->rowCount(); i++) {
+                const QSqlRecord& record = m_model->record(i);
+                QsoEntry* entry = new QsoEntry(record, this);
+                m_entries.push_back(entry);
+            }
+        }
     }
-
-    //QSqlQuery query(m_database);
-
-    //QsoEntry newEntry(this);
-    //newEntry.setProperty("CallsignFrom", "DM6LN");
-    //newEntry.CallsigTo = "DM5RS";
-
-    /*QsoEntry newEntry(this);
-    newEntry.setId(0);
-    newEntry.setCallsign(QLatin1String("DM5RS"));
-    newEntry.setOperator(QLatin1String("DM6LN"));
-
-    updateOrInsert(newEntry);*/
 
     return m_isOpen;
 }
@@ -86,30 +102,60 @@ void Database::createTables()
     if (m_isOpen) {
         QSqlQuery query(m_database);
 
+        // create info table
+        if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS info ("
+                                                  "Name VARCHAR(64),"
+                                                  "DBVersion VARCHAR(8),"
+                                                  "LISAVersion VARCHAR(8)"
+                                                  ")"))) {
+            qWarning() << "could not create info table";
+        }
+
+        if (m_name.isEmpty())
+            m_name = m_fileName;
+
+        // insert data into info table
+        query.prepare(QLatin1String("INSERT INTO info (Name, DBVersion, LISAVersion) "
+                                    "VALUES (:name, :dbversion, :lisaversion)"));
+        query.bindValue(QLatin1String(":name"), m_name);
+        query.bindValue(QLatin1String(":dbversion"), m_dbVersion);
+        query.bindValue(QLatin1String(":lisaversion"), QLatin1String(Core::Constants::LISA_VERSION_LONG));
+        if (!query.exec())
+            qWarning() << "could not insert values into info table";
+
         // create table if it does not already exist
         if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS logbook ("
                                                   "ID INTEGER PRIMARY KEY,"
-                                                  "Time INTEGER,"
-                                                  "CallsignFrom VARCHAR(32),"
-                                                  "CallsignTo VARCHAR(32),"
+                                                  "DateTime INTEGER,"
+                                                  "Operator VARCHAR(32),"
+                                                  "Callsign VARCHAR(32),"
                                                   "Name VARCHAR(32),"
-                                                  "Mode VARCHAR(32),"
                                                   "Frequency INTEGER,"
-                                                  "Band INTEGER,"
-                                                  "RstSend INTEGER,"
+                                                  "Mode VARCHAR(32),"
+                                                  "RstSent INTEGER,"
+                                                  "RstSentNr INTEGER,"
                                                   "RstRcvd INTEGER,"
-                                                  "Country INTEGER,"
-                                                  "Comment VARCHAR(50)"
+                                                  "RstRcvdNr INTEGER,"
+                                                  "Comment VARCHAR(1024)"
                                                   ")"))) {
-            qWarning() << "Could not create table";
+            qWarning() << "could not create logbook table";
         }
+
+        // create custom fields table
+
+        // create profiles table
+
+        // create stations table
     }
 }
 
-QsoEntry* Database::getEntry(int index)
+const QsoEntry* Database::getEntry(int index) const
 {
-    // UNDONE
     if (m_isOpen) {
+        if (index < 0 || index >= m_entries.size())
+            return 0;
+
+        return m_entries[index];
     }
 
     return 0;
@@ -135,21 +181,48 @@ void Database::remove(const QsoEntry& entry)
 
 QAbstractTableModel* Database::getModel() const
 {
-    if (m_isOpen) {
+    if (m_isOpen)
         return m_model;
-    }
 
     return 0;
 }
 
+QString Database::getName() const
+{
+    return m_name;
+}
+
+QString Database::getFileName() const
+{
+    return m_fileName;
+}
+
+bool Database::isOpen() const
+{
+    return m_isOpen;
+}
+
+void Database::setName(QString name)
+{
+    if (!m_isOpen)
+        m_name = name;
+}
+
 void Database::close()
 {
-    m_model->submitAll();   // necessary?
-    m_database.close();
-    delete m_model;
-    m_model = 0;
-    foreach (QsoEntry* entry, m_entries)
-        delete entry;
-    m_entries.clear();
-    m_isOpen = false;
+    if (m_isOpen) {
+        // close database
+        m_model->submitAll();   // necessary?
+        m_database.close();
+
+        m_isOpen = false;
+        m_fileName.clear();
+
+        // free memory
+        foreach (QsoEntry* entry, m_entries)
+            delete entry;
+        m_entries.clear();
+        delete m_model;
+        m_model = 0;
+    }
 }

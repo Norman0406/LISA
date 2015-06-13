@@ -56,7 +56,7 @@ private slots:
 
 private:
     QTableView* m_logbookView;
-    Database m_database;
+    Database* m_database;
     LogbookProxyModel* m_proxyModel;
     QMessageBox* m_deleteMessageBox;
 

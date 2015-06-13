@@ -29,11 +29,42 @@ using namespace Logbook::Internal;
 QsoEntry::QsoEntry(QObject* parent)
    : QObject(parent)
 {
-    m_time = QDateTime::currentDateTimeUtc();
+    clear();
+}
+
+QsoEntry::QsoEntry(const QSqlRecord& record, QObject* parent)
+    : QObject(parent)
+{
+    clear();
+    fromRecord(record);
+}
+
+QsoEntry::QsoEntry(const QsoEntry& other)
+{
+    // make a copy by iterating and cloning all stored properties
+    const QMetaObject* obj = other.metaObject();
+    for (int i = 0; i < obj->propertyCount(); i++) {
+        QMetaProperty metaProperty = obj->property(i);
+
+        if (metaProperty.isStored())
+            setProperty(metaProperty.name(), other.property(metaProperty.name()));
+    }
+}
+
+void QsoEntry::clear()
+{
+    m_id = 0;
+    m_dateTime = QDateTime::currentDateTimeUtc();
+    m_operator.clear();
+    m_callsign.clear();
+    m_name.clear();
     m_frequency = 0;
     m_mode = MODE_SSB;
     m_rstSent = 59;
+    m_rstSentNr = 0;
     m_rstRcvd = 59;
+    m_rstRcvdNr = 0;
+    m_comment.clear();
 }
 
 QSqlRecord QsoEntry::getRecord() const
@@ -45,18 +76,42 @@ QSqlRecord QsoEntry::getRecord() const
     for (int i = 0; i < obj->propertyCount(); i++) {
         QMetaProperty metaProperty = obj->property(i);
 
-        const char* name = metaProperty.name();
+        if (metaProperty.isStored()) {
+            const char* name = metaProperty.name();
 
-        // create field
-        QSqlField field;
-        field.setName(QLatin1String(name));
-        field.setValue(property(name));
+            // create field
+            QSqlField field;
+            field.setName(QLatin1String(name));
+            field.setValue(property(name));
 
-        // insert field into record
-        record.insert(i, field);
+            // insert field into record
+            record.insert(i, field);
+        }
     }
 
     return record;
+}
+
+void QsoEntry::fromRecord(const QSqlRecord& record)
+{
+    for (int i = 0; i < record.count(); i++) {
+        QSqlField field = record.field(i);
+        QString name = field.name();
+        QVariant value = field.value();
+
+        if (value.isNull()) {
+            qWarning() << "skipping null value " << name << " of record " << i;
+            continue;
+        }
+
+        QVariant prop = property(name.toStdString().c_str());
+        if (!prop.isValid()) {
+            qWarning() << "property " << name << " not found";
+            continue;
+        }
+
+        setProperty(name.toStdString().c_str(), value);
+    }
 }
 
 bool QsoEntry::inRange(const double& value, const double min, const double max) const
@@ -69,9 +124,14 @@ void QsoEntry::setId(int id)
     m_id = id;
 }
 
-void QsoEntry::setTime(QDateTime time)
+void QsoEntry::setDateTime(QDateTime dateTime)
 {
-    m_time = time;
+    m_dateTime = dateTime;
+}
+
+void QsoEntry::setOperator(QString op)
+{
+   m_operator = op;
 }
 
 void QsoEntry::setCallsign(QString callsign)
@@ -79,9 +139,9 @@ void QsoEntry::setCallsign(QString callsign)
     m_callsign = callsign;
 }
 
-void QsoEntry::setOperator(QString op)
+void QsoEntry::setName(QString name)
 {
-   m_operator = op;
+    m_name = name;
 }
 
 void QsoEntry::setFrequency(double frequency)
@@ -141,14 +201,24 @@ void QsoEntry::setFrequencyByBand(FrequencyBand band)
     }
 }
 
-void QsoEntry::setRstSend(int rstSent)
+void QsoEntry::setRstSent(int rstSent)
 {
     m_rstSent = rstSent;
+}
+
+void QsoEntry::setRstSentNr(int rstSentNr)
+{
+    m_rstSentNr = rstSentNr;
 }
 
 void QsoEntry::setRstRcvd(int rstRcvd)
 {
     m_rstRcvd = rstRcvd;
+}
+
+void QsoEntry::setRstRcvdNr(int rstRcvdNr)
+{
+    m_rstRcvdNr = rstRcvdNr;
 }
 
 void QsoEntry::setComment(QString comment)
@@ -161,9 +231,14 @@ int QsoEntry::getId() const
     return m_id;
 }
 
-const QDateTime& QsoEntry::getTime() const
+const QDateTime& QsoEntry::getDateTime() const
 {
-    return m_time;
+    return m_dateTime;
+}
+
+const QString& QsoEntry::getOperator() const
+{
+    return m_operator;
 }
 
 const QString& QsoEntry::getCallsign() const
@@ -171,9 +246,9 @@ const QString& QsoEntry::getCallsign() const
     return m_callsign;
 }
 
-const QString& QsoEntry::getOperator() const
+const QString& QsoEntry::getName() const
 {
-    return m_operator;
+    return m_name;
 }
 
 const double& QsoEntry::getFrequency() const
@@ -254,9 +329,19 @@ int QsoEntry::getRstSent() const
     return m_rstSent;
 }
 
+int QsoEntry::getRstSentNr() const
+{
+    return m_rstSentNr;
+}
+
 int QsoEntry::getRstRcvd() const
 {
     return m_rstRcvd;
+}
+
+int QsoEntry::getRstRcvdNr() const
+{
+    return m_rstRcvdNr;
 }
 
 const QString& QsoEntry::getComment() const

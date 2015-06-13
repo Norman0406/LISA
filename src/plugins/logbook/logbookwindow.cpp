@@ -59,7 +59,9 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setSortingEnabled(true);
     m_logbookView->setAlternatingRowColors(true);
 
-    m_database.open(QLatin1String("logbook"));
+    m_database = new Database(this);
+    m_database->setName(QLatin1String("DM6LN Logbook"));
+    m_database->open(QLatin1String("logbook"));
 
     // create proxy model
     //m_proxyModel = new LogbookProxyModel;
@@ -68,7 +70,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     // TODO: add proxy model to filter the database by different views
 
     // set the view model
-    m_logbookView->setModel(m_database.getModel());
+    m_logbookView->setModel(m_database->getModel());
     m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
 
@@ -84,14 +86,15 @@ LogbookWindow::LogbookWindow(QWidget *parent)
 LogbookWindow::~LogbookWindow()
 {
     //m_model->submitAll();
-    m_database.close();
+    m_database->close();
+    delete m_database;
 }
 
 void LogbookWindow::qsoSelected(const QModelIndex& index)
 {
-    QsoEntry* entry = m_database.getEntry(index.row());
+    const QsoEntry* entry = m_database->getEntry(index.row());
     if (entry) {
-        QsoEntry& bla = *entry;
+        //QsoEntry& bla = *entry;
     }
 }
 

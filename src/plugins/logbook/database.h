@@ -44,11 +44,16 @@ public:
 
     bool open(QString);
     void close();
+    void setName(QString);
 
-    QsoEntry* getEntry(int);
+    QAbstractTableModel* getModel() const;
+    QString getName() const;
+    QString getFileName() const;
+    bool isOpen() const;
+
+    const QsoEntry* getEntry(int) const;
     void updateOrInsert(const QsoEntry&);
     void remove(const QsoEntry&);
-    QAbstractTableModel* getModel() const;
 
 private:
     void createTables();
@@ -57,6 +62,9 @@ private:
     QSqlRelationalTableModel* m_model;
     QList<QsoEntry*> m_entries;
     bool m_isOpen;
+    QString m_fileName;
+    QString m_name;
+    const QString m_dbVersion;
 };
 
 } // namespace Internal
