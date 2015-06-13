@@ -28,6 +28,7 @@
 #include <QObject>
 #include <QDateTime>
 #include <QtSql>
+#include <QStandardItemModel>
 
 namespace Logbook {
 namespace Internal {
@@ -93,6 +94,8 @@ public:
         // UNDONE
     };
 
+    QAbstractItemModel* getModel();
+
     void setId(int id);
     void setDateTime(QDateTime);
     void setOperator(QString);
@@ -124,6 +127,7 @@ private:
     void clear();
     bool inRange(const double& value, const double min, const double max) const;
 
+    QStandardItemModel  m_model;
     int         m_id;
     QDateTime   m_dateTime;
     QString     m_operator;

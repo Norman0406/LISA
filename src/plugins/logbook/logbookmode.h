@@ -45,7 +45,6 @@ public:
     LogbookMode();
     ~LogbookMode();
 
-    LogbookForm* getLogbookForm() const;
     const QList<ProfileData>& getProfiles() const;
     void setProfiles(const QList<ProfileData>&);
     const ProfileData* getProfile(QUuid) const;

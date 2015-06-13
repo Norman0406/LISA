@@ -80,22 +80,33 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->horizontalHeader()->setHighlightSections(false);
     m_logbookView->setColumnHidden(0, true);
 
-    connect(m_logbookView, &QTableView::doubleClicked, this, &LogbookWindow::qsoSelected);
+    connect(m_logbookView, &QTableView::doubleClicked, this, &LogbookWindow::rowSelected);
 }
 
 LogbookWindow::~LogbookWindow()
 {
-    //m_model->submitAll();
     m_database->close();
     delete m_database;
 }
 
-void LogbookWindow::qsoSelected(const QModelIndex& index)
+Database* LogbookWindow::getDatabase()
 {
-    const QsoEntry* entry = m_database->getEntry(index.row());
-    if (entry) {
-        //QsoEntry& bla = *entry;
-    }
+    return m_database;
+}
+
+void LogbookWindow::rowSelected(const QModelIndex& index)
+{
+    /*const QsoEntry* entry = m_database->getEntry(index.row());
+    if (!entry)
+        qWarning() << "could not retrieve qso entry for row " << index.row();
+    else
+        emit qsoSelected(*entry);*/
+
+    emit qsoSelected(m_database->getModel(), index.row());
+}
+
+void LogbookWindow::qsoModified(const QsoEntry& entry)
+{
 }
 
 void LogbookWindow::deleteSelection()

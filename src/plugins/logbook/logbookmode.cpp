@@ -51,10 +51,8 @@ LogbookMode::LogbookMode()
 
     setWidget(m_window);
 
-    m_logbookForm = new LogbookForm(0, this, m_window);
-    //ExtensionSystem::PluginManager::addObject(m_logbookForm);
-
-    m_logbookEntryPane = new LogbookEntryPane(0);
+    m_logbookEntryPane = new LogbookEntryPane(this, m_window);
+    connect(m_window, &LogbookWindow::qsoSelected, m_logbookEntryPane, &LogbookEntryPane::rowSelected);
     ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
 
     loadSettings();
@@ -62,11 +60,9 @@ LogbookMode::LogbookMode()
 
 LogbookMode::~LogbookMode()
 {
-    delete m_window;
-    ExtensionSystem::PluginManager::removeObject(m_logbookForm);
-    delete m_logbookForm;
     ExtensionSystem::PluginManager::removeObject(m_logbookEntryPane);
     delete m_logbookEntryPane;
+    delete m_window;
 }
 
 void LogbookMode::loadSettings()
@@ -117,11 +113,6 @@ void LogbookMode::saveSettings()
         settings->setValue(QLatin1String("City"), data.getCity());
     }
     settings->endArray();
-}
-
-LogbookForm* LogbookMode::getLogbookForm() const
-{
-    return m_logbookForm;
 }
 
 const QList<ProfileData>& LogbookMode::getProfiles() const

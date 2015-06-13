@@ -114,6 +114,11 @@ void QsoEntry::fromRecord(const QSqlRecord& record)
     }
 }
 
+QAbstractItemModel* QsoEntry::getModel()
+{
+    return &m_model;
+}
+
 bool QsoEntry::inRange(const double& value, const double min, const double max) const
 {
     return value >= min && value <= max;

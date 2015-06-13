@@ -26,7 +26,8 @@ HEADERS += logbookplugin.h \
     importexport/importeradif.h \
     importexport/exporteradif.h \
     importexport/exporterfactory.h \
-    importexport/importerfactory.h
+    importexport/importerfactory.h \
+    logbookentrydelegate.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -51,7 +52,8 @@ SOURCES += logbookplugin.cpp \
     importexport/exporteradif.cpp \
     importexport/importeradif.cpp \
     importexport/exporterfactory.cpp \
-    importexport/importerfactory.cpp
+    importexport/importerfactory.cpp \
+    logbookentrydelegate.cpp
 
 FORMS += \
     profilesettingspage.ui \

@@ -84,13 +84,6 @@ bool Database::open(QString fileName)
             m_model = new QSqlRelationalTableModel(this, m_database);
             m_model->setTable(QLatin1String("logbook"));
             m_model->select();
-
-            // create new qso entries for each database record
-            for (int i = 0; i < m_model->rowCount(); i++) {
-                const QSqlRecord& record = m_model->record(i);
-                QsoEntry* entry = new QsoEntry(record, this);
-                m_entries.push_back(entry);
-            }
         }
     }
 
@@ -149,37 +142,7 @@ void Database::createTables()
     }
 }
 
-const QsoEntry* Database::getEntry(int index) const
-{
-    if (m_isOpen) {
-        if (index < 0 || index >= m_entries.size())
-            return 0;
-
-        return m_entries[index];
-    }
-
-    return 0;
-}
-
-void Database::updateOrInsert(const QsoEntry& entry)
-{
-    if (m_isOpen) {
-        const QSqlRecord& record = entry.getRecord();
-
-        QSqlTableModel model(this, m_database);
-        model.setTable(QLatin1String("logbook"));
-
-        // first, check if this entry already exists
-    }
-}
-
-void Database::remove(const QsoEntry& entry)
-{
-    if (m_isOpen) {
-    }
-}
-
-QAbstractTableModel* Database::getModel() const
+QSqlRelationalTableModel* Database::getModel() const
 {
     if (m_isOpen)
         return m_model;
@@ -219,9 +182,6 @@ void Database::close()
         m_fileName.clear();
 
         // free memory
-        foreach (QsoEntry* entry, m_entries)
-            delete entry;
-        m_entries.clear();
         delete m_model;
         m_model = 0;
     }

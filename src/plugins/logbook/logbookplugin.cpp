@@ -96,10 +96,10 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
     m_logbookMode = new LogbookMode;
     addAutoReleasedObject(m_logbookMode);
 
-    LogbookFormDialog* dialog = m_logbookMode->getLogbookForm()->getDialog();
+    //LogbookFormDialog* dialog = m_logbookMode->getLogbookForm()->getDialog();
     m_callsignLookupManager = new CallsignLookupManager(this);
-    m_callsignLookupManager->registerLogbookForm(dialog);
-    QObject::connect(dialog, &LogbookFormDialog::lookupCallsign, m_callsignLookupManager, &CallsignLookupManager::lookup);
+    //m_callsignLookupManager->registerLogbookForm(dialog);
+    //QObject::connect(dialog, &LogbookFormDialog::lookupCallsign, m_callsignLookupManager, &CallsignLookupManager::lookup);
 
     // TODO: move to core plugin or use other ways to determine which mode should be selected when
     // first starting up.

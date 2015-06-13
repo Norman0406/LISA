@@ -50,8 +50,16 @@ public:
     void addQso(QMap<QString, QString>* data);
     QTableView* getLogbookView();
 
+    Database* getDatabase();
+
+signals:
+    void qsoSelected(QSqlRelationalTableModel*, int);
+
+public slots:
+    void qsoModified(const QsoEntry&);
+
 private slots:
-    void qsoSelected(const QModelIndex&);
+    void rowSelected(const QModelIndex&);
     void deleteSelection();
 
 private:
