@@ -60,8 +60,7 @@ LogbookWindow::LogbookWindow(QWidget *parent)
     m_logbookView->setAlternatingRowColors(true);
 
     m_database = new Database(this);
-    m_database->setName(QLatin1String("DM6LN Logbook"));
-    m_database->open(QLatin1String("logbook"));
+    connect(m_database, &Database::modelChanged, this, &LogbookWindow::modelChanged);
 
     // create proxy model
     //m_proxyModel = new LogbookProxyModel;
@@ -69,24 +68,37 @@ LogbookWindow::LogbookWindow(QWidget *parent)
 
     // TODO: add proxy model to filter the database by different views
 
-    // set the view model
-    m_logbookView->setModel(m_database->getModel());
-    m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     layout->addWidget(m_logbookView);
-
-    // hide the id column and set the row size to minimum
-    m_logbookView->verticalHeader()->setDefaultSectionSize(m_logbookView->verticalHeader()->minimumSectionSize());
-    m_logbookView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    m_logbookView->horizontalHeader()->setHighlightSections(false);
-    m_logbookView->setColumnHidden(0, true);
 
     connect(m_logbookView, &QTableView::doubleClicked, this, &LogbookWindow::rowSelected);
 }
 
 LogbookWindow::~LogbookWindow()
 {
-    m_database->close();
+    close();
     delete m_database;
+}
+
+void LogbookWindow::open()
+{
+    m_database->close();
+    m_database->setName(QLatin1String("DM6LN Logbook"));
+    m_database->open(QLatin1String("logbook"));
+    m_logbookView->setModel(m_database->getModel());
+
+    // set the view model
+    m_logbookView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+
+    // hide the id column and set the row size to minimum
+    m_logbookView->verticalHeader()->setDefaultSectionSize(m_logbookView->verticalHeader()->minimumSectionSize());
+    m_logbookView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_logbookView->horizontalHeader()->setHighlightSections(false);
+    m_logbookView->setColumnHidden(0, true);
+}
+
+void LogbookWindow::close()
+{
+    m_database->close();
 }
 
 Database* LogbookWindow::getDatabase()
@@ -102,11 +114,7 @@ void LogbookWindow::rowSelected(const QModelIndex& index)
     else
         emit qsoSelected(*entry);*/
 
-    emit qsoSelected(m_database->getModel(), index.row());
-}
-
-void LogbookWindow::qsoModified(const QsoEntry& entry)
-{
+    emit qsoSelected(index.row());
 }
 
 void LogbookWindow::deleteSelection()

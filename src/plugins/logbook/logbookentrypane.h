@@ -39,12 +39,16 @@ public:
     bool hasFocus() const;
     bool canFocus() const;
 
+    void clearModel();
+
 public slots:
+    void setModel(QSqlRelationalTableModel*);
     void updateProfiles(const QList<ProfileData>&);
-    void rowSelected(QSqlRelationalTableModel*, int);
+    void rowSelected(int);
 
 private slots:
     void addQso();
+    void newQso();
     void clearQso();
     void selectedProfileChanged(int);
 
@@ -52,6 +56,9 @@ private:
     void setProfile(const ProfileData*);
 
     LogbookMode* m_mode;
+    QSqlRelationalTableModel* m_model;
+    QStandardItemModel* m_editModel;
+    int m_selectedRow;
     Ui::LogbookEntryWidget* m_ui;
     QWidget* m_widget;
     QsoEntry* m_qsoEntryCopy;

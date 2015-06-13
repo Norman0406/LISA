@@ -12,7 +12,10 @@ LogbookEntryPane::LogbookEntryPane(LogbookMode* mode, QWidget* parent)
     : Core::IOutputPane(parent),
       m_qsoEntryCopy(0),
       m_profile(0),
-      m_mode(mode)
+      m_mode(mode),
+      m_model(0),
+      m_editModel(0),
+      m_selectedRow(-1)
 {
     m_widget = new QWidget(parent);
     m_ui = new Ui::LogbookEntryWidget();
@@ -49,6 +52,8 @@ LogbookEntryPane::~LogbookEntryPane()
     delete m_itemDelegate;
     delete m_widget;
     delete m_ui;
+
+    clearModel();
 }
 
 QWidget* LogbookEntryPane::outputWidget(QWidget* parent)
@@ -79,7 +84,41 @@ bool LogbookEntryPane::canFocus() const
     return false;
 }
 
-void LogbookEntryPane::rowSelected(QSqlRelationalTableModel* model, int row)
+void LogbookEntryPane::setModel(QSqlRelationalTableModel* model)
+{
+    m_model = model;
+
+    // create a model with the same number of columns
+    delete m_editModel;
+    m_editModel = new QStandardItemModel();
+    m_editModel->insertColumns(0, m_model->columnCount());
+    m_editModel->submit();
+
+    m_mapper->setModel(m_editModel);
+    m_mapper->setItemDelegate(m_itemDelegate);
+    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_Date, 1);
+    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_UTC, 1);
+    m_mapper->addMapping(m_ui->lineEdit_QSO_CallsignTo, 3);
+    m_mapper->addMapping(m_ui->lineEdit_Personal_Name, 4);
+    m_mapper->addMapping(m_ui->lineEdit_QSO_Frequency, 5);
+    m_mapper->addMapping(m_ui->lineEdit_QSO_RstSent, 7);
+    m_mapper->addMapping(m_ui->spinBox_QSO_SentNumber, 8);
+    m_mapper->addMapping(m_ui->lineEdit_QSO_RstRcvd, 9);
+    m_mapper->addMapping(m_ui->spinBox_QSO_RcvdNumber, 10);
+    m_mapper->addMapping(m_ui->plainTextEdit_QSO_Comment, 11);
+
+    // when first loading a new model, a new empty qso is added
+    newQso();
+}
+
+void LogbookEntryPane::clearModel()
+{
+    m_model = 0;
+    delete m_editModel;
+    m_editModel = 0;
+}
+
+void LogbookEntryPane::rowSelected(int row)
 {
     // check if data has changed
 //    bool isDirty = false;
@@ -101,31 +140,69 @@ void LogbookEntryPane::rowSelected(QSqlRelationalTableModel* model, int row)
 //                                 QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
 //            addQso();
 //        }
-//    }
+//  }
 
-    m_mapper->setModel(model);
-    m_mapper->setItemDelegate(m_itemDelegate);
-    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_Date, 1);
-    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_UTC, 1);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_CallsignTo, 3);
-    m_mapper->addMapping(m_ui->lineEdit_Personal_Name, 4);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_Frequency, 5);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_RstSent, 7);
-    m_mapper->addMapping(m_ui->spinBox_QSO_SentNumber, 8);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_RstRcvd, 9);
-    m_mapper->addMapping(m_ui->spinBox_QSO_RcvdNumber, 10);
-    m_mapper->addMapping(m_ui->plainTextEdit_QSO_Comment, 11);
-    m_mapper->setCurrentIndex(row);
+    if (m_model) {
+        m_selectedRow = row;
+
+        // revert previous rows inserted
+        m_editModel->revert();
+        m_editModel->insertRow(0);
+        for (int i = 1; i < m_model->columnCount(); i++) {
+             QModelIndex editIndex = m_editModel->index(0, i);
+             QModelIndex modelIndex = m_model->index(row, i);
+             QVariant data = m_model->data(modelIndex);
+             m_editModel->setData(editIndex, data);
+        }
+
+        m_mapper->setCurrentIndex(0);
+    }
 }
 
 void LogbookEntryPane::addQso()
 {
-    m_mapper->submit();
+    if (m_model) {
+        m_mapper->submit();
+
+        int rowIndex = m_selectedRow;
+
+        if (rowIndex < 0) {
+            rowIndex = m_model->rowCount();
+            m_model->insertRow(rowIndex);
+        }
+
+        // update model (starting from 1 to skip the ID)
+        for (int i = 1; i < m_model->columnCount(); i++) {
+            QModelIndex editIndex = m_editModel->index(0, i);
+            QModelIndex modelIndex = m_model->index(rowIndex, i);
+            QVariant data = m_editModel->data(editIndex);
+            m_model->setData(modelIndex, data);
+        }
+        m_model->submitAll();
+        m_model->select();
+
+        newQso();
+    }
+}
+
+void LogbookEntryPane::newQso()
+{
+    if (m_model) {
+        // clear entries
+        if (m_editModel->rowCount() > 0)
+            m_editModel->removeRow(0);
+
+        m_editModel->insertRow(0);
+        m_mapper->setCurrentIndex(0);
+
+        m_selectedRow = -1;
+    }
 }
 
 void LogbookEntryPane::clearQso()
 {
-    m_mapper->revert();
+    if (m_model)
+        newQso();
 }
 
 void LogbookEntryPane::updateProfiles(const QList<ProfileData>& profiles)
@@ -165,8 +242,14 @@ void LogbookEntryPane::setProfile(const ProfileData* profile)
     // a valid profile should at least have a callsign entry
     bool profileValid = profile && !profile->getCallsign().isEmpty();
 
-    if (!profileValid)
+    if (!profileValid) {
         m_widget->setEnabled(false);
-    else
+        m_buttonAdd->setEnabled(false);
+        m_buttonClear->setEnabled(false);
+    }
+    else {
         m_widget->setEnabled(true);
+        m_buttonAdd->setEnabled(true);
+        m_buttonClear->setEnabled(true);
+    }
 }

@@ -51,6 +51,9 @@ public:
     QString getFileName() const;
     bool isOpen() const;
 
+signals:
+    void modelChanged(QSqlRelationalTableModel*);
+
 private:
     void createTables();
 

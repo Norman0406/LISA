@@ -47,16 +47,17 @@ class LogbookWindow
 public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
+
     void addQso(QMap<QString, QString>* data);
     QTableView* getLogbookView();
+    void open();
+    void close();
 
     Database* getDatabase();
 
 signals:
-    void qsoSelected(QSqlRelationalTableModel*, int);
-
-public slots:
-    void qsoModified(const QsoEntry&);
+    void modelChanged(QSqlRelationalTableModel*);
+    void qsoSelected(int);
 
 private slots:
     void rowSelected(const QModelIndex&);

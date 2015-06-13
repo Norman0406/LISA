@@ -53,9 +53,12 @@ LogbookMode::LogbookMode()
 
     m_logbookEntryPane = new LogbookEntryPane(this, m_window);
     connect(m_window, &LogbookWindow::qsoSelected, m_logbookEntryPane, &LogbookEntryPane::rowSelected);
+    connect(m_window, &LogbookWindow::modelChanged, m_logbookEntryPane, &LogbookEntryPane::setModel);
     ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
 
     loadSettings();
+
+    m_window->open();
 }
 
 LogbookMode::~LogbookMode()

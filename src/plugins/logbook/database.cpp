@@ -84,6 +84,8 @@ bool Database::open(QString fileName)
             m_model = new QSqlRelationalTableModel(this, m_database);
             m_model->setTable(QLatin1String("logbook"));
             m_model->select();
+
+            emit modelChanged(m_model);
         }
     }
 
