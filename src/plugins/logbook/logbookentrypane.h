@@ -50,9 +50,15 @@ private slots:
     void addQso();
     void newQso();
     void clearQso();
+    void deleteQso();
     void selectedProfileChanged(int);
+    void updateDateTime();
+    void dirty();
+    void convertInputToUppercase();
 
 private:
+    bool checkDirty();
+    void resetDirtyFlag();
     void setProfile(const ProfileData*);
 
     LogbookMode* m_mode;
@@ -67,12 +73,16 @@ private:
     QList<QUuid> m_profileUuids;
     QUuid m_selectedProfile;
     const ProfileData* m_profile;
+    QTimer* m_dateTimer;
+    bool m_isDirty;
+    bool m_dateTimerUpdate;
 
     // toolbar
     QList<QWidget*> m_toolbarWidgets;
     QComboBox* m_profileList;
     QPushButton* m_buttonAdd;
     QPushButton* m_buttonClear;
+    QPushButton* m_buttonDelete;
 };
 
 }

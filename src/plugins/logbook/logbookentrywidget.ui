@@ -66,14 +66,29 @@
         </item>
         <item>
          <widget class="QDateTimeEdit" name="dateTimeEdit_QSO_UTC">
+          <property name="wrapping">
+           <bool>false</bool>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::UpDownArrows</enum>
+          </property>
+          <property name="keyboardTracking">
+           <bool>true</bool>
+          </property>
+          <property name="showGroupSeparator" stdset="0">
+           <bool>false</bool>
           </property>
           <property name="displayFormat">
            <string>HH:mm:ss</string>
           </property>
           <property name="calendarPopup">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="timeSpec">
            <enum>Qt::LocalTime</enum>
