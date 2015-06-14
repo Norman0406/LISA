@@ -4,7 +4,9 @@
 #include <coreplugin/ioutputpane.h>
 #include <QDataWidgetMapper>
 #include <QPushButton>
-#include "qsoentry.h"
+#include <QSqlRelationalTableModel>
+#include <QStandardItemModel>
+#include <QComboBox>
 #include "profiledata.h"
 
 namespace Logbook {
@@ -55,11 +57,17 @@ private slots:
     void updateDateTime();
     void dirty();
     void convertInputToUppercase();
+    void frequencyChanged(QString);
+    void bandChanged(QString);
 
 private:
+    void initUiContents();
     bool checkDirty();
     void resetDirtyFlag();
     void setProfile(const ProfileData*);
+    bool inRange(const double& value, const double min, const double max) const;
+    QString bandFromFrequency(double) const;
+    double frequencyFromBand(QString) const;
 
     LogbookMode* m_mode;
     QSqlRelationalTableModel* m_model;
@@ -67,7 +75,6 @@ private:
     int m_selectedRow;
     Ui::LogbookEntryWidget* m_ui;
     QWidget* m_widget;
-    QsoEntry* m_qsoEntryCopy;
     QDataWidgetMapper* m_mapper;
     LogbookEntryDelegate* m_itemDelegate;
     QList<QUuid> m_profileUuids;
@@ -76,6 +83,12 @@ private:
     QTimer* m_dateTimer;
     bool m_isDirty;
     bool m_dateTimerUpdate;
+
+    QStringList m_bands;
+    QStringList m_modes;
+
+    bool m_hasPrevData;
+    bool m_bandChanged;
 
     // toolbar
     QList<QWidget*> m_toolbarWidgets;

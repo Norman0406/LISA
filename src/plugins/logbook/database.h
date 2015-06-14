@@ -31,8 +31,6 @@
 namespace Logbook {
 namespace Internal {
 
-class QsoEntry;
-
 class Database
         : public QObject
 {

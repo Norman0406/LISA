@@ -31,7 +31,6 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookWindow;
-class LogbookForm;
 class CallsignLookup;
 class ProfileData;
 class LogbookEntryPane;
@@ -57,7 +56,6 @@ signals:
 
 private:
     LogbookWindow* m_window;
-    LogbookForm* m_logbookForm;
     LogbookEntryPane* m_logbookEntryPane;
     CallsignLookup* m_callsignLookup;
     QList<ProfileData> m_profiles;

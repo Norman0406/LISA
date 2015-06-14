@@ -10,9 +10,6 @@ HEADERS += logbookplugin.h \
     logbookmode.h \
     logbookproxymodel.h \
     logbooktoolbar.h \
-    qsoentry.h \
-    logbookform.h \
-    logbookformdialog.h \
     callsignlookup/callsignlookup.h \
     callsignlookup/callsignlookupqrzcom.h \
     callsignlookup/callsigndata.h \
@@ -36,9 +33,6 @@ SOURCES += logbookplugin.cpp \
     logbookmode.cpp \
     logbookproxymodel.cpp \
     logbooktoolbar.cpp \
-    qsoentry.cpp \
-    logbookform.cpp \
-    logbookformdialog.cpp \
     callsignlookup/callsignlookup.cpp \
     callsignlookup/callsignlookupqrzcom.cpp \
     callsignlookup/callsigndata.cpp \

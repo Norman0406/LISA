@@ -32,8 +32,6 @@
 
 #include "logbookmode.h"
 #include "profilesettingspage.h"
-#include "logbookform.h"
-#include "logbookformdialog.h"
 #include "callsignlookup/callsignlookupmanager.h"
 #include "callsignlookup/callsignlookupsettingspage.h"
 

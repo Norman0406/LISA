@@ -10,37 +10,19 @@ using namespace Logbook::Internal;
 
 LogbookEntryPane::LogbookEntryPane(LogbookMode* mode, QWidget* parent)
     : Core::IOutputPane(parent),
-      m_qsoEntryCopy(0),
       m_profile(0),
       m_mode(mode),
       m_model(0),
       m_editModel(0),
       m_selectedRow(-1),
       m_isDirty(false),
-      m_dateTimerUpdate(false)
+      m_dateTimerUpdate(false),
+      m_hasPrevData(false),
+      m_bandChanged(false)
 {
     m_widget = new QWidget(parent);
     m_ui = new Ui::LogbookEntryWidget();
     m_ui->setupUi(m_widget);
-
-    connect(m_ui->lineEdit_QSO_CallsignTo, &QLineEdit::textChanged, this, &LogbookEntryPane::convertInputToUppercase);
-
-    // connect to each widget, such that a signal is called whenever data changes
-    QList<QWidget*> childWidgets = m_widget->findChildren<QWidget*>();
-    foreach (QWidget* widget, childWidgets) {
-        if (QLineEdit* w = qobject_cast<QLineEdit*>(widget))
-            connect(w, SIGNAL(textChanged(QString)), this, SLOT(dirty()));
-        else if (QDateTimeEdit* w = qobject_cast<QDateTimeEdit*>(widget))
-            connect(w, SIGNAL(dateChanged(QDate)), this, SLOT(dirty()));
-        else if (QSpinBox* w = qobject_cast<QSpinBox*>(widget))
-            connect(w, SIGNAL(valueChanged(int)), this, SLOT(dirty()));
-        else if (QComboBox* w = qobject_cast<QComboBox*>(widget))
-            connect(w, SIGNAL(currentIndexChanged(int)), this, SLOT(dirty()));
-        else if (QPlainTextEdit* w = qobject_cast<QPlainTextEdit*>(widget))
-            connect(w, SIGNAL(textChanged()), this, SLOT(dirty()));
-        else if (QCheckBox* w = qobject_cast<QCheckBox*>(widget))
-            connect(w, SIGNAL(stateChanged(int)), this, SLOT(dirty()));
-    }
 
     m_itemDelegate = new LogbookEntryDelegate(m_ui, this);
 
@@ -74,6 +56,8 @@ LogbookEntryPane::LogbookEntryPane(LogbookMode* mode, QWidget* parent)
     m_dateTimer->setSingleShot(false);
     m_dateTimer->start();
     updateDateTime();
+
+    initUiContents();
 }
 
 LogbookEntryPane::~LogbookEntryPane()
@@ -87,6 +71,63 @@ LogbookEntryPane::~LogbookEntryPane()
     delete m_ui;
 
     clearModel();
+}
+
+void LogbookEntryPane::initUiContents()
+{
+    connect(m_ui->lineEdit_QSO_CallsignTo, &QLineEdit::textChanged, this, &LogbookEntryPane::convertInputToUppercase);
+    connect(m_ui->lineEdit_QSO_Frequency, &QLineEdit::textChanged, this, &LogbookEntryPane::frequencyChanged);
+    connect(m_ui->comboBox_QSO_Band, &QComboBox::currentTextChanged, this, &LogbookEntryPane::bandChanged);
+
+    //m_ui->lineEdit_QSO_Frequency->setInputMask(QLatin1String("00009.999"));
+
+    m_bands << QLatin1String("160m") <<
+               QLatin1String("80m") <<
+               QLatin1String("40m") <<
+               QLatin1String("30m") <<
+               QLatin1String("20m") <<
+               QLatin1String("17m") <<
+               QLatin1String("15m") <<
+               QLatin1String("12m") <<
+               QLatin1String("10m") <<
+               QLatin1String("6m") <<
+               QLatin1String("2m") <<
+               QLatin1String("70cm") <<
+               QLatin1String("23cm") <<
+               QLatin1String("13cm");
+    m_ui->comboBox_QSO_Band->addItems(m_bands);
+
+    m_modes << QLatin1String("AM") <<
+               QLatin1String("FM") <<
+               QLatin1String("SSB") <<
+               QLatin1String("USB") <<
+               QLatin1String("LSB") <<
+               QLatin1String("CW") <<
+               QLatin1String("PSK") <<
+               QLatin1String("QPSK") <<
+               QLatin1String("RTTY") <<
+               QLatin1String("DSTAR") <<
+               QLatin1String("FAX") <<
+               QLatin1String("JT65");
+    m_modes.sort();
+    m_ui->comboBox_QSO_Mode->addItems(m_modes);
+
+    // connect to each widget, such that a signal is called whenever data changes
+    QList<QWidget*> childWidgets = m_widget->findChildren<QWidget*>();
+    foreach (QWidget* widget, childWidgets) {
+        if (QLineEdit* w = qobject_cast<QLineEdit*>(widget))
+            connect(w, SIGNAL(textChanged(QString)), this, SLOT(dirty()));
+        else if (QDateTimeEdit* w = qobject_cast<QDateTimeEdit*>(widget))
+            connect(w, SIGNAL(dateChanged(QDate)), this, SLOT(dirty()));
+        else if (QSpinBox* w = qobject_cast<QSpinBox*>(widget))
+            connect(w, SIGNAL(valueChanged(int)), this, SLOT(dirty()));
+        else if (QComboBox* w = qobject_cast<QComboBox*>(widget))
+            connect(w, SIGNAL(currentIndexChanged(int)), this, SLOT(dirty()));
+        else if (QPlainTextEdit* w = qobject_cast<QPlainTextEdit*>(widget))
+            connect(w, SIGNAL(textChanged()), this, SLOT(dirty()));
+        else if (QCheckBox* w = qobject_cast<QCheckBox*>(widget))
+            connect(w, SIGNAL(stateChanged(int)), this, SLOT(dirty()));
+    }
 }
 
 QWidget* LogbookEntryPane::outputWidget(QWidget* parent)
@@ -134,6 +175,7 @@ void LogbookEntryPane::setModel(QSqlRelationalTableModel* model)
     m_mapper->addMapping(m_ui->lineEdit_QSO_CallsignTo, 3);
     m_mapper->addMapping(m_ui->lineEdit_Personal_Name, 4);
     m_mapper->addMapping(m_ui->lineEdit_QSO_Frequency, 5);
+    m_mapper->addMapping(m_ui->comboBox_QSO_Mode, 6);
     m_mapper->addMapping(m_ui->lineEdit_QSO_RstSent, 7);
     m_mapper->addMapping(m_ui->spinBox_QSO_SentNumber, 8);
     m_mapper->addMapping(m_ui->lineEdit_QSO_RstRcvd, 9);
@@ -149,6 +191,7 @@ void LogbookEntryPane::clearModel()
     m_model = 0;
     delete m_editModel;
     m_editModel = 0;
+    m_hasPrevData = false;
 }
 
 void LogbookEntryPane::rowSelected(int row)
@@ -206,6 +249,8 @@ void LogbookEntryPane::addQso()
             m_model->submitAll();
             m_model->select();
 
+            m_hasPrevData = true;
+
             newQso();
         }
     }
@@ -226,12 +271,32 @@ void LogbookEntryPane::newQso()
 
         m_selectedRow = -1;
 
-        resetDirtyFlag();
-
         if (!m_dateTimer->isActive()) {
             updateDateTime();
             m_dateTimer->start();
         }
+
+        if (m_hasPrevData) {
+            QSqlQuery query = m_model->query();
+
+            // get data from the last added qso and set data to gui elements
+            if (query.exec(QLatin1String("SELECT Frequency, Mode, Operator FROM logbook ORDER BY ID DESC LIMIT 1"))) {
+                query.next();
+                if (query.isValid()) {
+                    QString frequency = query.value(0).toString();
+                    QString mode = query.value(1).toString();
+                    //QString op = query.value(2).toString();
+
+                    m_ui->comboBox_QSO_Mode->setCurrentText(mode);
+                    m_ui->lineEdit_QSO_Frequency->setText(frequency);
+                }
+            }
+            else {
+                qWarning() << "could not get last qso entries: " << query.lastError().text();
+            }
+        }
+
+        resetDirtyFlag();
     }
 }
 
@@ -270,12 +335,14 @@ void LogbookEntryPane::updateDateTime()
 
     if (current != now) {
         bool previousDirtyFlag = m_isDirty;
+
         m_dateTimerUpdate = true;
 
         m_ui->dateTimeEdit_QSO_Date->setDate(now.date());
         m_ui->dateTimeEdit_QSO_UTC->setTime(now.time());
 
         m_dateTimerUpdate = false;
+
         m_isDirty = previousDirtyFlag;
     }
 }
@@ -317,6 +384,127 @@ void LogbookEntryPane::convertInputToUppercase()
         text = text.toUpper();
         sender->setText(text);
     }
+}
+
+void LogbookEntryPane::frequencyChanged(QString frqStr)
+{
+    bool ok = false;
+    double frequency = frqStr.toDouble(&ok);
+    if (!ok)
+        qWarning() << "could not convert string " << frqStr << " to frequency";
+    else {
+        QString bandString = bandFromFrequency(frequency);
+
+        m_bandChanged = true;
+
+        if (bandString.isEmpty()) {
+            QPalette palette = m_ui->comboBox_QSO_Band->palette();
+            palette.setColor(QPalette::Text, Qt::red);
+            m_ui->comboBox_QSO_Band->setPalette(palette);
+
+            // select nearest band
+            double minFrq = -1;
+            foreach (QString band, m_bands) {
+                double frq = frequencyFromBand(band);
+                if (minFrq < 0 || qAbs(frequency - frq) < qAbs(frequency - minFrq))
+                    minFrq = frq;
+            }
+            m_ui->comboBox_QSO_Band->setCurrentText(bandFromFrequency(minFrq));
+        }
+        else {
+            QPalette palette = m_ui->comboBox_QSO_Band->palette();
+            palette.setColor(QPalette::Text, Qt::black);
+            m_ui->comboBox_QSO_Band->setPalette(palette);
+
+            m_ui->comboBox_QSO_Band->setCurrentText(bandString);
+        }
+
+        m_bandChanged = false;
+    }
+}
+
+QString LogbookEntryPane::bandFromFrequency(double frequency) const
+{
+    QString bandString;
+    if (inRange(frequency, 1.8, 2.0))
+        bandString = QLatin1String("160m");
+    else if (inRange(frequency, 3.5, 3.8))
+        bandString = QLatin1String("80m");
+    else if (inRange(frequency, 7, 7.2))
+        bandString = QLatin1String("40m");
+    else if (inRange(frequency, 10.1, 10.15))
+        bandString = QLatin1String("30m");
+    else if (inRange(frequency, 14, 14.35))
+        bandString = QLatin1String("20m");
+    else if (inRange(frequency, 18.068, 18.168))
+        bandString = QLatin1String("17m");
+    else if (inRange(frequency, 21, 21.45))
+        bandString = QLatin1String("15m");
+    else if (inRange(frequency, 24.89, 24.99))
+        bandString = QLatin1String("12m");
+    else if (inRange(frequency, 28, 29.7))
+        bandString = QLatin1String("10m");
+    else if (inRange(frequency, 50.08, 51))
+        bandString = QLatin1String("6m");
+    else if (inRange(frequency, 144, 146))
+        bandString = QLatin1String("2m");
+    else if (inRange(frequency, 430, 440))
+        bandString = QLatin1String("70cm");
+    else if (inRange(frequency, 1240, 1300))
+        bandString = QLatin1String("23cm");
+    else if (inRange(frequency, 2320, 2450))
+        bandString = QLatin1String("13cm");
+    return bandString;
+}
+
+bool LogbookEntryPane::inRange(const double& value, const double min, const double max) const
+{
+    return value >= min && value <= max;
+}
+
+void LogbookEntryPane::bandChanged(QString band)
+{
+    // don't do anything if the band changed programmatically
+    if (m_bandChanged)
+        return;
+
+    double frequency = frequencyFromBand(band);
+    if (frequency > 0)
+        m_ui->lineEdit_QSO_Frequency->setText(QString(QLatin1String("%1")).arg(frequency));
+}
+
+double LogbookEntryPane::frequencyFromBand(QString band) const
+{
+    double frequency = 0;
+    if (band == QLatin1String("160m"))
+        frequency = 1.8;
+    else if (band == QLatin1String("80m"))
+        frequency = 3.5;
+    else if (band == QLatin1String("40m"))
+        frequency = 7;
+    else if (band == QLatin1String("30m"))
+        frequency = 10.1;
+    else if (band == QLatin1String("20m"))
+        frequency = 14;
+    else if (band == QLatin1String("17m"))
+        frequency = 18.086;
+    else if (band == QLatin1String("15m"))
+        frequency = 21;
+    else if (band == QLatin1String("12m"))
+        frequency = 24.89;
+    else if (band == QLatin1String("10m"))
+        frequency = 28;
+    else if (band == QLatin1String("6m"))
+        frequency = 50.08;
+    else if (band == QLatin1String("2m"))
+        frequency = 144;
+    else if (band == QLatin1String("70cm"))
+        frequency = 433;
+    else if (band == QLatin1String("23cm"))
+        frequency = 1240;
+    else if (band == QLatin1String("13cm"))
+        frequency = 2320;
+    return frequency;
 }
 
 void LogbookEntryPane::updateProfiles(const QList<ProfileData>& profiles)

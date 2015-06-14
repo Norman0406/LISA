@@ -24,7 +24,6 @@
 
 #include "logbookmode.h"
 #include "logbookwindow.h"
-#include "logbookform.h"
 #include "logbookentrypane.h"
 #include "profiledata.h"
 

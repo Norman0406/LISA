@@ -27,7 +27,6 @@
 #include <QDateTime>
 #include <app/app_version.h>
 #include "logbookplugin.h"
-#include "qsoentry.h"
 
 using namespace Logbook::Internal;
 
@@ -125,8 +124,8 @@ void Database::createTables()
                                                   "Operator VARCHAR(32),"
                                                   "Callsign VARCHAR(32),"
                                                   "Name VARCHAR(32),"
-                                                  "Frequency INTEGER,"
-                                                  "Mode VARCHAR(32),"
+                                                  "Frequency REAL,"
+                                                  "Mode VARCHAR(8),"
                                                   "RstSent INTEGER,"
                                                   "RstSentNr INTEGER,"
                                                   "RstRcvd INTEGER,"
