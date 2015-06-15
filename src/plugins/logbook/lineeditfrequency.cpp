@@ -1,6 +1,5 @@
 #include "lineeditfrequency.h"
 #include <QFontDatabase>
-#include <QDoubleValidator>
 #include <QKeyEvent>
 
 using namespace Logbook::Internal;
@@ -9,19 +8,14 @@ LineEditFrequency::LineEditFrequency(QWidget* parent)
     : QLineEdit(parent),
       m_frequency(0)
 {
+    // set a font with fixed character width
     setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
+    // set a validator that accepts only numbers and a dot
     setValidator(new QRegExpValidator(QRegExp(QLatin1String("\\d*.\\d+"))));
 
-//    QDoubleValidator* frqValidator = new QDoubleValidator(0, 99999.99, 2, this);
-//    frqValidator->setNotation(QDoubleValidator::StandardNotation);
-//    setValidator(frqValidator);
-
     setAlignment(Qt::AlignRight);
-
     setFrequency(m_frequency);
-
-
 
     connect(this, &LineEditFrequency::textChanged, this, &LineEditFrequency::valueChanged);
 }

@@ -284,12 +284,12 @@ void LogbookEntryPane::newQso()
             if (query.exec(QLatin1String("SELECT Frequency, Mode, Operator FROM logbook ORDER BY ID DESC LIMIT 1"))) {
                 query.next();
                 if (query.isValid()) {
-                    QString frequency = query.value(0).toString();
+                    double frequency = query.value(0).toDouble();
                     QString mode = query.value(1).toString();
                     //QString op = query.value(2).toString();
 
                     m_ui->comboBox_QSO_Mode->setCurrentText(mode);
-                    m_ui->lineEdit_QSO_Frequency->setText(frequency);
+                    m_ui->lineEdit_QSO_Frequency->setFrequency(frequency);
                 }
             }
             else {
@@ -469,7 +469,7 @@ void LogbookEntryPane::bandChanged(QString band)
 
     double frequency = frequencyFromBand(band);
     if (frequency > 0)
-        m_ui->lineEdit_QSO_Frequency->setText(QString(QLatin1String("%1")).arg(frequency));
+        m_ui->lineEdit_QSO_Frequency->setFrequency(frequency);
 }
 
 double LogbookEntryPane::frequencyFromBand(QString band) const
