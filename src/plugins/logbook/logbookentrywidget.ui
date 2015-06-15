@@ -188,7 +188,20 @@
          <widget class="QLineEdit" name="lineEdit_QSO_RstSent"/>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox_QSO_SentNumber"/>
+         <widget class="Logbook::Internal::SpinBoxRST" name="spinBox_QSO_SentNumber">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="showGroupSeparator" stdset="0">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string/>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -208,7 +221,7 @@
          <widget class="QLineEdit" name="lineEdit_QSO_RstRcvd"/>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox_QSO_RcvdNumber">
+         <widget class="Logbook::Internal::SpinBoxRST" name="spinBox_QSO_RcvdNumber">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -220,6 +233,12 @@
             <width>0</width>
             <height>0</height>
            </size>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
           </property>
          </widget>
         </item>
@@ -753,6 +772,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Logbook::Internal::SpinBoxRST</class>
+   <extends>QSpinBox</extends>
+   <header>logbook/spinboxrst.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

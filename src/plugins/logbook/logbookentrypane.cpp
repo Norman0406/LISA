@@ -367,12 +367,16 @@ void LogbookEntryPane::dirty()
         if (!m_dateTimerUpdate)
             m_dateTimer->stop();
 
+        m_buttonAdd->setEnabled(true);
+
         m_isDirty = true;
     }
 }
 
 void LogbookEntryPane::resetDirtyFlag()
 {
+    m_buttonAdd->setEnabled(false);
+
     m_isDirty = false;
 }
 
