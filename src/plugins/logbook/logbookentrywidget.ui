@@ -149,7 +149,7 @@
       <item row="3" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLineEdit" name="lineEdit_QSO_Frequency"/>
+         <widget class="Logbook::Internal::LineEditFrequency" name="lineEdit_QSO_Frequency"/>
         </item>
         <item>
          <widget class="QLabel" name="labelBand">
@@ -777,6 +777,11 @@
    <class>Logbook::Internal::SpinBoxRST</class>
    <extends>QSpinBox</extends>
    <header>logbook/spinboxrst.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Logbook::Internal::LineEditFrequency</class>
+   <extends>QLineEdit</extends>
+   <header>logbook/lineeditfrequency.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

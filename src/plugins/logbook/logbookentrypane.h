@@ -57,7 +57,7 @@ private slots:
     void updateDateTime();
     void dirty();
     void convertInputToUppercase();
-    void frequencyChanged(QString);
+    void frequencyChanged(double);
     void bandChanged(QString);
 
 private:

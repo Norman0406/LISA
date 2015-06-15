@@ -3,6 +3,7 @@
 #include "database.h"
 #include "logbookentrydelegate.h"
 #include "logbookmode.h"
+#include "lineeditfrequency.h"
 
 #include <QMessageBox>
 
@@ -76,10 +77,10 @@ LogbookEntryPane::~LogbookEntryPane()
 void LogbookEntryPane::initUiContents()
 {
     connect(m_ui->lineEdit_QSO_CallsignTo, &QLineEdit::textChanged, this, &LogbookEntryPane::convertInputToUppercase);
-    connect(m_ui->lineEdit_QSO_Frequency, &QLineEdit::textChanged, this, &LogbookEntryPane::frequencyChanged);
+    connect(m_ui->lineEdit_QSO_Frequency, &LineEditFrequency::frequencyChanged, this, &LogbookEntryPane::frequencyChanged);
     connect(m_ui->comboBox_QSO_Band, &QComboBox::currentTextChanged, this, &LogbookEntryPane::bandChanged);
 
-    //m_ui->lineEdit_QSO_Frequency->setInputMask(QLatin1String("00009.999"));
+    m_ui->lineEdit_QSO_CallsignTo->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
     m_bands << QLatin1String("160m") <<
                QLatin1String("80m") <<
@@ -390,41 +391,35 @@ void LogbookEntryPane::convertInputToUppercase()
     }
 }
 
-void LogbookEntryPane::frequencyChanged(QString frqStr)
+void LogbookEntryPane::frequencyChanged(double frequency)
 {
-    bool ok = false;
-    double frequency = frqStr.toDouble(&ok);
-    if (!ok)
-        qWarning() << "could not convert string " << frqStr << " to frequency";
-    else {
-        QString bandString = bandFromFrequency(frequency);
+    QString bandString = bandFromFrequency(frequency);
 
-        m_bandChanged = true;
+    m_bandChanged = true;
 
-        if (bandString.isEmpty()) {
-            QPalette palette = m_ui->comboBox_QSO_Band->palette();
-            palette.setColor(QPalette::Text, Qt::red);
-            m_ui->comboBox_QSO_Band->setPalette(palette);
+    if (bandString.isEmpty()) {
+        QPalette palette = m_ui->comboBox_QSO_Band->palette();
+        palette.setColor(QPalette::Text, Qt::red);
+        m_ui->comboBox_QSO_Band->setPalette(palette);
 
-            // select nearest band
-            double minFrq = -1;
-            foreach (QString band, m_bands) {
-                double frq = frequencyFromBand(band);
-                if (minFrq < 0 || qAbs(frequency - frq) < qAbs(frequency - minFrq))
-                    minFrq = frq;
-            }
-            m_ui->comboBox_QSO_Band->setCurrentText(bandFromFrequency(minFrq));
+        // select nearest band
+        double minFrq = -1;
+        foreach (QString band, m_bands) {
+            double frq = frequencyFromBand(band);
+            if (minFrq < 0 || qAbs(frequency - frq) < qAbs(frequency - minFrq))
+                minFrq = frq;
         }
-        else {
-            QPalette palette = m_ui->comboBox_QSO_Band->palette();
-            palette.setColor(QPalette::Text, Qt::black);
-            m_ui->comboBox_QSO_Band->setPalette(palette);
-
-            m_ui->comboBox_QSO_Band->setCurrentText(bandString);
-        }
-
-        m_bandChanged = false;
+        m_ui->comboBox_QSO_Band->setCurrentText(bandFromFrequency(minFrq));
     }
+    else {
+        QPalette palette = m_ui->comboBox_QSO_Band->palette();
+        palette.setColor(QPalette::Text, Qt::black);
+        m_ui->comboBox_QSO_Band->setPalette(palette);
+
+        m_ui->comboBox_QSO_Band->setCurrentText(bandString);
+    }
+
+    m_bandChanged = false;
 }
 
 QString LogbookEntryPane::bandFromFrequency(double frequency) const

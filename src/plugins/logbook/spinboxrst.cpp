@@ -9,5 +9,5 @@ SpinBoxRST::SpinBoxRST(QWidget* parent)
 
 QString SpinBoxRST::textFromValue(int value) const
 {
-    return QString(QLatin1String("%1")).arg(value, 3, 10, QChar(QLatin1Char('0')));
+    return QString(QLatin1String("%1")).arg(value, 4, 10, QChar(QLatin1Char('0')));
 }

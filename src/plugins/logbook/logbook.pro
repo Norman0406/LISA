@@ -25,7 +25,8 @@ HEADERS += logbookplugin.h \
     importexport/exporterfactory.h \
     importexport/importerfactory.h \
     logbookentrydelegate.h \
-    spinboxrst.h
+    spinboxrst.h \
+    lineeditfrequency.h
 
 SOURCES += logbookplugin.cpp \
     logbookwindow.cpp \
@@ -49,7 +50,8 @@ SOURCES += logbookplugin.cpp \
     importexport/exporterfactory.cpp \
     importexport/importerfactory.cpp \
     logbookentrydelegate.cpp \
-    spinboxrst.cpp
+    spinboxrst.cpp \
+    lineeditfrequency.cpp
 
 FORMS += \
     profilesettingspage.ui \
