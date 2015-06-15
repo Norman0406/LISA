@@ -1,5 +1,6 @@
 #include "lineeditfrequency.h"
 #include <QFontDatabase>
+#include <QRegExpValidator>
 #include <QKeyEvent>
 
 using namespace Logbook::Internal;
