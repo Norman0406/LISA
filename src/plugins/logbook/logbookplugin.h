@@ -49,6 +49,7 @@ public:
     LogbookPlugin();
     ~LogbookPlugin();
 
+    static QString userResourcePath();
     static QString resourcePath();
 
     bool initialize(const QStringList &arguments, QString *errorMessage);

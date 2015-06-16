@@ -51,7 +51,7 @@ bool Database::open(QString fileName)
         return true;
 
     fileName = fileName;
-    m_database.setDatabaseName(LogbookPlugin::resourcePath() + fileName + QLatin1String(".db"));
+    m_database.setDatabaseName(LogbookPlugin::userResourcePath() + fileName + QLatin1String(".db"));
 
     // open database
     m_isOpen = m_database.open();

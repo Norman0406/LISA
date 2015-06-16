@@ -19,6 +19,7 @@ class LogbookEntryWidget;
 class Database;
 class LogbookEntryDelegate;
 class LogbookMode;
+class CountryFile;
 
 class LogbookEntryPane
         : public Core::IOutputPane
@@ -70,6 +71,7 @@ private:
     double frequencyFromBand(QString) const;
 
     LogbookMode* m_mode;
+    CountryFile* m_countryFile;
     QSqlRelationalTableModel* m_model;
     QStandardItemModel* m_editModel;
     int m_selectedRow;

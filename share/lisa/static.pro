@@ -25,6 +25,7 @@ isEmpty(vcproj) {
 
 DATA_DIRS = \
     themes \
+    logbook \
 
 for(data_dir, DATA_DIRS) {
     files = $$files($$PWD/$$data_dir/*, true)

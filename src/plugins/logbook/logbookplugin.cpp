@@ -57,9 +57,14 @@ LogbookPlugin::~LogbookPlugin()
 {
 }
 
-QString LogbookPlugin::resourcePath()
+QString LogbookPlugin::userResourcePath()
 {
     return Core::ICore::userResourcePath() + QLatin1String("/logbook/");
+}
+
+QString LogbookPlugin::resourcePath()
+{
+    return Core::ICore::resourcePath() + QLatin1String("/logbook/");
 }
 
 bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessage)
@@ -67,11 +72,9 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
     Q_UNUSED(arguments)
     Q_UNUSED(errorMessage)
 
-    QString a = resourcePath();
-
     // create resourcePath
-    if (!QDir(resourcePath()).exists())
-        QDir().mkdir(resourcePath());
+    if (!QDir(userResourcePath()).exists())
+        QDir().mkdir(userResourcePath());
 
     // Create our own menu to place in the Tools menu
     Core::ActionContainer *logbookMenu =

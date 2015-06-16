@@ -4,6 +4,7 @@
 #include "logbookentrydelegate.h"
 #include "logbookmode.h"
 #include "lineeditfrequency.h"
+#include "countryfile.h"
 
 #include <QMessageBox>
 
@@ -24,6 +25,9 @@ LogbookEntryPane::LogbookEntryPane(LogbookMode* mode, QWidget* parent)
     m_widget = new QWidget(parent);
     m_ui = new Ui::LogbookEntryWidget();
     m_ui->setupUi(m_widget);
+
+    m_countryFile = new CountryFile();
+    m_countryFile->open();
 
     m_itemDelegate = new LogbookEntryDelegate(m_ui, this);
 
