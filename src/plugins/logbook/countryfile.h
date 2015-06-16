@@ -29,11 +29,16 @@ public:
 
     void open();
 
-    const Country* getCountry(QString callsign) const;
+    const Country* getCountry(QString) const;
+    QStringList getContinents() const;
+    QStringList getDXCCs() const;
 
 private:
+    const Country* checkPrefix(QString) const;
+
     QList<Country*> m_countries;
-    QMap<QString, QList<Country*>> m_prefixMap;
+    QStringList m_continents;
+    QStringList m_dxccs;
 };
 
 }

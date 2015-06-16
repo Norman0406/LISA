@@ -40,6 +40,12 @@ void CountryFile::open()
                 newCountry->GMTOffset = countries[6].trimmed().toInt();
                 newCountry->DXCCPrefix = countries[7].trimmed();
 
+                if (!m_dxccs.contains(newCountry->DXCCPrefix))
+                    m_dxccs << newCountry->DXCCPrefix;
+
+                if (!m_continents.contains(newCountry->Continent))
+                    m_continents << newCountry->Continent;
+
                 m_countries.push_back(newCountry);
                 lastCountry = newCountry;
             }
@@ -56,6 +62,9 @@ void CountryFile::open()
                 }
             }
         }
+
+        Q_ASSERT(m_continents.size() == 6);
+        Q_ASSERT(m_countries.size() == m_dxccs.size());
 
         ctyFile.close();
     }
@@ -104,4 +113,14 @@ const Country* CountryFile::checkPrefix(QString callsign) const
     }
 
     return currentCountry;
+}
+
+QStringList CountryFile::getContinents() const
+{
+    return m_continents;
+}
+
+QStringList CountryFile::getDXCCs() const
+{
+    return m_dxccs;
 }
