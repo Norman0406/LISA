@@ -29,15 +29,18 @@ public:
 
     void open();
 
-    const Country* getCountry(QString) const;
-    QStringList getContinents() const;
-    QStringList getDXCCs() const;
+    const Country* getCountryFromCallsign(QString) const;
+    const Country* getCountryFromName(QString) const;
+    const QStringList& getContinents() const;
+    const QStringList& getCountries() const;
+    const QStringList& getDXCCs() const;
 
 private:
     const Country* checkPrefix(QString) const;
 
-    QList<Country*> m_countries;
+    QList<Country*> m_countryList;
     QStringList m_continents;
+    QStringList m_countries;
     QStringList m_dxccs;
 };
 

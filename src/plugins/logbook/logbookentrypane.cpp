@@ -85,6 +85,8 @@ void LogbookEntryPane::initUiContents()
     connect(m_ui->comboBox_QSO_Band, &QComboBox::currentTextChanged, this, &LogbookEntryPane::bandChanged);
 
     m_ui->lineEdit_QSO_CallsignTo->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    m_ui->lineEdit_QSO_CallsignTo->setValidator(new QRegExpValidator(QRegExp(QLatin1String("(?!/)([A-Z]|[a-z]|[0-9]|[/])*"))));
+    connect(m_ui->lineEdit_QSO_CallsignTo, &QLineEdit::editingFinished, this, &LogbookEntryPane::callsignEntered);
 
     m_bands << QLatin1String("160m") <<
                QLatin1String("80m") <<
@@ -117,9 +119,28 @@ void LogbookEntryPane::initUiContents()
     m_modes.sort();
     m_ui->comboBox_QSO_Mode->addItems(m_modes);
 
+    const QStringList& continents = m_countryFile->getContinents();
+    m_ui->comboBox_Personal_Continent->addItems(continents);
+
+    const QStringList& countries = m_countryFile->getCountries();
+    m_ui->comboBox_Personal_Country->addItems(countries);
+
+    // when the user changes the country, CQ and ITU Zone should change if not changed manually
+    connect(m_ui->comboBox_Personal_Country, &QComboBox::currentTextChanged, [this](const QString name) {
+        const Country* country = m_countryFile->getCountryFromName(name);
+        if (country) {
+            if (!hasManualInput(m_ui->lineEdit_Contest_CQZone))
+                m_ui->lineEdit_Contest_CQZone->setText(QString(QLatin1String("%1")).arg(country->CQZone));
+            if (!hasManualInput(m_ui->lineEdit_Contest_ITUZone))
+                m_ui->lineEdit_Contest_ITUZone->setText(QString(QLatin1String("%1")).arg(country->ITUZone));
+        }
+    });
+
     // connect to each widget, such that a signal is called whenever data changes
     QList<QWidget*> childWidgets = m_widget->findChildren<QWidget*>();
     foreach (QWidget* widget, childWidgets) {
+        widget->setProperty("ManualInput", false);
+
         if (QLineEdit* w = qobject_cast<QLineEdit*>(widget))
             connect(w, SIGNAL(textChanged(QString)), this, SLOT(dirty()));
         else if (QDateTimeEdit* w = qobject_cast<QDateTimeEdit*>(widget))
@@ -230,11 +251,7 @@ void LogbookEntryPane::rowSelected(int row)
 void LogbookEntryPane::addQso()
 {
     if (m_model) {
-        if (m_ui->lineEdit_QSO_CallsignTo->text().isEmpty()) {
-            QMessageBox::warning(m_widget, tr("Missing data"),
-                                 tr("Please enter a valid callsign."));
-        }
-        else {
+        if (validateCallsign(m_ui->lineEdit_QSO_CallsignTo->text())) {
             m_mapper->submit();
 
             int rowIndex = m_selectedRow;
@@ -372,6 +389,10 @@ void LogbookEntryPane::dirty()
         if (!m_dateTimerUpdate)
             m_dateTimer->stop();
 
+        QWidget* widget = qobject_cast<QWidget*>(sender());
+        if (widget)
+            widget->setProperty("ManualInput", true);
+
         m_buttonAdd->setEnabled(true);
 
         m_isDirty = true;
@@ -380,6 +401,10 @@ void LogbookEntryPane::dirty()
 
 void LogbookEntryPane::resetDirtyFlag()
 {
+    QList<QWidget*> childWidgets = m_widget->findChildren<QWidget*>();
+    foreach (QWidget* widget, childWidgets)
+        widget->setProperty("ManualInput", false);
+
     m_buttonAdd->setEnabled(false);
 
     m_isDirty = false;
@@ -391,7 +416,9 @@ void LogbookEntryPane::convertInputToUppercase()
     if (sender) {
         QString text = sender->text();
         text = text.toUpper();
+        int curPos = sender->cursorPosition();
         sender->setText(text);
+        sender->setCursorPosition(curPos);
     }
 }
 
@@ -508,6 +535,104 @@ double LogbookEntryPane::frequencyFromBand(QString band) const
     else if (band == QLatin1String("13cm"))
         frequency = 2320;
     return frequency;
+}
+
+void LogbookEntryPane::callsignEntered()
+{
+    QLineEdit* callsignEdit = qobject_cast<QLineEdit*>(sender());
+    if (callsignEdit) {
+        QString callsignText = callsignEdit->text();
+
+        if (validateCallsign(callsignText)) {
+            QString prefix;
+            QString callsign;
+            QString suffix;
+
+            m_ui->lineEdit_Personal_Callsign->setText(callsign);
+
+            splitCallsign(callsignText, prefix, callsign, suffix);
+
+            const Country* country = m_countryFile->getCountryFromCallsign(callsign);
+
+            if (country) {
+                m_ui->comboBox_Personal_Continent->setCurrentText(country->Continent);
+                m_ui->comboBox_Personal_Country->setCurrentText(country->Name);
+                m_ui->lineEdit_Contest_CQZone->setText(QString(QLatin1String("%1")).arg(country->CQZone));
+                m_ui->lineEdit_Contest_ITUZone->setText(QString(QLatin1String("%1")).arg(country->ITUZone));
+
+                // NOTE: the time zone does not account for daylight saving time
+                //m_ui->spinBox_Personal_TimeZone->setValue(country->GMTOffset);
+            }
+        }
+    }
+}
+
+bool LogbookEntryPane::validateCallsign(QString callsign) const
+{
+    if (callsign.isEmpty()) {
+        QMessageBox::warning(m_widget, tr("Invalid callsign"),
+                             tr("The entered callsign has an invalid format.\nCallsigns must not be empty."));
+        m_ui->lineEdit_QSO_CallsignTo->setFocus();
+        return false;
+    }
+    else if (callsign.startsWith(QLatin1Char('/'))) {
+        QMessageBox::warning(m_widget, tr("Invalid callsign"),
+                             tr("The entered callsign has an invalid format.\nCallsigns must not start with '/'."));
+        m_ui->lineEdit_QSO_CallsignTo->setFocus();
+        return false;
+    }
+    else if (callsign.endsWith(QLatin1Char('/'))) {
+        QMessageBox::warning(m_widget, tr("Invalid callsign"),
+                             tr("The entered callsign has an invalid format.\nCallsigns must not end with '/'."));
+        m_ui->lineEdit_QSO_CallsignTo->setFocus();
+        return false;
+    }
+    else if (callsign.count(QLatin1Char('/')) > 2) {
+        QMessageBox::warning(m_widget, tr("Invalid callsign"),
+                             tr("The entered callsign has an invalid format.\nCallsigns can only have at most two '/'."));
+        m_ui->lineEdit_QSO_CallsignTo->setFocus();
+        return false;
+    }
+
+    return true;
+}
+
+void LogbookEntryPane::splitCallsign(const QString& callsignText, QString& prefix, QString& callsign, QString& suffix) const
+{
+    QStringList callsignParts = callsignText.split(QLatin1Char('/'));
+
+    prefix.clear();     // part before any '/'
+    callsign.clear();   // actual callsign part between two '/'
+    suffix.clear();     // suffix after any '/'
+
+    if (callsignParts.count() == 1) {
+        callsign = callsignParts[0];
+    }
+    else if (callsignParts.count() == 2) {
+        // what part is the prefix or the suffix, and what the actual callsign?
+        if (callsignParts[0].count() > callsignParts[1].count()) {
+            callsign = callsignParts[0];
+            suffix = callsignParts[1];
+        }
+        else {
+            prefix = callsignParts[0];
+            suffix = callsignParts[1];
+        }
+    }
+    else if (callsignParts.count() == 3) {
+        prefix = callsignParts[0];
+        callsign = callsignParts[1];
+        suffix = callsignParts[2];
+    }
+}
+
+bool LogbookEntryPane::hasManualInput(QWidget* widget) const
+{
+    QVariant property = widget->property("ManualInput");
+    if (property.isValid() && !property.isNull() && property.toBool() == true)
+        return true;
+
+    return false;
 }
 
 void LogbookEntryPane::updateProfiles(const QList<ProfileData>& profiles)

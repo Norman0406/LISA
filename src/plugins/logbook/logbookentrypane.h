@@ -56,6 +56,7 @@ private slots:
     void deleteQso();
     void selectedProfileChanged(int);
     void updateDateTime();
+    void callsignEntered();
     void dirty();
     void convertInputToUppercase();
     void frequencyChanged(double);
@@ -69,6 +70,9 @@ private:
     bool inRange(const double& value, const double min, const double max) const;
     QString bandFromFrequency(double) const;
     double frequencyFromBand(QString) const;
+    bool validateCallsign(QString) const;
+    void splitCallsign(const QString&, QString&, QString&, QString&) const;
+    bool hasManualInput(QWidget*) const;
 
     LogbookMode* m_mode;
     CountryFile* m_countryFile;

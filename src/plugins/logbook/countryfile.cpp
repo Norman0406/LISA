@@ -10,13 +10,17 @@ CountryFile::CountryFile()
 
 CountryFile::~CountryFile()
 {
-    foreach (Country* country, m_countries)
+    foreach (Country* country, m_countryList)
         delete country;
 }
 
 void CountryFile::open()
 {
-    // TODO: check for update
+    // TODO: check for update:
+    // each country file contains an entry "=VERSION". This entry will be assigned to a different country
+    // for each version. So in order to check the necessity of an update, see if the VERSION prefix is
+    // assigned to the same country.
+    // The exact version is also written under country "Canada" in the form of "=VERyyyymmdd".
 
     QString ctyFilename = LogbookPlugin::resourcePath() + QLatin1String("cty.dat");
     QFile ctyFile(ctyFilename);
@@ -46,7 +50,10 @@ void CountryFile::open()
                 if (!m_continents.contains(newCountry->Continent))
                     m_continents << newCountry->Continent;
 
-                m_countries.push_back(newCountry);
+                if (!m_countries.contains(newCountry->Name))
+                    m_countries << newCountry->Name;
+
+                m_countryList.push_back(newCountry);
                 lastCountry = newCountry;
             }
             else if (countries.count() == 1 && lastCountry) {
@@ -64,13 +71,17 @@ void CountryFile::open()
         }
 
         Q_ASSERT(m_continents.size() == 6);
-        Q_ASSERT(m_countries.size() == m_dxccs.size());
+        Q_ASSERT(m_countryList.size() == m_dxccs.size());
+
+        m_dxccs.sort();
+        m_continents.sort();
+        m_countries.sort();
 
         ctyFile.close();
     }
 }
 
-const Country* CountryFile::getCountry(QString callsign) const
+const Country* CountryFile::getCountryFromCallsign(QString callsign) const
 {
     // TODO: create a regex for callsigns
 
@@ -92,6 +103,16 @@ const Country* CountryFile::getCountry(QString callsign) const
     return 0;
 }
 
+const Country* CountryFile::getCountryFromName(QString name) const
+{
+    foreach (const Country* country, m_countryList) {
+        if (country->Name == name)
+            return country;
+    }
+
+    return 0;
+}
+
 const Country* CountryFile::checkPrefix(QString callsign) const
 {
     Country* currentCountry = 0;
@@ -99,7 +120,7 @@ const Country* CountryFile::checkPrefix(QString callsign) const
 
     // We check for prefixes that are the beginning of the callsign. Whenever there is a matching
     // prefix that is longer, this one is preferred.
-    foreach (Country* country, m_countries) {
+    foreach (Country* country, m_countryList) {
         foreach (const QString& prefix, country->Prefixes) {
             bool prefixFound = callsign.startsWith(prefix);
             if (prefixFound && !currentCountry ||
@@ -115,12 +136,18 @@ const Country* CountryFile::checkPrefix(QString callsign) const
     return currentCountry;
 }
 
-QStringList CountryFile::getContinents() const
+const QStringList& CountryFile::getContinents() const
 {
     return m_continents;
 }
 
-QStringList CountryFile::getDXCCs() const
+const QStringList& CountryFile::getCountries() const
 {
+    return m_countries;
+}
+
+const QStringList& CountryFile::getDXCCs() const
+{
+    // UNDONE: load ADIFCnt.txt
     return m_dxccs;
 }
