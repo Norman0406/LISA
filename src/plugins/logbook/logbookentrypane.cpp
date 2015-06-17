@@ -675,6 +675,36 @@ bool LogbookEntryPane::hasManualInput(QWidget* widget) const
     return false;
 }
 
+void LogbookEntryPane::setCurrentData(QWidget* widget, QVariant variant)
+{
+    widget->setProperty("CurrentData", variant);
+}
+
+bool LogbookEntryPane::differsFromCurrentData(QWidget* widget)
+{
+    QVariant property = widget->property("CurrentData");
+
+    if (property.isValid() && property.isNull()) {
+        QVariant actualData;
+        if (QLineEdit* w = qobject_cast<QLineEdit*>(widget))
+            actualData.fromValue(w->text());
+        else if (QDateTimeEdit* w = qobject_cast<QDateTimeEdit*>(widget))
+            actualData.fromValue(w->dateTime());
+        else if (QSpinBox* w = qobject_cast<QSpinBox*>(widget))
+            actualData.fromValue(w->value());
+        else if (QComboBox* w = qobject_cast<QComboBox*>(widget))
+            actualData.fromValue(w->currentText());
+        else if (QPlainTextEdit* w = qobject_cast<QPlainTextEdit*>(widget))
+            actualData.fromValue(w->toPlainText());
+        else if (QCheckBox* w = qobject_cast<QCheckBox*>(widget))
+            actualData.fromValue(w->isChecked());
+
+        return property.value() == actualData.value();
+    }
+
+    return true;
+}
+
 void LogbookEntryPane::updateProfiles(const QList<ProfileData>& profiles)
 {
     int selectedIndex = 0;

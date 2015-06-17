@@ -80,6 +80,8 @@ private:
     bool validateCallsign(QString) const;
     void splitCallsign(const QString&, QString&, QString&, QString&) const;
     bool hasManualInput(QWidget*) const;
+    void setCurrentData(QWidget*, QVariant);
+    bool differsFromCurrentData(QWidget*);
 
     LogbookMode* m_mode;
     CountryFile* m_countryFile;
