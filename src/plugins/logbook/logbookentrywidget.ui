@@ -299,13 +299,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_Personal_Callsign">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelName">
          <property name="text">
@@ -576,6 +569,9 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_Personal_Callsign"/>
        </item>
       </layout>
      </widget>

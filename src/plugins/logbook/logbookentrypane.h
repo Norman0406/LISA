@@ -57,6 +57,7 @@ private slots:
     void selectedProfileChanged(int);
     void updateDateTime();
     void callsignEntered();
+    void callsignSelected(const QString&);
     void dirty();
     void convertInputToUppercase();
     void frequencyChanged(double);

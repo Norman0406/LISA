@@ -136,6 +136,8 @@ void LogbookEntryPane::initUiContents()
         }
     });
 
+    connect(m_ui->comboBox_Personal_Callsign, &QComboBox::currentTextChanged, this, &LogbookEntryPane::callsignSelected);
+
     // connect to each widget, such that a signal is called whenever data changes
     QList<QWidget*> childWidgets = m_widget->findChildren<QWidget*>();
     foreach (QWidget* widget, childWidgets) {
@@ -251,6 +253,7 @@ void LogbookEntryPane::rowSelected(int row)
 void LogbookEntryPane::addQso()
 {
     if (m_model) {
+
         if (validateCallsign(m_ui->lineEdit_QSO_CallsignTo->text())) {
             m_mapper->submit();
 
@@ -287,6 +290,9 @@ void LogbookEntryPane::newQso()
 
         m_buttonDelete->setEnabled(false);
         m_buttonAdd->setText(tr("Add"));
+
+        m_ui->comboBox_Personal_Callsign->clear();
+        m_ui->comboBox_Personal_Callsign->setEnabled(false);
 
         m_editModel->insertRow(0);
         m_mapper->setCurrentIndex(0);
@@ -548,22 +554,43 @@ void LogbookEntryPane::callsignEntered()
             QString callsign;
             QString suffix;
 
-            m_ui->lineEdit_Personal_Callsign->setText(callsign);
-
             splitCallsign(callsignText, prefix, callsign, suffix);
 
-            const Country* country = m_countryFile->getCountryFromCallsign(callsign);
+            // add available callsign data to the callsign drop down list and select the callsign proposal
+            m_ui->comboBox_Personal_Callsign->clear();
+            m_ui->comboBox_Personal_Callsign->setEnabled(true);
 
-            if (country) {
-                m_ui->comboBox_Personal_Continent->setCurrentText(country->Continent);
-                m_ui->comboBox_Personal_Country->setCurrentText(country->Name);
-                m_ui->lineEdit_Contest_CQZone->setText(QString(QLatin1String("%1")).arg(country->CQZone));
-                m_ui->lineEdit_Contest_ITUZone->setText(QString(QLatin1String("%1")).arg(country->ITUZone));
+            // add prefix item
+            if (!prefix.isEmpty())
+                m_ui->comboBox_Personal_Callsign->addItem(prefix);
 
-                // NOTE: the time zone does not account for daylight saving time
-                //m_ui->spinBox_Personal_TimeZone->setValue(country->GMTOffset);
-            }
+            // add callsign
+            m_ui->comboBox_Personal_Callsign->addItem(callsign);
+
+            // add suffix item
+            if (!suffix.isEmpty())
+                m_ui->comboBox_Personal_Callsign->addItem(suffix);
+
+            // select callsign proposal
+            m_ui->comboBox_Personal_Callsign->setCurrentText(callsign);
         }
+    }
+}
+
+void LogbookEntryPane::callsignSelected(const QString& callsign)
+{
+    // a callsign was selected in the drop down list (either programmatically or manually), fill in the
+    // country data
+    const Country* country = m_countryFile->getCountryFromCallsign(callsign);
+
+    if (country) {
+        m_ui->comboBox_Personal_Continent->setCurrentText(country->Continent);
+        m_ui->comboBox_Personal_Country->setCurrentText(country->Name);
+        m_ui->lineEdit_Contest_CQZone->setText(QString(QLatin1String("%1")).arg(country->CQZone));
+        m_ui->lineEdit_Contest_ITUZone->setText(QString(QLatin1String("%1")).arg(country->ITUZone));
+
+        // NOTE: the time zone does not account for daylight saving time
+        //m_ui->spinBox_Personal_TimeZone->setValue(country->GMTOffset);
     }
 }
 
@@ -616,7 +643,7 @@ void LogbookEntryPane::splitCallsign(const QString& callsignText, QString& prefi
         }
         else {
             prefix = callsignParts[0];
-            suffix = callsignParts[1];
+            callsign = callsignParts[1];
         }
     }
     else if (callsignParts.count() == 3) {
