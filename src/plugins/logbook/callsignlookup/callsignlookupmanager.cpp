@@ -1,6 +1,6 @@
 #include "callsignlookupmanager.h"
 #include "callsignlookupqrzcom.h"
-//#include "../logbookformdialog.h"
+#include "../logbookentrypane.h"
 
 #include <coreplugin/icore.h>
 #include <coreplugin/settingsdatabase.h>
@@ -8,8 +8,8 @@
 using namespace Logbook::Internal;
 
 CallsignLookupManager::CallsignLookupManager(QObject* parent)
-    : QObject(parent)
-//      m_logbookForm(0)
+    : QObject(parent),
+      m_entryPane(0)
 {
     m_lookupServices.push_back(new CallsignLookupQRZcom(this));
 
@@ -26,15 +26,15 @@ CallsignLookupManager::~CallsignLookupManager()
         delete service;
 }
 
-//void CallsignLookupManager::registerLogbookForm(LogbookFormDialog* logbookForm)
-//{
-//    m_logbookForm = logbookForm;
-//}
+void CallsignLookupManager::registerEntryPane(LogbookEntryPane* entryPane)
+{
+    m_entryPane = entryPane;
+}
 
-//void CallsignLookupManager::unregisterLogbookForm()
-//{
-//    m_logbookForm = 0;
-//}
+void CallsignLookupManager::unregisterEntryPane()
+{
+    m_entryPane = 0;
+}
 
 const QList<CallsignLookup*> CallsignLookupManager::getServices() const
 {
@@ -100,12 +100,12 @@ void CallsignLookupManager::lookup(QString callsign)
 
 void CallsignLookupManager::callsignRetrieved(CallsignData callsignData)
 {
-//    if (m_logbookForm) {
-//        switch (callsignData.getService()) {
-//        case CallsignData::CS_QRZCOM:
-//            QString name = QString(QLatin1String("%1 %2")).arg(callsignData.getField(QLatin1String("fname"))).arg(callsignData.getField(QLatin1String("name")));
-//            m_logbookForm->setName(name);
-//            break;
-//        }
-//    }
+    if (m_entryPane) {
+        switch (callsignData.getService()) {
+        case CallsignData::CS_QRZCOM:
+            QString name = QString(QLatin1String("%1 %2")).arg(callsignData.getField(QLatin1String("fname"))).arg(callsignData.getField(QLatin1String("name")));
+            m_entryPane->setUiName(name);
+            break;
+        }
+    }
 }

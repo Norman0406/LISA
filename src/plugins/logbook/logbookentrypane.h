@@ -44,6 +44,12 @@ public:
 
     void clearModel();
 
+    void setUiName(QString);
+    void setUiAddress(QString);
+
+signals:
+    void lookupCallsign(QString);
+
 public slots:
     void setModel(QSqlRelationalTableModel*);
     void updateProfiles(const QList<ProfileData>&);

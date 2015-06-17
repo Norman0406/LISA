@@ -29,6 +29,7 @@
 
 #include "callsignlookup/callsignlookupqrzcom.h"
 #include "callsignlookup/callsigndata.h"
+#include "callsignlookup/callsignlookupmanager.h"
 
 #include <extensionsystem/pluginmanager.h>
 #include <coreplugin/minisplitter.h>
@@ -55,6 +56,10 @@ LogbookMode::LogbookMode()
     connect(m_window, &LogbookWindow::modelChanged, m_logbookEntryPane, &LogbookEntryPane::setModel);
     ExtensionSystem::PluginManager::addObject(m_logbookEntryPane);
 
+    m_callsignLookupManager = new CallsignLookupManager(this);
+    m_callsignLookupManager->registerEntryPane(m_logbookEntryPane);
+    QObject::connect(m_logbookEntryPane, &LogbookEntryPane::lookupCallsign, m_callsignLookupManager, &CallsignLookupManager::lookup);
+
     loadSettings();
 
     m_window->open();
@@ -65,6 +70,7 @@ LogbookMode::~LogbookMode()
     ExtensionSystem::PluginManager::removeObject(m_logbookEntryPane);
     delete m_logbookEntryPane;
     delete m_window;
+    delete m_callsignLookupManager;
 }
 
 void LogbookMode::loadSettings()
@@ -135,4 +141,9 @@ const ProfileData* LogbookMode::getProfile(QUuid uuid) const
             return &data;
     }
     return 0;
+}
+
+CallsignLookupManager* LogbookMode::getCallsignLookupManager()
+{
+    return m_callsignLookupManager;
 }

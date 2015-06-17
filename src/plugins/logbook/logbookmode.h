@@ -31,9 +31,9 @@ namespace Logbook {
 namespace Internal {
 
 class LogbookWindow;
-class CallsignLookup;
 class ProfileData;
 class LogbookEntryPane;
+class CallsignLookupManager;
 
 class LogbookMode
         : public Core::IMode
@@ -47,6 +47,7 @@ public:
     const QList<ProfileData>& getProfiles() const;
     void setProfiles(const QList<ProfileData>&);
     const ProfileData* getProfile(QUuid) const;
+    CallsignLookupManager* getCallsignLookupManager();
 
     void loadSettings();
     void saveSettings();
@@ -57,7 +58,7 @@ signals:
 private:
     LogbookWindow* m_window;
     LogbookEntryPane* m_logbookEntryPane;
-    CallsignLookup* m_callsignLookup;
+    CallsignLookupManager* m_callsignLookupManager;
     QList<ProfileData> m_profiles;
 };
 

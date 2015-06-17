@@ -222,6 +222,18 @@ void LogbookEntryPane::clearModel()
     m_hasPrevData = false;
 }
 
+void LogbookEntryPane::setUiName(QString name)
+{
+    if (!hasManualInput(m_ui->lineEdit_Personal_Name))
+        m_ui->lineEdit_Personal_Name->setText(name);
+}
+
+void LogbookEntryPane::setUiAddress(QString address)
+{
+    if (!hasManualInput(m_ui->plainTextEdit_Personal_Address))
+        m_ui->plainTextEdit_Personal_Address->setPlainText(address);
+}
+
 void LogbookEntryPane::rowSelected(int row)
 {
     // check if data has changed
@@ -245,6 +257,8 @@ void LogbookEntryPane::rowSelected(int row)
 
         m_buttonDelete->setEnabled(true);
         m_buttonAdd->setText(tr("Modify"));
+
+        callsignEntered();
 
         resetDirtyFlag();
     }
@@ -545,35 +559,32 @@ double LogbookEntryPane::frequencyFromBand(QString band) const
 
 void LogbookEntryPane::callsignEntered()
 {
-    QLineEdit* callsignEdit = qobject_cast<QLineEdit*>(sender());
-    if (callsignEdit) {
-        QString callsignText = callsignEdit->text();
+    QString callsignText = m_ui->lineEdit_QSO_CallsignTo->text();
 
-        if (validateCallsign(callsignText)) {
-            QString prefix;
-            QString callsign;
-            QString suffix;
+    if (validateCallsign(callsignText)) {
+        QString prefix;
+        QString callsign;
+        QString suffix;
 
-            splitCallsign(callsignText, prefix, callsign, suffix);
+        splitCallsign(callsignText, prefix, callsign, suffix);
 
-            // add available callsign data to the callsign drop down list and select the callsign proposal
-            m_ui->comboBox_Personal_Callsign->clear();
-            m_ui->comboBox_Personal_Callsign->setEnabled(true);
+        // add available callsign data to the callsign drop down list and select the callsign proposal
+        m_ui->comboBox_Personal_Callsign->clear();
+        m_ui->comboBox_Personal_Callsign->setEnabled(true);
 
-            // add prefix item
-            if (!prefix.isEmpty())
-                m_ui->comboBox_Personal_Callsign->addItem(prefix);
+        // add prefix item
+        if (!prefix.isEmpty())
+            m_ui->comboBox_Personal_Callsign->addItem(prefix);
 
-            // add callsign
-            m_ui->comboBox_Personal_Callsign->addItem(callsign);
+        // add callsign
+        m_ui->comboBox_Personal_Callsign->addItem(callsign);
 
-            // add suffix item
-            if (!suffix.isEmpty())
-                m_ui->comboBox_Personal_Callsign->addItem(suffix);
+        // add suffix item
+        if (!suffix.isEmpty())
+            m_ui->comboBox_Personal_Callsign->addItem(suffix);
 
-            // select callsign proposal
-            m_ui->comboBox_Personal_Callsign->setCurrentText(callsign);
-        }
+        // select callsign proposal
+        m_ui->comboBox_Personal_Callsign->setCurrentText(callsign);
     }
 }
 
@@ -591,6 +602,8 @@ void LogbookEntryPane::callsignSelected(const QString& callsign)
 
         // NOTE: the time zone does not account for daylight saving time
         //m_ui->spinBox_Personal_TimeZone->setValue(country->GMTOffset);
+
+        emit lookupCallsign(callsign);
     }
 }
 

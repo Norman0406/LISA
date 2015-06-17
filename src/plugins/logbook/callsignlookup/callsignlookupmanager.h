@@ -9,6 +9,7 @@ namespace Logbook {
 namespace Internal {
 
 class CallsignLookup;
+class LogbookEntryPane;
 
 class CallsignLookupManager
         : public QObject
@@ -19,8 +20,8 @@ public:
     CallsignLookupManager(QObject* parent);
     ~CallsignLookupManager();
 
-//    void registerLogbookForm(LogbookFormDialog*);
-//    void unregisterLogbookForm();
+    void registerEntryPane(LogbookEntryPane*);
+    void unregisterEntryPane();
 
     const QList<CallsignLookup*> getServices() const;
     CallsignLookup* getService(CallsignData::CallsignService);
@@ -36,7 +37,7 @@ private slots:
 
 private:
     QList<CallsignLookup*> m_lookupServices;
-//    LogbookFormDialog* m_logbookForm;
+    LogbookEntryPane* m_entryPane;
 };
 
 }
