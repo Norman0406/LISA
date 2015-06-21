@@ -26,6 +26,7 @@
 #define LOGBOOKMODE_H
 
 #include <coreplugin/imode.h>
+#include <QMenu>
 
 namespace Logbook {
 namespace Internal {
@@ -34,6 +35,8 @@ class LogbookWindow;
 class ProfileData;
 class LogbookEntryPane;
 class CallsignLookupManager;
+class ImporterFactory;
+class ExporterFactory;
 
 class LogbookMode
         : public Core::IMode
@@ -48,6 +51,7 @@ public:
     void setProfiles(const QList<ProfileData>&);
     const ProfileData* getProfile(QUuid) const;
     CallsignLookupManager* getCallsignLookupManager();
+    void addMenus(QMenu*) const;
 
     void loadSettings();
     void saveSettings();
@@ -55,7 +59,13 @@ public:
 signals:
     void profilesChanged(const QList<ProfileData>&);
 
+private slots:
+    void importQsos();
+    void exportQsos();
+
 private:
+    ImporterFactory* m_importerFactory;
+    ExporterFactory* m_exporterFactory;
     LogbookWindow* m_window;
     LogbookEntryPane* m_logbookEntryPane;
     CallsignLookupManager* m_callsignLookupManager;

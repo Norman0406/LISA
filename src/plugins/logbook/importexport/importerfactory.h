@@ -25,13 +25,13 @@
 #ifndef IMPORTERFACTORY_H
 #define IMPORTERFACTORY_H
 
+#include  "importer.h"
+
 #include <utils/factory.h>
 #include <QString>
 
 namespace Logbook {
 namespace Internal {
-
-class Importer;
 
 class ImporterFactory
         : public Utils::Factory<Importer>

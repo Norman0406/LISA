@@ -11,8 +11,8 @@ Exporter::~Exporter()
 {
 }
 
-void Exporter::exportTo(const QString& file)
+void Exporter::doExport(QModelIndexList& selection)
 {
-    iExportTo(file);
+    iDoExport(selection);
 }
 

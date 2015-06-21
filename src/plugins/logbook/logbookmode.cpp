@@ -26,6 +26,8 @@
 #include "logbookwindow.h"
 #include "logbookentrypane.h"
 #include "profiledata.h"
+#include "importexport/importerfactory.h"
+#include "importexport/exporterfactory.h"
 
 #include "callsignlookup/callsignlookupqrzcom.h"
 #include "callsignlookup/callsigndata.h"
@@ -60,6 +62,9 @@ LogbookMode::LogbookMode()
     m_callsignLookupManager->registerEntryPane(m_logbookEntryPane);
     QObject::connect(m_logbookEntryPane, &LogbookEntryPane::lookupCallsign, m_callsignLookupManager, &CallsignLookupManager::lookup);
 
+    m_importerFactory = new ImporterFactory();
+    m_exporterFactory = new ExporterFactory();
+
     loadSettings();
 
     m_window->open();
@@ -71,6 +76,8 @@ LogbookMode::~LogbookMode()
     delete m_logbookEntryPane;
     delete m_window;
     delete m_callsignLookupManager;
+    delete m_importerFactory;
+    delete m_exporterFactory;
 }
 
 void LogbookMode::loadSettings()
@@ -146,4 +153,56 @@ const ProfileData* LogbookMode::getProfile(QUuid uuid) const
 CallsignLookupManager* LogbookMode::getCallsignLookupManager()
 {
     return m_callsignLookupManager;
+}
+
+void LogbookMode::addMenus(QMenu* mainMenu) const
+{
+    // add importer menus
+    QMenu* importMenu = new QMenu(tr("&Import"), mainMenu);
+    mainMenu->addMenu(importMenu);
+
+    QStringList importTypes = m_importerFactory->getTypes();
+    importMenu->setEnabled(!importTypes.empty());
+    foreach (QString type, importTypes) {
+        QAction* action = importMenu->addAction(type);
+        action->setProperty("Type", type);
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(importQsos()));
+    }
+
+    // add exporter menus
+    QMenu* exportMenu = new QMenu(tr("&Export"), mainMenu);
+    mainMenu->addMenu(exportMenu);
+
+    QStringList exportTypes = m_exporterFactory->getTypes();
+    exportMenu->setEnabled(!exportTypes.empty());
+    foreach (QString type, exportTypes) {
+        QAction* action = exportMenu->addAction(type);
+        action->setProperty("Type", type);
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(exportQsos()));
+    }
+}
+
+void LogbookMode::importQsos()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    QString type = action->property("Type").toString();
+    Importer* importer = m_importerFactory->createByType(type, this);
+    if (importer) {
+        qDebug() << "import";
+    }
+    else
+        qWarning() << "could create importer from type " << type;
+}
+
+void LogbookMode::exportQsos()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    QString type = action->property("Type").toString();
+    Exporter* exporter = m_exporterFactory->createByType(type, this);
+    if (exporter) {
+        QModelIndexList selection = m_window->getExportQsos();
+        exporter->doExport(selection);
+    }
+    else
+        qWarning() << "could not create exporter from type " << type;
 }

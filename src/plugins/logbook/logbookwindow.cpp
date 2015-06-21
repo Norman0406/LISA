@@ -108,60 +108,35 @@ Database* LogbookWindow::getDatabase()
     return m_database;
 }
 
+QModelIndexList LogbookWindow::getExportQsos()
+{
+    QItemSelectionModel* selectionModel = m_logbookView->selectionModel();
+
+    // import / export only the selected qsos
+    QModelIndexList list = selectionModel->selectedRows();
+
+    // import / export all qsos if no rows are selected
+    if (list.count() == 0) {
+        for (int i = 0; i < selectionModel->model()->rowCount(); i++) {
+            QModelIndex index = selectionModel->model()->index(i, 0);
+            list.push_back(index);
+        }
+    }
+
+    return list;
+}
+
 void LogbookWindow::rowSelected(const QModelIndex& index)
 {
-    /*const QsoEntry* entry = m_database->getEntry(index.row());
-    if (!entry)
-        qWarning() << "could not retrieve qso entry for row " << index.row();
-    else
-        emit qsoSelected(*entry);*/
-
     emit qsoSelected(index.row());
 }
 
-void LogbookWindow::deleteSelection()
-{
-    /*QItemSelection selection = m_logbookView->selectionModel()->selection();
-
-    if(selection.size() < 2)
-    {
-        m_deleteMessageBox->setInformativeText(tr("Do you want to delete the selected item?"));
-    }
-    else
-    {
-        m_deleteMessageBox->setInformativeText(tr("Do you want to delete the selected items?"));
-    }
-
-    m_deleteMessageBox->setDefaultButton(QMessageBox::Cancel);
-    int ret = m_deleteMessageBox->exec();
-
-    if(ret == QMessageBox::Ok)
-    {
-        QList<int> rows;
-        foreach( const QModelIndex & index, selection.indexes() ) {
-            rows.append( index.row() );
-        }
-        qSort( rows );
-
-        int prev = -1;
-        for( int i = rows.count() - 1; i >= 0; i -= 1 ) {
-            int current = rows[i];
-            if( current != prev ) {
-                m_model->removeRows( current, 1 );
-                prev = current;
-            }
-        }
-        m_model->submit();
-        m_model->select();
-    }*/
-}
-
-bool LogbookWindow::eventFilter(QObject *target, QEvent *event)
+bool LogbookWindow::eventFilter(QObject* target, QEvent* event)
 {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
         if (keyEvent && keyEvent->key() == Qt::Key_Delete) {
-            deleteSelection();
+            // UNDONE
             return true;
         }
     }
@@ -172,23 +147,4 @@ bool LogbookWindow::eventFilter(QObject *target, QEvent *event)
 QTableView* LogbookWindow::getLogbookView()
 {
     return m_logbookView;
-}
-
-void LogbookWindow::addQso(QMap<QString, QString>* data) {
-    /*qDebug() << QDateTime::currentDateTime().toString(Qt::ISODate);
-    int row = m_model->rowCount();
-    m_model->insertRow(row);
-    qDebug() << data->value(QLatin1String("Callsign"));
-    m_model->setData(m_model->index(row,1), data->value(QLatin1String("Datetime")));
-    m_model->setData(m_model->index(row,2), data->value(QLatin1String("CallsignFrom")));
-    m_model->setData(m_model->index(row,3), data->value(QLatin1String("Callsign")));
-    m_model->setData(m_model->index(row,4), data->value(QLatin1String("Name")));
-    m_model->setData(m_model->index(row,5), data->value(QLatin1String("Mode")));
-    m_model->setData(m_model->index(row,6), data->value(QLatin1String("Frequency")));
-    m_model->setData(m_model->index(row,7), data->value(QLatin1String("Band")));
-    m_model->setData(m_model->index(row,8), data->value(QLatin1String("RSTSend")));
-    m_model->setData(m_model->index(row,9), data->value(QLatin1String("RSTRcvd")));
-
-    m_model->submit();
-    m_model->select();*/
 }

@@ -2,6 +2,7 @@
 #define ADIFEXPORTER_H
 
 #include "exporter.h"
+#include <QXmlStreamWriter>
 
 namespace Logbook {
 namespace Internal {
@@ -17,7 +18,11 @@ public:
     QString getType() const;
 
 protected:
-    void iExportTo(const QString&) const;
+    void iDoExport(QModelIndexList&) const;
+
+private:
+    void writeAdifField(QString, QVariant, QXmlStreamWriter&) const;
+    QString getModeEnum(const QString&) const;
 };
 
 }

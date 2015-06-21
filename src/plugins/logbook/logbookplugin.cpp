@@ -76,11 +76,10 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
         QDir().mkdir(userResourcePath());
 
     // Create our own menu to place in the Tools menu
-    Core::ActionContainer *logbookMenu =
+    Core::ActionContainer* logbookMenu =
             Core::ActionManager::createMenu("Logbook.MainMenu");
-    QMenu *menu = logbookMenu->menu();
-    menu->setTitle(tr("&Logbook"));
-    menu->setEnabled(false);
+    QMenu* mainMenu = logbookMenu->menu();
+    mainMenu->setTitle(tr("&Logbook"));
 
     // Request the Tools menu and add the Hello World menu to it
     Core::ActionContainer *toolsBar =
@@ -95,6 +94,8 @@ bool LogbookPlugin::initialize(const QStringList &arguments, QString *errorMessa
     // it will unregister itself from the plugin manager when it is deleted.
     m_logbookMode = new LogbookMode;
     addAutoReleasedObject(m_logbookMode);
+
+    m_logbookMode->addMenus(mainMenu);
 
     // TODO: move to core plugin or use other ways to determine which mode should be selected when
     // first starting up.

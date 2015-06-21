@@ -48,10 +48,10 @@ public:
     LogbookWindow(QWidget *parent = 0);
     ~LogbookWindow();
 
-    void addQso(QMap<QString, QString>* data);
     QTableView* getLogbookView();
     void open();
     void close();
+    QModelIndexList getExportQsos();
 
     Database* getDatabase();
 
@@ -61,7 +61,6 @@ signals:
 
 private slots:
     void rowSelected(const QModelIndex&);
-    void deleteSelection();
 
 private:
     QTableView* m_logbookView;
@@ -69,7 +68,7 @@ private:
     LogbookProxyModel* m_proxyModel;
     QMessageBox* m_deleteMessageBox;
 
-    bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject*, QEvent*);
 };
 
 } // namespace Internal

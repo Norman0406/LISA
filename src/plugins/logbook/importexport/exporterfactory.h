@@ -25,13 +25,14 @@
 #ifndef EXPORTERFACTORY_H
 #define EXPORTERFACTORY_H
 
+#include "exporter.h"
+
 #include <utils/factory.h>
 #include <QString>
+#include <QMenu>
 
 namespace Logbook {
 namespace Internal {
-
-class Exporter;
 
 class ExporterFactory
         : public Utils::Factory<Exporter>

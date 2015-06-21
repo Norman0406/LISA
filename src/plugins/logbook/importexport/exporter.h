@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QModelIndexList>
 
 namespace Logbook {
 namespace Internal {
@@ -17,12 +18,12 @@ public:
 
     virtual QString getType() const = 0;
 
-    void exportTo(const QString&);
+    void doExport(QModelIndexList&);
 
 protected:
     Exporter(QObject* parent = 0);
 
-    virtual void iExportTo(const QString&) const = 0;
+    virtual void iDoExport(QModelIndexList&) const = 0;
 };
 
 }

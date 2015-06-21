@@ -699,7 +699,7 @@ bool LogbookEntryPane::differsFromCurrentData(QWidget* widget)
         else if (QCheckBox* w = qobject_cast<QCheckBox*>(widget))
             actualData.fromValue(w->isChecked());
 
-        return property.value() == actualData.value();
+        return property == actualData;
     }
 
     return true;
