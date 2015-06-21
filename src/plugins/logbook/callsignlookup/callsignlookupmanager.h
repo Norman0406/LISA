@@ -34,6 +34,7 @@ public slots:
 
 private slots:
     void callsignRetrieved(CallsignData);
+    void error(QString);
 
 private:
     QList<CallsignLookup*> m_lookupServices;

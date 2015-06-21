@@ -23,6 +23,7 @@ public:
 
 signals:
     void callsignRetrieved(CallsignData);
+    void error(QString);
 
 protected:
     CallsignLookup(QObject* parent, CallsignData::CallsignService);

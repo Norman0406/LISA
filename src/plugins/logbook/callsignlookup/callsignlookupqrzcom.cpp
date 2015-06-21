@@ -21,6 +21,8 @@ CallsignLookupQRZcom::CallsignLookupQRZcom(QObject* parent)
 {
     m_manager = new QNetworkAccessManager(this);
     connect(m_manager, &QNetworkAccessManager::finished, this, &CallsignLookupQRZcom::replyFinished);
+
+    // TODO: check internet connection
 }
 
 CallsignLookupQRZcom::~CallsignLookupQRZcom()
@@ -58,6 +60,13 @@ QString CallsignLookupQRZcom::getPassword() const
 
 void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
 {
+    if (reply->error() != QNetworkReply::NoError) {
+        QString errorStr = reply->errorString();
+        emit error(errorStr);
+        emit replyProcessed(reply);
+        return;
+    }
+
     QString dataString = QString::fromUtf8(reply->readAll());
 
     // TODO: check for error messages and remarks and throw signals
@@ -79,10 +88,11 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                 qWarning() << "Session element not found";
             }
             else {
-                QDomElement error = sessionElem.firstChildElement(QLatin1String("Error"));
-                if (!error.isNull()) {
-                    QString errorString = error.text();
-                    qDebug() << errorString;
+                QDomElement errorVal = sessionElem.firstChildElement(QLatin1String("Error"));
+                if (!errorVal.isNull()) {
+                    QString errorString = errorVal.text();
+                    qDebug() << "QRZ.com error: " << errorString;
+                    emit error(errorString);
                 }
                 else {
                     QDomElement sessionKey = sessionElem.firstChildElement(QLatin1String("Key"));
@@ -92,8 +102,9 @@ void CallsignLookupQRZcom::replyFinished(QNetworkReply* reply)
                     QDomElement message = sessionElem.firstChildElement(QLatin1String("Message"));
                     QDomElement remark = sessionElem.firstChildElement(QLatin1String("Remark"));
 
-                    if (sessionKey.isNull())
+                    if (sessionKey.isNull()) {
                         qWarning() << "invalid session key";
+                    }
                     else {
                         QString sessionKeyString = sessionKey.text();
                         if (m_sessionKey != sessionKeyString) {
@@ -176,17 +187,20 @@ void CallsignLookupQRZcom::processLookup()
     if (m_sessionKey.isEmpty() && !m_refreshRunning) {
         m_refreshRunning = true;
 
+        // TODO: separate thread to avoid blocking gui thread
         QNetworkReply* refreshReply = refreshSessionKey();
 
         auto connection = std::make_shared<QMetaObject::Connection>();
         *connection = connect(this, &CallsignLookupQRZcom::replyProcessed, [=](QNetworkReply* reply) {
             if (reply == refreshReply) {
-                m_refreshRunning = false;
+                if (reply->error() == QNetworkReply::NoError) {
+                    m_refreshRunning = false;
 
-                if (!m_sessionKey.isEmpty())
-                    processLookup();
-                else
-                    qWarning() << "could not retrieve a valid session key";
+                    if (!m_sessionKey.isEmpty())
+                        processLookup();
+                    else
+                        qWarning() << "could not retrieve a valid session key";
+                }
 
                 disconnect(*connection);
             }

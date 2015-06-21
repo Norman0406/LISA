@@ -15,6 +15,7 @@ CallsignLookupManager::CallsignLookupManager(QObject* parent)
 
     foreach (CallsignLookup* service, m_lookupServices) {
         connect(service, &CallsignLookup::callsignRetrieved, this, &CallsignLookupManager::callsignRetrieved);
+        connect(service, &CallsignLookup::error, this, &CallsignLookupManager::error);
     }
 
     loadSettings();
@@ -108,4 +109,9 @@ void CallsignLookupManager::callsignRetrieved(CallsignData callsignData)
             break;
         }
     }
+}
+
+void CallsignLookupManager::error(QString errorString)
+{
+    qWarning() << errorString;
 }
