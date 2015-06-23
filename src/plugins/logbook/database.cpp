@@ -82,6 +82,9 @@ bool Database::open(QString fileName)
 
             m_model = new QSqlRelationalTableModel(this, m_database);
             m_model->setTable(QLatin1String("logbook"));
+            /*m_model->setRelation(m_model->fieldIndex(QLatin1String("Profile")),
+                                 QSqlRelation(QLatin1String("profiles", QLatin1String("ID"), QLatin1String(""))));*/
+
             m_model->select();
 
             emit modelChanged(m_model);
@@ -119,27 +122,75 @@ void Database::createTables()
 
         // create table if it does not already exist
         if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS logbook ("
-                                                  "ID INTEGER PRIMARY KEY,"
-                                                  "DateTime INTEGER,"
-                                                  "Operator VARCHAR(32),"
-                                                  "Callsign VARCHAR(32),"
-                                                  "Name VARCHAR(32),"
-                                                  "Frequency REAL,"
-                                                  "Mode VARCHAR(8),"
-                                                  "RstSent INTEGER,"
-                                                  "RstSentNr INTEGER,"
-                                                  "RstRcvd INTEGER,"
-                                                  "RstRcvdNr INTEGER,"
-                                                  "Comment VARCHAR(1024)"
-                                                  ")"))) {
-            qWarning() << "could not create logbook table";
+                                      // general qso data
+                                      "ID INTEGER PRIMARY KEY,"
+                                      "DateTime VARCHAR(32),"
+                                      "Callsign VARCHAR(32),"
+                                      "Frequency REAL,"
+                                      "Mode VARCHAR(16),"
+                                      "RstSent INTEGER,"
+                                      "RstSentNr INTEGER,"
+                                      "RstRcvd INTEGER,"
+                                      "RstRcvdNr INTEGER,"
+                                      "Comment VARCHAR(1024),"
+                                      // profile data
+                                      "Profile INTEGER,"
+                                      // station data
+                                      "Station INTEGER,"
+                                      // contest info
+                                      "DXCC INTEGER,"
+                                      // qsl info
+                                      "QSLVia VARCHAR(128),"
+                                      "QSLSent VARCHAR(128),"
+                                      "QSLRcvd VARCHAR(128),"
+                                      "QSLType VARCHAR(128),"
+                                      "FOREIGN KEY(Profile) REFERENCES profiles(ID),"
+                                      "FOREIGN KEY(Station) REFERENCES stations(ID)"
+                                      ")"))) {
+            qWarning() << "could not create logbook table: " << query.lastError().text();
         }
 
-        // create custom fields table
+        // UNDONE: custom fields
 
         // create profiles table
+        if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS profiles ("
+                                      "ID INTEGER PRIMARY KEY,"
+                                      "Callsign VARCHAR(32),"
+                                      "Name VARCHAR(64),"
+                                      "Address VARCHAR(512),"
+                                      "Country VARCHAR(32),"
+                                      "State VARCHAR(32),"
+                                      "Continent VARCHAR(2),"
+                                      "Locator VARCHAR(6),"
+                                      "Latitude INTEGER,"
+                                      "Longitude INTEGER,"
+                                      "Equipment VARCHAR(512)"
+                                      ")"))) {
+            qWarning() << "could not create profiles table: " << query.lastError().text();
+        }
 
         // create stations table
+        if (!query.exec(QLatin1String("CREATE TABLE IF NOT EXISTS stations ("
+                                      "ID INTEGER PRIMARY KEY,"
+                                      "Callsign VARCHAR(32),"
+                                      "Name VARCHAR(64),"
+                                      "Address VARCHAR(512),"
+                                      "Country VARCHAR(32),"
+                                      "State VARCHAR(32),"
+                                      "Continent VARCHAR(2),"
+                                      "Locator VARCHAR(6),"
+                                      "Latitude INTEGER,"
+                                      "Longitude INTEGER,"
+                                      "CQZone INTEGER,"
+                                      "ITUZone INTEGER,"
+                                      "EMail VARCHAR(32),"
+                                      "Url VARCHAR(128),"
+                                      "Equipment VARCHAR(512),"
+                                      "Birthday VARCHAR(32),"
+                                      "Aliases VARCHAR(128)"
+                                      ")"))) {
+            qWarning() << "could not create stations table: " << query.lastError().text();
+        }
     }
 }
 

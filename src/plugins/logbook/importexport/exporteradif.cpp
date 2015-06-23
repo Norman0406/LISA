@@ -27,7 +27,7 @@ QString ExporterAdif::getType() const
 
 void ExporterAdif::iDoExport(QModelIndexList& selection) const
 {
-    QString filename = QFileDialog::getSaveFileName(Core::ICore::dialogParent(), tr("Export ADIF"), QLatin1String(""), tr("ADIF Files (*.adx)"));
+    QString filename = QFileDialog::getSaveFileName(Core::ICore::dialogParent(), tr("Export ADIF (%1 entries)").arg(selection.size()), QLatin1String(""), tr("ADIF Files (*.adx)"));
     if (!filename.isEmpty()) {
         QFile file(filename);
         if (file.open(QFile::WriteOnly | QFile::Text)) {

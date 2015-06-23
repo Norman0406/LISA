@@ -198,17 +198,18 @@ void LogbookEntryPane::setModel(QSqlRelationalTableModel* model)
 
     m_mapper->setModel(m_editModel);
     m_mapper->setItemDelegate(m_itemDelegate);
-    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_Date, 1);
-    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_UTC, 1);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_CallsignTo, 3);
-    m_mapper->addMapping(m_ui->lineEdit_Personal_Name, 4);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_Frequency, 5);
-    m_mapper->addMapping(m_ui->comboBox_QSO_Mode, 6);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_RstSent, 7);
-    m_mapper->addMapping(m_ui->spinBox_QSO_SentNumber, 8);
-    m_mapper->addMapping(m_ui->lineEdit_QSO_RstRcvd, 9);
-    m_mapper->addMapping(m_ui->spinBox_QSO_RcvdNumber, 10);
-    m_mapper->addMapping(m_ui->plainTextEdit_QSO_Comment, 11);
+
+    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_Date, m_model->fieldIndex(QLatin1String("DateTime")));
+    m_mapper->addMapping(m_ui->dateTimeEdit_QSO_UTC, m_model->fieldIndex(QLatin1String("DateTime")));
+    m_mapper->addMapping(m_ui->lineEdit_QSO_CallsignTo, m_model->fieldIndex(QLatin1String("Callsign")));
+    //m_mapper->addMapping(m_ui->lineEdit_Personal_Name, 4);
+    m_mapper->addMapping(m_ui->lineEdit_QSO_Frequency, m_model->fieldIndex(QLatin1String("Frequency")));
+    m_mapper->addMapping(m_ui->comboBox_QSO_Mode, m_model->fieldIndex(QLatin1String("Mode")));
+    m_mapper->addMapping(m_ui->lineEdit_QSO_RstSent, m_model->fieldIndex(QLatin1String("RstSent")));
+    m_mapper->addMapping(m_ui->spinBox_QSO_SentNumber, m_model->fieldIndex(QLatin1String("RstSentNr")));
+    m_mapper->addMapping(m_ui->lineEdit_QSO_RstRcvd, m_model->fieldIndex(QLatin1String("RstRcvd")));
+    m_mapper->addMapping(m_ui->spinBox_QSO_RcvdNumber, m_model->fieldIndex(QLatin1String("RstRcvdNr")));
+    m_mapper->addMapping(m_ui->plainTextEdit_QSO_Comment, m_model->fieldIndex(QLatin1String("Comment")));
 
     // when first loading a new model, a new empty qso is added
     newQso();
@@ -322,7 +323,7 @@ void LogbookEntryPane::newQso()
             QSqlQuery query = m_model->query();
 
             // get data from the last added qso and set data to gui elements
-            if (query.exec(QLatin1String("SELECT Frequency, Mode, Operator FROM logbook ORDER BY ID DESC LIMIT 1"))) {
+            if (query.exec(QLatin1String("SELECT Frequency, Mode, Profile FROM logbook ORDER BY ID DESC LIMIT 1"))) {
                 query.next();
                 if (query.isValid()) {
                     double frequency = query.value(0).toDouble();
