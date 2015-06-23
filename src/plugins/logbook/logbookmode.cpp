@@ -189,6 +189,7 @@ void LogbookMode::importQsos()
     Importer* importer = m_importerFactory->createByType(type, this);
     if (importer) {
         qDebug() << "import";
+        delete importer;
     }
     else
         qWarning() << "could create importer from type " << type;
@@ -202,6 +203,7 @@ void LogbookMode::exportQsos()
     if (exporter) {
         QModelIndexList selection = m_window->getExportQsos();
         exporter->doExport(selection);
+        delete exporter;
     }
     else
         qWarning() << "could not create exporter from type " << type;
